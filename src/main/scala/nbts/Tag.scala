@@ -1,6 +1,5 @@
 package nbts
 
-import org.apache.commons.lang3.ArrayUtils
 import scala.collection.mutable
 
 sealed trait Tag
@@ -123,103 +122,190 @@ object DoubleTag:
   val Zero: DoubleTag = new DoubleTag(0.0)
   def apply(data: Double): DoubleTag = if data == 0.0 then Zero else new DoubleTag(data)
 
-sealed trait CollectionTag[T <: Tag] extends Tag:
+sealed trait CollectionTag[T <: Tag] extends Tag with mutable.IndexedBuffer[T]:
   def set(index: Int, element: T): T
-  def add(index: Int, element: T): Unit
-  def remove(index: Int): T
   def setTag(index: Int, tag: Tag): Boolean
   def addTag(index: Int, tag: Tag): Boolean
 
 final case class ByteArrayTag(private var data: Array[Byte]) extends CollectionTag[ByteTag]:
-  def size: Int = data.size
+  override def addOne(element: ByteTag) =
+    data :+= element.asByte; this
 
-  def get(index: Int): ByteTag = ByteTag(data(index))
+  override def apply(index: Int): ByteTag = ByteTag(data(index))
+
+  override def clear(): Unit = data = Array.empty
+
+  override def insert(index: Int, element: ByteTag): Unit =
+    val (left, right) = data.splitAt(index)
+    data = (left :+ element.asByte) ++ right
+
+  override def insertAll(index: Int, elements: IterableOnce[ByteTag]): Unit =
+    val (left, right) = data.splitAt(index)
+    data = left ++ elements.iterator.map(_.asByte) ++ right
+
+  override def length: Int = data.size
+
+  override def prepend(element: ByteTag) =
+    data +:= element.asByte; this
+
+  override def remove(index: Int, count: Int): Unit =
+    val (left, right) = data.splitAt(index)
+    data = left ++ right.drop(count)
+
+  override def remove(index: Int): ByteTag =
+    val old = data(index)
+    remove(index, 1)
+    ByteTag(old)
+
+  override def update(index: Int, element: ByteTag): Unit =
+    data(index) = element.asByte
 
   def set(index: Int, element: ByteTag): ByteTag =
     val old = data(index)
-    data(index) = element.asByte
-    ByteTag(old)
-
-  def add(index: Int, element: ByteTag): Unit =
-    data = ArrayUtils.insert(index, data, element.asByte)
-
-  def remove(index: Int): ByteTag =
-    val old = data(index)
-    data = ArrayUtils.remove(data, index)
+    this(index) = element
     ByteTag(old)
 
   def setTag(index: Int, tag: Tag): Boolean =
     tag match
-    case tag: NumericTag => data(index) = tag.asByte; true
+    case tag: NumericTag => this(index) = ByteTag(tag.asByte); true
     case _ => false
 
   def addTag(index: Int, tag: Tag): Boolean =
     tag match
-    case tag: NumericTag => ArrayUtils.insert(index, data, tag.asByte); true
+    case tag: NumericTag => insert(index, ByteTag(tag.asByte)); true
     case _ => false
 
 final case class IntArrayTag(private var data: Array[Int]) extends CollectionTag[IntTag]:
-  def size: Int = data.size
+  override def addOne(element: IntTag) =
+    data :+= element.asByte; this
 
-  def get(index: Int): IntTag = IntTag(data(index))
+  override def apply(index: Int): IntTag = IntTag(data(index))
+
+  override def clear(): Unit = data = Array.empty
+
+  override def insert(index: Int, element: IntTag): Unit =
+    val (left, right) = data.splitAt(index)
+    data = (left :+ element.asInt) ++ right
+
+  override def insertAll(index: Int, elements: IterableOnce[IntTag]): Unit =
+    val (left, right) = data.splitAt(index)
+    data = left ++ elements.iterator.map(_.asInt) ++ right
+
+  override def length: Int = data.size
+
+  override def prepend(element: IntTag) =
+    data +:= element.asInt; this
+
+  override def remove(index: Int, count: Int): Unit =
+    val (left, right) = data.splitAt(index)
+    data = left ++ right.drop(count)
+
+  override def remove(index: Int): IntTag =
+    val old = data(index)
+    remove(index, 1)
+    IntTag(old)
+
+  override def update(index: Int, element: IntTag): Unit =
+    data(index) = element.asInt
 
   def set(index: Int, element: IntTag): IntTag =
     val old = data(index)
-    data(index) = element.asInt
-    IntTag(old)
-
-  def add(index: Int, element: IntTag): Unit =
-    data = ArrayUtils.insert(index, data, element.asInt)
-
-  def remove(index: Int): IntTag =
-    val old = data(index)
-    data = ArrayUtils.remove(data, index)
+    this(index) = element
     IntTag(old)
 
   def setTag(index: Int, tag: Tag): Boolean =
     tag match
-    case tag: NumericTag => data(index) = tag.asInt; true
+    case tag: NumericTag => this(index) = IntTag(tag.asInt); true
     case _ => false
 
   def addTag(index: Int, tag: Tag): Boolean =
     tag match
-    case tag: NumericTag => ArrayUtils.insert(index, data, tag.asInt); true
+    case tag: NumericTag => insert(index, IntTag(tag.asInt)); true
     case _ => false
 
 final case class LongArrayTag(private var data: Array[Long]) extends CollectionTag[LongTag]:
-  def size: Int = data.size
+  override def addOne(element: LongTag) =
+    data :+= element.asByte; this
 
-  def get(index: Int): LongTag = LongTag(data(index))
+  override def apply(index: Int): LongTag = LongTag(data(index))
+
+  override def clear(): Unit = data = Array.empty
+
+  override def insert(index: Int, element: LongTag): Unit =
+    val (left, right) = data.splitAt(index)
+    data = (left :+ element.asLong) ++ right
+
+  override def insertAll(index: Int, elements: IterableOnce[LongTag]): Unit =
+    val (left, right) = data.splitAt(index)
+    data = left ++ elements.iterator.map(_.asLong) ++ right
+
+  override def length: Int = data.size
+
+  override def prepend(element: LongTag) =
+    data +:= element.asLong; this
+
+  override def remove(index: Int, count: Int): Unit =
+    val (left, right) = data.splitAt(index)
+    data = left ++ right.drop(count)
+
+  override def remove(index: Int): LongTag =
+    val old = data(index)
+    remove(index, 1)
+    LongTag(old)
+
+  override def update(index: Int, element: LongTag): Unit =
+    data(index) = element.asLong
 
   def set(index: Int, element: LongTag): LongTag =
     val old = data(index)
-    data(index) = element.asLong
-    LongTag(old)
-
-  def add(index: Int, element: LongTag): Unit =
-    data = ArrayUtils.insert(index, data, element.asLong)
-
-  def remove(index: Int): LongTag =
-    val old = data(index)
-    data = ArrayUtils.remove(data, index)
+    this(index) = element
     LongTag(old)
 
   def setTag(index: Int, tag: Tag): Boolean =
     tag match
-    case tag: NumericTag => data(index) = tag.asLong; true
+    case tag: NumericTag => this(index) = LongTag(tag.asLong); true
     case _ => false
 
   def addTag(index: Int, tag: Tag): Boolean =
     tag match
-    case tag: NumericTag => ArrayUtils.insert(index, data, tag.asLong); true
+    case tag: NumericTag => insert(index, LongTag(tag.asLong)); true
     case _ => false
 
-final case class ListTag private (data: mutable.AbstractBuffer[Tag], var elementClass: Class[? <: Tag]) extends CollectionTag[Tag]:
+final case class ListTag private (data: mutable.AbstractBuffer[Tag], private var elementType: Class[? <: Tag]) extends CollectionTag[Tag]:
   def apply(): ListTag = ListTag(mutable.ArrayBuffer.empty, EndTag.getClass)
 
-  def size: Int = data.size
+  override def addOne(element: Tag) =
+    insert(size, element); this
 
-  def get(index: Int): Tag = data(index)
+  override def apply(index: Int): Tag = data(index)
+
+  override def clear(): Unit =
+    data.clear()
+    updateTypeAfterRemove()
+
+  override def insert(index: Int, element: Tag): Unit =
+    if updateType(element) then data.insert(index, element)
+    else throw UnsupportedOperationException()
+
+  override def insertAll(index: Int, elements: IterableOnce[Tag]): Unit =
+    elements.iterator.foreach(insert(index, _))
+
+  override def length: Int = data.size
+
+  override def prepend(element: Tag) =
+    insert(0, element); this
+
+  override def remove(index: Int, count: Int): Unit =
+    data.remove(index, count)
+    updateTypeAfterRemove()
+
+  override def remove(index: Int): Tag =
+    val old = data.remove(index)
+    updateTypeAfterRemove()
+    old
+
+  override def update(index: Int, element: Tag): Unit =
+    set(index, element)
 
   def set(index: Int, element: Tag): Tag =
     val old = data(index)
@@ -229,21 +315,19 @@ final case class ListTag private (data: mutable.AbstractBuffer[Tag], var element
   def add(index: Int, element: Tag): Unit =
     if !addTag(index, element) then throw UnsupportedOperationException()
 
-  def remove(index: Int): Tag =
-    val old = data.remove(index)
-    if data.isEmpty then elementClass = EndTag.getClass
-    old
-
   def setTag(index: Int, tag: Tag): Boolean =
-    if !updateClass(tag) then false
-    else data(index) = tag; true
+    if !updateType(tag) then false
+    else this(index) = tag; true
 
   def addTag(index: Int, tag: Tag): Boolean =
-    if !updateClass(tag) then false
-    else data.insert(index, tag); true
+    if !updateType(tag) then false
+    else insert(index, tag); true
 
-  private def updateClass(tag: Tag): Boolean =
+  private def updateTypeAfterRemove(): Unit =
+    if nonEmpty then elementType = EndTag.getClass
+
+  private def updateType(tag: Tag): Boolean =
     if tag.getClass == EndTag.getClass then false
-    else if elementClass == EndTag.getClass then
-      elementClass = tag.getClass; true
-    else elementClass == tag.getClass
+    else if elementType == EndTag.getClass then
+      elementType = tag.getClass; true
+    else elementType == tag.getClass
