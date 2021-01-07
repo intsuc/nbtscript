@@ -312,9 +312,6 @@ final case class ListTag private (data: mutable.AbstractBuffer[Tag], private var
     if setTag(index, element) then old
     else throw UnsupportedOperationException()
 
-  def add(index: Int, element: Tag): Unit =
-    if !addTag(index, element) then throw UnsupportedOperationException()
-
   def setTag(index: Int, tag: Tag): Boolean =
     if !updateType(tag) then false
     else this(index) = tag; true
