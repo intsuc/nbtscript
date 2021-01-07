@@ -13,7 +13,7 @@ final case class StringTag private (data: String) extends Tag:
   val id: Byte = 8
 
 object StringTag:
-  val Empty = StringTag("")
+  val Empty = new StringTag("")
   def apply(data: String): StringTag = if data.isEmpty then Empty else new StringTag(data)
 
 final case class CompoundTag private (data: Map[String, Tag]) extends Tag:
@@ -109,7 +109,7 @@ final case class FloatTag private (data: Float) extends NumericTag:
   def asNumber: Number = data
 
 object FloatTag:
-  val ZERO: FloatTag = FloatTag(0.0f)
+  val ZERO: FloatTag = new FloatTag(0.0f)
   def apply(data: Float): FloatTag = if data == 0.0f then ZERO else new FloatTag(data)
 
 final case class DoubleTag private (data: Double) extends NumericTag:
@@ -123,7 +123,7 @@ final case class DoubleTag private (data: Double) extends NumericTag:
   def asNumber: Number = data
 
 object DoubleTag:
-  val ZERO: DoubleTag = DoubleTag(0.0)
+  val ZERO: DoubleTag = new DoubleTag(0.0)
   def apply(data: Double): DoubleTag = if data == 0.0 then ZERO else new DoubleTag(data)
 
 sealed abstract class CollectionTag[T <: Tag] extends AbstractList[T] with Tag:
