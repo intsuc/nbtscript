@@ -117,8 +117,8 @@ final case class FloatTag private (data: Float) extends NumericTag:
   def asNumber: Number = data
 
 object FloatTag:
-  val ZERO: FloatTag = new FloatTag(0.0f)
-  def apply(data: Float): FloatTag = if data == 0.0f then ZERO else new FloatTag(data)
+  val Zero: FloatTag = new FloatTag(0.0f)
+  def apply(data: Float): FloatTag = if data == 0.0f then Zero else new FloatTag(data)
 
 final case class DoubleTag private (data: Double) extends NumericTag:
   val id: Byte = 6
@@ -131,8 +131,8 @@ final case class DoubleTag private (data: Double) extends NumericTag:
   def asNumber: Number = data
 
 object DoubleTag:
-  val ZERO: DoubleTag = new DoubleTag(0.0)
-  def apply(data: Double): DoubleTag = if data == 0.0 then ZERO else new DoubleTag(data)
+  val Zero: DoubleTag = new DoubleTag(0.0)
+  def apply(data: Double): DoubleTag = if data == 0.0 then Zero else new DoubleTag(data)
 
 sealed trait CollectionTag[T <: Tag] extends Tag:
   def set(index: Int, element: T): T
