@@ -321,7 +321,7 @@ final case class ListTag private (data: mutable.AbstractBuffer[Tag], private var
     else insert(index, tag); true
 
   private def updateTypeAfterRemove(): Unit =
-    if nonEmpty then elementType = EndTag.getClass
+    if isEmpty then elementType = EndTag.getClass
 
   private def updateType(tag: Tag): Boolean =
     if tag.getClass == EndTag.getClass then false
