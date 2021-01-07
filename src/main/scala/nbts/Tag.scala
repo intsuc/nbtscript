@@ -3,22 +3,17 @@ package nbts
 import org.apache.commons.lang3.ArrayUtils
 import scala.collection.mutable
 
-sealed trait Tag:
-  val id: Byte
+sealed trait Tag
 
-object EndTag extends Tag:
-  val id: Byte = 0
+object EndTag extends Tag
 
-final case class StringTag private (data: String) extends Tag:
-  val id: Byte = 8
+final case class StringTag private (data: String) extends Tag
 
 object StringTag:
   val Empty = new StringTag("")
   def apply(data: String): StringTag = if data.isEmpty then Empty else new StringTag(data)
 
 final case class CompoundTag private (data: mutable.Map[String, Tag]) extends Tag:
-  val id: Byte = 10
-
   def put(key: String, value: Tag): Option[Tag] = data.put(key, value)
 
   def get(key: String): Option[Tag] = data.get(key)
@@ -40,7 +35,6 @@ sealed trait NumericTag extends Tag:
   def asNumber: Number
 
 final case class ByteTag private (data: Byte) extends NumericTag:
-  val id: Byte = 1
   def asByte: Byte = data
   def asShort: Short = data
   def asInt: Int = data
@@ -59,7 +53,6 @@ object ByteTag:
   def apply(data: Boolean): ByteTag = if data then One else Zero
 
 final case class ShortTag private (data: Short) extends NumericTag:
-  val id: Byte = 2
   def asByte: Byte = (data & 0xff).toByte
   def asShort: Short = data
   def asInt: Int = data
@@ -75,7 +68,6 @@ object ShortTag:
   def apply(data: Short): ShortTag = Cache.lift(data - MinCache).getOrElse(new ShortTag(data))
 
 final case class IntTag private (data: Int) extends NumericTag:
-  val id: Byte = 3
   def asByte: Byte = (data & 0xff).toByte
   def asShort: Short = (data & 0xffff).toShort
   def asInt: Int = data
@@ -91,7 +83,6 @@ object IntTag:
   def apply(data: Int): IntTag = Cache.lift(data - MinCache).getOrElse(new IntTag(data))
 
 final case class LongTag private (data: Long) extends NumericTag:
-  val id: Byte = 4
   def asByte: Byte = (data & 0xff).toByte
   def asShort: Short = (data & 0xffff).toShort
   def asInt: Int = data.toInt
@@ -107,7 +98,6 @@ object LongTag:
   def apply(data: Long): LongTag = Cache.lift(data.toInt - MinCache).getOrElse(new LongTag(data))
 
 final case class FloatTag private (data: Float) extends NumericTag:
-  val id: Byte = 5
   def asByte: Byte = (floor(data) & 0xff).toByte
   def asShort: Short = (floor(data) & 0xffff).toShort
   def asInt: Int = floor(data)
@@ -121,7 +111,6 @@ object FloatTag:
   def apply(data: Float): FloatTag = if data == 0.0f then Zero else new FloatTag(data)
 
 final case class DoubleTag private (data: Double) extends NumericTag:
-  val id: Byte = 6
   def asByte: Byte = (floor(data) & 0xff).toByte
   def asShort: Short = (floor(data) & 0xffff).toShort
   def asInt: Int = floor(data)
@@ -142,8 +131,6 @@ sealed trait CollectionTag[T <: Tag] extends Tag:
   def addTag(index: Int, tag: Tag): Boolean
 
 final case class ByteArrayTag(private var data: Array[Byte]) extends CollectionTag[ByteTag]:
-  val id: Byte = 7
-
   def size: Int = data.size
 
   def get(index: Int): ByteTag = ByteTag(data(index))
@@ -172,8 +159,6 @@ final case class ByteArrayTag(private var data: Array[Byte]) extends CollectionT
     case _ => false
 
 final case class IntArrayTag(private var data: Array[Int]) extends CollectionTag[IntTag]:
-  val id: Byte = 11
-
   def size: Int = data.size
 
   def get(index: Int): IntTag = IntTag(data(index))
@@ -202,8 +187,6 @@ final case class IntArrayTag(private var data: Array[Int]) extends CollectionTag
     case _ => false
 
 final case class LongArrayTag(private var data: Array[Long]) extends CollectionTag[LongTag]:
-  val id: Byte = 12
-
   def size: Int = data.size
 
   def get(index: Int): LongTag = LongTag(data(index))
@@ -231,10 +214,8 @@ final case class LongArrayTag(private var data: Array[Long]) extends CollectionT
     case tag: NumericTag => ArrayUtils.insert(index, data, tag.asLong); true
     case _ => false
 
-final case class ListTag private (data: mutable.ArrayBuffer[Tag], var elementId: Byte) extends CollectionTag[Tag]:
-  val id: Byte = 9
-
-  def apply(): ListTag = ListTag(mutable.ArrayBuffer.empty, 0)
+final case class ListTag private (data: mutable.AbstractBuffer[Tag], var elementClass: Class[? <: Tag]) extends CollectionTag[Tag]:
+  def apply(): ListTag = ListTag(mutable.ArrayBuffer.empty, EndTag.getClass)
 
   def size: Int = data.size
 
@@ -243,26 +224,26 @@ final case class ListTag private (data: mutable.ArrayBuffer[Tag], var elementId:
   def set(index: Int, element: Tag): Tag =
     val old = data(index)
     if setTag(index, element) then old
-    else throw UnsupportedOperationException(s"Trying to add tag of type ${element.id} to list of $elementId")
+    else throw UnsupportedOperationException()
 
   def add(index: Int, element: Tag): Unit =
-    if !addTag(index, element) then throw UnsupportedOperationException(s"Trying to add tag of type ${element.id} to list of $elementId")
+    if !addTag(index, element) then throw UnsupportedOperationException()
 
   def remove(index: Int): Tag =
     val old = data.remove(index)
-    if data.isEmpty then elementId = 0
+    if data.isEmpty then elementClass = EndTag.getClass
     old
 
   def setTag(index: Int, tag: Tag): Boolean =
-    if !updateId(tag) then false
+    if !updateClass(tag) then false
     else data(index) = tag; true
 
   def addTag(index: Int, tag: Tag): Boolean =
-    if !updateId(tag) then false
+    if !updateClass(tag) then false
     else data.insert(index, tag); true
 
-  private def updateId(tag: Tag): Boolean =
-    if tag.id == 0 then false
-    else if elementId == 0 then
-      elementId = tag.id; true
-    else elementId == tag.id
+  private def updateClass(tag: Tag): Boolean =
+    if tag.getClass == EndTag.getClass then false
+    else if elementClass == EndTag.getClass then
+      elementClass = tag.getClass; true
+    else elementClass == tag.getClass
