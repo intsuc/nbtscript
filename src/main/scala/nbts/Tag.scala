@@ -124,7 +124,7 @@ final case class DoubleTag private (data: Double) extends NumericTag:
 
 object DoubleTag:
   val ZERO: DoubleTag = DoubleTag(0.0)
-  def apply(data: Double): DoubleTag = if data == 0.0f then ZERO else new DoubleTag(data)
+  def apply(data: Double): DoubleTag = if data == 0.0 then ZERO else new DoubleTag(data)
 
 sealed abstract class CollectionTag[T <: Tag] extends AbstractList[T] with Tag:
   def set(index: Int, element: T): T
