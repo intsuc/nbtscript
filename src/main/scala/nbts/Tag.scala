@@ -1,7 +1,7 @@
 package nbts
 
-import java.util.{AbstractList, ArrayList, HashMap, List, Map}
 import org.apache.commons.lang3.ArrayUtils
+import scala.collection.mutable
 
 sealed trait Tag:
   val id: Byte
@@ -16,11 +16,19 @@ object StringTag:
   val Empty = new StringTag("")
   def apply(data: String): StringTag = if data.isEmpty then Empty else new StringTag(data)
 
-final case class CompoundTag private (data: Map[String, Tag]) extends Tag:
+final case class CompoundTag private (data: mutable.Map[String, Tag]) extends Tag:
   val id: Byte = 10
 
+  def put(key: String, value: Tag): Option[Tag] = data.put(key, value)
+
+  def get(key: String): Option[Tag] = data.get(key)
+
+  def -=(key: String): Unit = data -= key
+
+  def contains(key: String): Boolean = data contains key
+
 object CompoundTag:
-  def apply(): CompoundTag = new CompoundTag(HashMap())
+  def apply(): CompoundTag = new CompoundTag(mutable.Map.empty)
 
 sealed trait NumericTag extends Tag:
   def asByte: Byte
@@ -126,7 +134,7 @@ object DoubleTag:
   val ZERO: DoubleTag = new DoubleTag(0.0)
   def apply(data: Double): DoubleTag = if data == 0.0 then ZERO else new DoubleTag(data)
 
-sealed abstract class CollectionTag[T <: Tag] extends AbstractList[T] with Tag:
+sealed trait CollectionTag[T <: Tag] extends Tag:
   def set(index: Int, element: T): T
   def add(index: Int, element: T): Unit
   def remove(index: Int): T
@@ -140,15 +148,15 @@ final case class ByteArrayTag(private var data: Array[Byte]) extends CollectionT
 
   def get(index: Int): ByteTag = ByteTag(data(index))
 
-  override def set(index: Int, element: ByteTag): ByteTag =
+  def set(index: Int, element: ByteTag): ByteTag =
     val old = data(index)
     data(index) = element.asByte
     ByteTag(old)
 
-  override def add(index: Int, element: ByteTag): Unit =
+  def add(index: Int, element: ByteTag): Unit =
     data = ArrayUtils.insert(index, data, element.asByte)
 
-  override def remove(index: Int): ByteTag =
+  def remove(index: Int): ByteTag =
     val old = data(index)
     data = ArrayUtils.remove(data, index)
     ByteTag(old)
@@ -170,15 +178,15 @@ final case class IntArrayTag(private var data: Array[Int]) extends CollectionTag
 
   def get(index: Int): IntTag = IntTag(data(index))
 
-  override def set(index: Int, element: IntTag): IntTag =
+  def set(index: Int, element: IntTag): IntTag =
     val old = data(index)
     data(index) = element.asInt
     IntTag(old)
 
-  override def add(index: Int, element: IntTag): Unit =
+  def add(index: Int, element: IntTag): Unit =
     data = ArrayUtils.insert(index, data, element.asInt)
 
-  override def remove(index: Int): IntTag =
+  def remove(index: Int): IntTag =
     val old = data(index)
     data = ArrayUtils.remove(data, index)
     IntTag(old)
@@ -200,15 +208,15 @@ final case class LongArrayTag(private var data: Array[Long]) extends CollectionT
 
   def get(index: Int): LongTag = LongTag(data(index))
 
-  override def set(index: Int, element: LongTag): LongTag =
+  def set(index: Int, element: LongTag): LongTag =
     val old = data(index)
     data(index) = element.asLong
     LongTag(old)
 
-  override def add(index: Int, element: LongTag): Unit =
+  def add(index: Int, element: LongTag): Unit =
     data = ArrayUtils.insert(index, data, element.asLong)
 
-  override def remove(index: Int): LongTag =
+  def remove(index: Int): LongTag =
     val old = data(index)
     data = ArrayUtils.remove(data, index)
     LongTag(old)
@@ -223,35 +231,35 @@ final case class LongArrayTag(private var data: Array[Long]) extends CollectionT
     case tag: NumericTag => ArrayUtils.insert(index, data, tag.asLong); true
     case _ => false
 
-final case class ListTag private (data: List[Tag], var elementId: Byte) extends CollectionTag[Tag]:
+final case class ListTag private (data: mutable.ArrayBuffer[Tag], var elementId: Byte) extends CollectionTag[Tag]:
   val id: Byte = 9
 
-  def apply(): ListTag = ListTag(ArrayList(), 0)
+  def apply(): ListTag = ListTag(mutable.ArrayBuffer.empty, 0)
 
   def size: Int = data.size
 
-  def get(index: Int): Tag = data.get(index)
+  def get(index: Int): Tag = data(index)
 
-  override def set(index: Int, element: Tag): Tag =
-    val old = data.get(index)
+  def set(index: Int, element: Tag): Tag =
+    val old = data(index)
     if setTag(index, element) then old
     else throw UnsupportedOperationException(s"Trying to add tag of type ${element.id} to list of $elementId")
 
-  override def add(index: Int, element: Tag): Unit =
+  def add(index: Int, element: Tag): Unit =
     if !addTag(index, element) then throw UnsupportedOperationException(s"Trying to add tag of type ${element.id} to list of $elementId")
 
-  override def remove(index: Int): Tag =
+  def remove(index: Int): Tag =
     val old = data.remove(index)
     if data.isEmpty then elementId = 0
     old
 
   def setTag(index: Int, tag: Tag): Boolean =
     if !updateId(tag) then false
-    else data.set(index, tag); true
+    else data(index) = tag; true
 
   def addTag(index: Int, tag: Tag): Boolean =
     if !updateId(tag) then false
-    else data.add(index, tag); true
+    else data.insert(index, tag); true
 
   private def updateId(tag: Tag): Boolean =
     if tag.id == 0 then false
