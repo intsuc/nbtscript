@@ -18,57 +18,57 @@ enum Node:
   case CompoundChild(name: String)
 
 extension (node: Node)
-  def get(target: Tag, context: mutable.Buffer[Tag]): Unit =
+  def get(target: Tag): Seq[Tag] =
     (node, target) match
     case (Node.MatchRootObject(pattern), target: CompoundTag) =>
-      if pattern <= target then context += target
+      if pattern <= target then Seq(target) else Seq.empty
     case (Node.MatchObject(name, pattern), target: CompoundTag) =>
-      target.get(name).map(tag => if pattern <= tag then context += tag)
+      target.get(name).map(tag => if pattern <= tag then Seq(tag) else Seq.empty).getOrElse(Seq.empty)
     case (Node.AllElements, target: CollectionTag[?]) =>
-      context ++= target
+      target.toSeq
     case (Node.MatchElement(pattern), target: ListTag) =>
-      target.filter(pattern <= _).foreach(context += _)
+      target.filter(pattern <= _).toSeq
     case (Node.IndexedElement(index), target: CollectionTag[?]) =>
       val normalized = if index < 0 then target.size + index else index
-      if 0 until target.size contains normalized then context += target(normalized)
+      if 0 until target.size contains normalized then Seq(target(normalized)) else Seq.empty
     case (Node.CompoundChild(name), target: CompoundTag) =>
-      target.get(name).map(context += _)
-    case _ =>
+      target.get(name).toSeq
+    case _ => Seq.empty
 
-  def getOrCreate(target: Tag, source: => Tag, context: mutable.Buffer[Tag]): Unit =
+  def getOrCreate(target: Tag, source: => Tag): Seq[Tag] =
     (node, target) match
     case (Node.MatchRootObject(_), _) =>
-      node.get(target, context)
+      node.get(target)
     case (Node.MatchObject(name, pattern), target: CompoundTag) =>
       target.get(name) match
-      case Some(element) =>
-        if pattern <= element then context += element
+      case Some(tag) =>
+        if pattern <= tag then Seq(tag) else Seq.empty
       case None =>
         val tag = pattern.copy
         target(name) = tag
-        context += tag
+        Seq(tag)
     case (Node.AllElements, target: CollectionTag[?]) =>
       if target.isEmpty then
         val tag = source
-        if target.addTag(0, tag) then context += tag
-      else context ++= target
+        if target.addTag(0, tag) then Seq(tag) else Seq.empty
+      else target.toSeq
     case (Node.MatchElement(pattern), target: ListTag) =>
       val filtered = target.filter(pattern <= _)
       if filtered.isEmpty then
         val tag = pattern.copy
         target += tag
-        context += tag
-      else filtered.foreach(context += _)
+        Seq(tag)
+      else filtered.toSeq
     case (Node.IndexedElement(_), target) =>
-      node.get(target, context)
+      node.get(target)
     case (Node.CompoundChild(name), target: CompoundTag) =>
       val tag = target.get(name) match
       case Some(tag) => tag
       case None =>
         val tag = source
         target(name) = tag; tag
-      context += tag
-    case _ =>
+      Seq(tag)
+    case _ => Seq.empty
 
   def preferredParent: Tag =
     node match
@@ -161,9 +161,7 @@ extension (path: Path)
   def get(target: Tag): Seq[Tag] =
     var targets = mutable.Buffer(target)
     path foreach { node =>
-      val context = mutable.Buffer.empty[Tag]
-      targets.foreach(node.get(_, context))
-      targets = context
+      targets = targets.flatMap(node.get(_))
       if targets.isEmpty then throw Exception()
     }
     targets.toSeq
@@ -171,9 +169,7 @@ extension (path: Path)
   def count(target: Tag): Int =
     var targets = mutable.Buffer(target)
     path forall { node =>
-      val context = mutable.Buffer.empty[Tag]
-      targets.foreach(node.get(_, context))
-      targets = context
+      targets = targets.flatMap(node.get(_))
       if targets.isEmpty then false else true
     }
     targets.size
@@ -181,18 +177,14 @@ extension (path: Path)
   private def getOrCreateParents(target: Tag): mutable.Buffer[Tag] =
     var targets = mutable.Buffer(target)
     path.dropRight(1).zipWithIndex foreach { (node, index) =>
-      val context = mutable.Buffer.empty[Tag]
-      targets.foreach(node.getOrCreate(_, path(index + 1).preferredParent, context))
-      targets = context
+      targets = targets.flatMap(node.getOrCreate(_, path(index + 1).preferredParent))
       if targets.isEmpty then throw Exception()
     }
     targets
 
   def getOrCreate(target: Tag, source: => Tag): Seq[Tag] =
     val parents = path.getOrCreateParents(target)
-    val context = mutable.Buffer.empty[Tag]
-    parents.foreach(path.last.getOrCreate(_, source, context))
-    context.toSeq
+    parents.flatMap(path.last.getOrCreate(_, source)).toSeq
 
   def set(target: Tag, source: => Tag): Int =
     val parents = path.getOrCreateParents(target)
@@ -201,8 +193,6 @@ extension (path: Path)
   def remove(target: Tag): Int =
     var targets = mutable.Buffer(target)
     path.dropRight(1) foreach { node =>
-      val context = mutable.Buffer.empty[Tag]
-      targets.foreach(node.get(_, context))
-      targets = context
+      targets = targets.flatMap(node.get(_))
     }
     targets.map(path.last.remove(_)).sum
