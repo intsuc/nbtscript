@@ -154,3 +154,55 @@ extension (node: Node)
         target -= name; 1
       else 0
     case _ => 0
+
+type Path = Seq[Node]
+
+extension (path: Path)
+  def get(target: Tag): Seq[Tag] =
+    var targets = mutable.Buffer(target)
+    path foreach { node =>
+      val context = mutable.Buffer.empty[Tag]
+      targets.foreach(node.get(_, context))
+      targets = context
+      if targets.isEmpty then throw Exception()
+    }
+    targets.toSeq
+
+  def count(target: Tag): Int =
+    var targets = mutable.Buffer(target)
+    path forall { node =>
+      val context = mutable.Buffer.empty[Tag]
+      targets.foreach(node.get(_, context))
+      targets = context
+      if targets.isEmpty then false else true
+    }
+    targets.size
+
+  private def getOrCreateParents(target: Tag): mutable.Buffer[Tag] =
+    var targets = mutable.Buffer(target)
+    path.dropRight(1).zipWithIndex foreach { (node, index) =>
+      val context = mutable.Buffer.empty[Tag]
+      targets.foreach(node.getOrCreate(_, path(index + 1).preferredParent, context))
+      targets = context
+      if targets.isEmpty then throw Exception()
+    }
+    targets
+
+  def getOrCreate(target: Tag, source: => Tag): Seq[Tag] =
+    val parents = path.getOrCreateParents(target)
+    val context = mutable.Buffer.empty[Tag]
+    parents.foreach(path.last.getOrCreate(_, source, context))
+    context.toSeq
+
+  def set(target: Tag, source: => Tag): Int =
+    val parents = path.getOrCreateParents(target)
+    parents.map(path.last.set(_, source)).sum
+
+  def remove(target: Tag): Int =
+    var targets = mutable.Buffer(target)
+    path.dropRight(1) foreach { node =>
+      val context = mutable.Buffer.empty[Tag]
+      targets.foreach(node.get(_, context))
+      targets = context
+    }
+    targets.map(path.last.remove(_)).sum
