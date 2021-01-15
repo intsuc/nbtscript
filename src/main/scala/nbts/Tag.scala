@@ -132,6 +132,11 @@ sealed trait CollectionTag[T <: Tag] extends Tag with mutable.IndexedBuffer[T]:
 final case class ByteArrayTag(private var data: Array[Byte]) extends CollectionTag[ByteTag]:
   override def copy: Tag = ByteArrayTag(data.clone)
 
+  override def equals(argument: Any): Boolean =
+    argument match
+    case argument: ByteArrayTag => data sameElements argument.data
+    case _ => false
+
   override def addOne(element: ByteTag) =
     data :+= element.asByte; this
 
@@ -182,6 +187,11 @@ final case class ByteArrayTag(private var data: Array[Byte]) extends CollectionT
 final case class IntArrayTag(private var data: Array[Int]) extends CollectionTag[IntTag]:
   override def copy: Tag = IntArrayTag(data.clone)
 
+  override def equals(argument: Any): Boolean =
+    argument match
+    case argument: IntArrayTag => data sameElements argument.data
+    case _ => false
+
   override def addOne(element: IntTag) =
     data :+= element.asByte; this
 
@@ -231,6 +241,11 @@ final case class IntArrayTag(private var data: Array[Int]) extends CollectionTag
 
 final case class LongArrayTag(private var data: Array[Long]) extends CollectionTag[LongTag]:
   override def copy: Tag = LongArrayTag(data.clone)
+
+  override def equals(argument: Any): Boolean =
+    argument match
+    case argument: LongArrayTag => data sameElements argument.data
+    case _ => false
 
   override def addOne(element: LongTag) =
     data :+= element.asByte; this
