@@ -2,7 +2,8 @@ package nbts
 
 import scala.collection.mutable
 
-sealed trait Tag
+sealed trait Tag:
+  def copy: Tag = this
 
 object EndTag extends Tag
 
@@ -12,7 +13,9 @@ object StringTag:
   val Empty = new StringTag("")
   def apply(data: String): StringTag = if data.isEmpty then Empty else new StringTag(data)
 
-final case class CompoundTag private (data: mutable.Map[String, Tag]) extends Tag:
+final case class CompoundTag(private val data: mutable.Map[String, Tag] = mutable.Map.empty) extends Tag:
+  override def copy: Tag = CompoundTag(mutable.Map.empty ++ data.view.mapValues(_.copy))
+
   def put(key: String, value: Tag): Option[Tag] = data.put(key, value)
 
   def get(key: String): Option[Tag] = data.get(key)
@@ -20,9 +23,6 @@ final case class CompoundTag private (data: mutable.Map[String, Tag]) extends Ta
   def -=(key: String): Unit = data -= key
 
   def contains(key: String): Boolean = data contains key
-
-object CompoundTag:
-  def apply(): CompoundTag = new CompoundTag(mutable.Map.empty)
 
 sealed trait NumericTag extends Tag:
   def asByte: Byte
@@ -128,6 +128,8 @@ sealed trait CollectionTag[T <: Tag] extends Tag with mutable.IndexedBuffer[T]:
   def addTag(index: Int, tag: Tag): Boolean
 
 final case class ByteArrayTag(private var data: Array[Byte]) extends CollectionTag[ByteTag]:
+  override def copy: Tag = ByteArrayTag(data.clone)
+
   override def addOne(element: ByteTag) =
     data :+= element.asByte; this
 
@@ -176,6 +178,8 @@ final case class ByteArrayTag(private var data: Array[Byte]) extends CollectionT
     case _ => false
 
 final case class IntArrayTag(private var data: Array[Int]) extends CollectionTag[IntTag]:
+  override def copy: Tag = IntArrayTag(data.clone)
+
   override def addOne(element: IntTag) =
     data :+= element.asByte; this
 
@@ -224,6 +228,8 @@ final case class IntArrayTag(private var data: Array[Int]) extends CollectionTag
     case _ => false
 
 final case class LongArrayTag(private var data: Array[Long]) extends CollectionTag[LongTag]:
+  override def copy: Tag = LongArrayTag(data.clone)
+
   override def addOne(element: LongTag) =
     data :+= element.asByte; this
 
@@ -272,7 +278,7 @@ final case class LongArrayTag(private var data: Array[Long]) extends CollectionT
     case _ => false
 
 final case class ListTag private (data: mutable.AbstractBuffer[Tag], private var elementType: Class[? <: Tag]) extends CollectionTag[Tag]:
-  def apply(): ListTag = ListTag(mutable.ArrayBuffer.empty, EndTag.getClass)
+  override def copy: Tag = ListTag(mutable.ArrayBuffer.empty ++ data.map(_.copy), elementType)
 
   override def addOne(element: Tag) =
     insert(size, element); this
@@ -328,3 +334,6 @@ final case class ListTag private (data: mutable.AbstractBuffer[Tag], private var
     else if elementType == EndTag.getClass then
       elementType = tag.getClass; true
     else elementType == tag.getClass
+
+object ListTag:
+  def apply(): ListTag = ListTag(mutable.ArrayBuffer.empty, EndTag.getClass)
