@@ -13,16 +13,18 @@ object StringTag:
   val Empty = new StringTag("")
   def apply(data: String): StringTag = if data.isEmpty then Empty else new StringTag(data)
 
-final case class CompoundTag(private val data: mutable.Map[String, Tag] = mutable.Map.empty) extends Tag:
-  override def copy: Tag = CompoundTag(mutable.Map.empty ++ data.view.mapValues(_.copy))
+final case class CompoundTag(private val data: mutable.Map[String, Tag] = mutable.HashMap.empty) extends Tag with mutable.Map[String, Tag]:
+  override def copy: Tag = CompoundTag(mutable.HashMap.empty ++ data.view.mapValues(_.copy))
 
-  def put(key: String, value: Tag): Option[Tag] = data.put(key, value)
+  def addOne(element: (String, Tag)) =
+    data.addOne(element); this
 
   def get(key: String): Option[Tag] = data.get(key)
 
-  def -=(key: String): Unit = data -= key
+  def iterator: Iterator[(String, Tag)] = data.iterator
 
-  def contains(key: String): Boolean = data contains key
+  def subtractOne(element: String) =
+    data.subtractOne(element); this
 
 sealed trait NumericTag extends Tag:
   def asByte: Byte
@@ -277,7 +279,7 @@ final case class LongArrayTag(private var data: Array[Long]) extends CollectionT
     case tag: NumericTag => insert(index, LongTag(tag.asLong)); true
     case _ => false
 
-final case class ListTag private (data: mutable.AbstractBuffer[Tag], private var elementType: Class[? <: Tag]) extends CollectionTag[Tag]:
+final case class ListTag private (data: mutable.Buffer[Tag], private var elementType: Class[? <: Tag]) extends CollectionTag[Tag]:
   override def copy: Tag = ListTag(mutable.ArrayBuffer.empty ++ data.map(_.copy), elementType)
 
   override def addOne(element: Tag) =
