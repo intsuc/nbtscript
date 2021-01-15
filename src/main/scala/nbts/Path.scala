@@ -4,9 +4,9 @@ import scala.collection.mutable
 
 extension (left: Tag) def <= (right: Tag): Boolean =
   (left, right) match
-  case (CompoundTag(left), CompoundTag(right)) => left.keys.forall(key => right.get(key).map(left(key) <= _).getOrElse(false))
-  case (ListTag(left, _), ListTag(right, _)) if left.isEmpty => right.isEmpty
-  case (ListTag(left, _), ListTag(right, _)) => left.toSet subsetOf right.toSet
+  case (left: CompoundTag, right: CompoundTag) => left.keys.forall(name => right.get(name).map(left(name) <= _).getOrElse(false))
+  case (left: ListTag, right: ListTag) if left.isEmpty => right.isEmpty
+  case (left: ListTag, right: ListTag) => left.toSet subsetOf right.toSet
   case (left, right) => left == right
 
 enum Node:
@@ -23,10 +23,7 @@ extension (node: Node)
     case (Node.MatchRootObject(pattern), target: CompoundTag) =>
       if pattern <= target then context += target
     case (Node.MatchObject(name, pattern), target: CompoundTag) =>
-      target.get(name) match
-      case Some(element) =>
-        if pattern <= element then context += element
-      case None =>
+      target.get(name).map(tag => if pattern <= tag then context += tag)
     case (Node.AllElements, target: CollectionTag[?]) =>
       context ++= target
     case (Node.MatchElement(pattern), target: ListTag) =>
@@ -47,31 +44,30 @@ extension (node: Node)
       case Some(element) =>
         if pattern <= element then context += element
       case None =>
-        val element = pattern.copy
-        target.put(name, element)
-        context += element
+        val tag = pattern.copy
+        target(name) = tag
+        context += tag
     case (Node.AllElements, target: CollectionTag[?]) =>
       if target.isEmpty then
-        val element = source
-        if target.addTag(0, element) then context += element
+        val tag = source
+        if target.addTag(0, tag) then context += tag
       else context ++= target
     case (Node.MatchElement(pattern), target: ListTag) =>
       val filtered = target.filter(pattern <= _)
       if filtered.isEmpty then
-        val element = pattern.copy
-        target += element
-        context += element
+        val tag = pattern.copy
+        target += tag
+        context += tag
       else filtered.foreach(context += _)
     case (Node.IndexedElement(_), target) =>
       node.get(target, context)
     case (Node.CompoundChild(name), target: CompoundTag) =>
-      target.get(name) match
-      case Some(element) =>
-        context += element
+      val tag = target.get(name) match
+      case Some(tag) => tag
       case None =>
-        val element = source
-        target.put(name, element)
-        context += element
+        val tag = source
+        target(name) = tag; tag
+      context += tag
     case _ =>
 
   def preferredParent: Tag =
@@ -87,14 +83,13 @@ extension (node: Node)
     (node, target) match
     case (Node.MatchRootObject(_), _) => 0
     case (Node.MatchObject(name, pattern), target: CompoundTag) =>
-      target.get(name) match
-      case Some(element) =>
-        if pattern <= element then
-          val element = source
-          if target == element then 0
-          else target.put(name, element); 1
+      target.get(name).map(tag =>
+        if pattern <= tag then
+          val tag = source
+          if target == tag then 0
+          else target(name) = tag; 1
         else 0
-      case None => 0
+      ).getOrElse(0)
     case (Node.AllElements, target: CollectionTag[?]) =>
       if target.isEmpty then
         target.addTag(0, source); 1
@@ -115,31 +110,29 @@ extension (node: Node)
         val size = target.size
         var result = 0
         for index <- 0 until size do
-          val element = source
-          if pattern <= target(index) && element != target(index) && target.setTag(index, element) then result += 1
+          val tag = source
+          if pattern <= target(index) && tag != target(index) && target.setTag(index, tag) then result += 1
         result
     case (Node.IndexedElement(index), target: CollectionTag[?]) =>
       val normalized = if index < 0 then target.size + index else index
-      if (0 until target.size) contains normalized then
-        val element = source
-        if element == target(normalized) then 0
-        else if target.setTag(normalized, element) then 1 else 0
+      if 0 until target.size contains normalized then
+        val tag = source
+        if tag != target(normalized) && target.setTag(normalized, tag) then 1 else 0
       else 0
     case (Node.CompoundChild(name), target: CompoundTag) =>
-      val element = source
-      if element == target.put(name, element) then 0 else 1
+      val src = source
+      target.put(name, src).map(tag => if src == tag then 0 else 1).getOrElse(1)
     case _ => 0
 
   def remove(target: Tag): Int =
     (node, target) match
     case (Node.MatchRootObject(_), _) => 0
     case (Node.MatchObject(name, pattern), target: CompoundTag) =>
-      target.get(name) match
-      case Some(element) =>
-        if pattern <= element then
+      target.get(name).map(tag =>
+        if pattern <= tag then
           target -= name; 1
         else 0
-      case None => 0
+      ).getOrElse(0)
     case (Node.AllElements, target: CollectionTag[?]) =>
       val size = target.size
       target.clear()
@@ -153,7 +146,7 @@ extension (node: Node)
       result
     case (Node.IndexedElement(index), target: CollectionTag[?]) =>
       val normalized = if index < 0 then target.size + index else index
-      if (0 until target.size) contains normalized then
+      if 0 until target.size contains normalized then
         target.remove(normalized); 1
       else 0
     case (Node.CompoundChild(name), target: CompoundTag) =>
