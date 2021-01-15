@@ -17,9 +17,8 @@ enum Node:
   case IndexedElement(index: Int)
   case CompoundChild(name: String)
 
-extension (node: Node)
   def get(target: Tag): Seq[Tag] =
-    (node, target) match
+    (this, target) match
     case (Node.MatchRootObject(pattern), target: CompoundTag) =>
       if pattern <= target then Seq(target) else Seq.empty
     case (Node.MatchObject(name, pattern), target: CompoundTag) =>
@@ -36,9 +35,9 @@ extension (node: Node)
     case _ => Seq.empty
 
   def getOrCreate(target: Tag, source: => Tag): Seq[Tag] =
-    (node, target) match
+    (this, target) match
     case (Node.MatchRootObject(_), _) =>
-      node.get(target)
+      get(target)
     case (Node.MatchObject(name, pattern), target: CompoundTag) =>
       target.get(name) match
       case Some(tag) =>
@@ -60,7 +59,7 @@ extension (node: Node)
         Seq(tag)
       else filtered.toSeq
     case (Node.IndexedElement(_), target) =>
-      node.get(target)
+      get(target)
     case (Node.CompoundChild(name), target: CompoundTag) =>
       val tag = target.get(name) match
       case Some(tag) => tag
@@ -71,7 +70,7 @@ extension (node: Node)
     case _ => Seq.empty
 
   def preferredParent: Tag =
-    node match
+    this match
     case Node.MatchRootObject(_) => CompoundTag()
     case Node.MatchObject(_, _) => CompoundTag()
     case Node.AllElements => ListTag()
@@ -80,7 +79,7 @@ extension (node: Node)
     case Node.CompoundChild(_) => CompoundTag()
 
   def set(target: Tag, source: => Tag): Int =
-    (node, target) match
+    (this, target) match
     case (Node.MatchRootObject(_), _) => 0
     case (Node.MatchObject(name, pattern), target: CompoundTag) =>
       target.get(name).map(tag =>
@@ -125,7 +124,7 @@ extension (node: Node)
     case _ => 0
 
   def remove(target: Tag): Int =
-    (node, target) match
+    (this, target) match
     case (Node.MatchRootObject(_), _) => 0
     case (Node.MatchObject(name, pattern), target: CompoundTag) =>
       target.get(name).map(tag =>
@@ -159,40 +158,21 @@ type Path = Seq[Node]
 
 extension (path: Path)
   def get(target: Tag): Seq[Tag] =
-    var targets = mutable.Buffer(target)
-    path foreach { node =>
-      targets = targets.flatMap(node.get(_))
-      if targets.isEmpty then throw Exception()
-    }
-    targets.toSeq
+    path.foldLeft(mutable.Buffer(target))(_ flatMap _.get).toSeq
 
   def count(target: Tag): Int =
-    var targets = mutable.Buffer(target)
-    path forall { node =>
-      targets = targets.flatMap(node.get(_))
-      if targets.isEmpty then false else true
-    }
-    targets.size
+    get(target).size
 
   private def getOrCreateParents(target: Tag): mutable.Buffer[Tag] =
-    var targets = mutable.Buffer(target)
-    path.dropRight(1).zipWithIndex foreach { (node, index) =>
-      targets = targets.flatMap(node.getOrCreate(_, path(index + 1).preferredParent))
-      if targets.isEmpty then throw Exception()
+    path.dropRight(1).sliding(2).foldLeft(mutable.Buffer(target)) {
+      case (targets, Seq(left, right)) => targets.flatMap(left.getOrCreate(_, right.preferredParent))
     }
-    targets
 
   def getOrCreate(target: Tag, source: => Tag): Seq[Tag] =
-    val parents = path.getOrCreateParents(target)
-    parents.flatMap(path.last.getOrCreate(_, source)).toSeq
+    path.getOrCreateParents(target).flatMap(path.last.getOrCreate(_, source)).toSeq
 
   def set(target: Tag, source: => Tag): Int =
-    val parents = path.getOrCreateParents(target)
-    parents.map(path.last.set(_, source)).sum
+    path.getOrCreateParents(target).map(path.last.set(_, source)).sum
 
   def remove(target: Tag): Int =
-    var targets = mutable.Buffer(target)
-    path.dropRight(1) foreach { node =>
-      targets = targets.flatMap(node.get(_))
-    }
-    targets.map(path.last.remove(_)).sum
+    path.dropRight(1).foldLeft(mutable.Buffer(target))(_ flatMap _.get).map(path.last.remove).sum
