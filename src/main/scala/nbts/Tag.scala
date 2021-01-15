@@ -3,18 +3,19 @@ package nbts
 import scala.collection.mutable
 
 sealed trait Tag:
-  def copy: Tag = this
+  def copy(): Tag = this
 
 object EndTag extends Tag
 
-final case class StringTag private (data: String) extends Tag
+final case class StringTag private (data: String) extends Tag:
+  def size: Int = data.size
 
 object StringTag:
   val Empty = new StringTag("")
   def apply(data: String): StringTag = if data.isEmpty then Empty else new StringTag(data)
 
 final case class CompoundTag(private val data: mutable.Map[String, Tag] = mutable.HashMap.empty) extends Tag with mutable.Map[String, Tag]:
-  override def copy: Tag = CompoundTag(mutable.HashMap.empty ++ data.view.mapValues(_.copy))
+  override def copy(): CompoundTag = CompoundTag(mutable.HashMap.empty ++ data.view.mapValues(_.copy()))
 
   def addOne(element: (String, Tag)) =
     data.addOne(element); this
@@ -130,7 +131,7 @@ sealed trait CollectionTag[T <: Tag] extends Tag with mutable.IndexedBuffer[T]:
   def addTag(index: Int, tag: Tag): Boolean
 
 final case class ByteArrayTag(private var data: Array[Byte]) extends CollectionTag[ByteTag]:
-  override def copy: Tag = ByteArrayTag(data.clone)
+  override def copy(): ByteArrayTag = ByteArrayTag(data.clone)
 
   override def equals(argument: Any): Boolean =
     argument match
@@ -185,7 +186,7 @@ final case class ByteArrayTag(private var data: Array[Byte]) extends CollectionT
     case _ => false
 
 final case class IntArrayTag(private var data: Array[Int]) extends CollectionTag[IntTag]:
-  override def copy: Tag = IntArrayTag(data.clone)
+  override def copy(): IntArrayTag = IntArrayTag(data.clone)
 
   override def equals(argument: Any): Boolean =
     argument match
@@ -240,7 +241,7 @@ final case class IntArrayTag(private var data: Array[Int]) extends CollectionTag
     case _ => false
 
 final case class LongArrayTag(private var data: Array[Long]) extends CollectionTag[LongTag]:
-  override def copy: Tag = LongArrayTag(data.clone)
+  override def copy(): LongArrayTag = LongArrayTag(data.clone)
 
   override def equals(argument: Any): Boolean =
     argument match
@@ -295,7 +296,7 @@ final case class LongArrayTag(private var data: Array[Long]) extends CollectionT
     case _ => false
 
 final case class ListTag private (data: mutable.Buffer[Tag], private var elementType: Class[? <: Tag]) extends CollectionTag[Tag]:
-  override def copy: Tag = ListTag(mutable.ArrayBuffer.empty ++ data.map(_.copy), elementType)
+  override def copy(): ListTag = ListTag(mutable.ArrayBuffer.empty ++ data.map(_.copy()), elementType)
 
   override def addOne(element: Tag) =
     insert(size, element); this

@@ -43,7 +43,7 @@ enum Node:
       case Some(tag) =>
         if pattern <= tag then Seq(tag) else Seq.empty
       case None =>
-        val tag = pattern.copy
+        val tag = pattern.copy()
         target(name) = tag
         Seq(tag)
     case (Node.AllElements, target: CollectionTag[?]) =>
@@ -54,7 +54,7 @@ enum Node:
     case (Node.MatchElement(pattern), target: ListTag) =>
       val filtered = target.filter(pattern <= _)
       if filtered.isEmpty then
-        val tag = pattern.copy
+        val tag = pattern.copy()
         target += tag
         Seq(tag)
       else filtered.toSeq
@@ -154,25 +154,23 @@ enum Node:
       else 0
     case _ => 0
 
-type Path = Seq[Node]
-
-extension (path: Path)
+final case class Path(nodes: Seq[Node]):
   def get(target: Tag): Seq[Tag] =
-    path.foldLeft(mutable.Buffer(target))(_ flatMap _.get).toSeq
+    nodes.foldLeft(mutable.Buffer(target))(_ flatMap _.get).toSeq
 
   def count(target: Tag): Int =
     get(target).size
 
   private def getOrCreateParents(target: Tag): mutable.Buffer[Tag] =
-    path.dropRight(1).sliding(2).foldLeft(mutable.Buffer(target)) {
+    nodes.dropRight(1).sliding(2).foldLeft(mutable.Buffer(target)) {
       case (targets, Seq(left, right)) => targets.flatMap(left.getOrCreate(_, right.preferredParent))
     }
 
   def getOrCreate(target: Tag, source: => Tag): Seq[Tag] =
-    path.getOrCreateParents(target).flatMap(path.last.getOrCreate(_, source)).toSeq
+    getOrCreateParents(target).flatMap(nodes.last.getOrCreate(_, source)).toSeq
 
   def set(target: Tag, source: => Tag): Int =
-    path.getOrCreateParents(target).map(path.last.set(_, source)).sum
+    getOrCreateParents(target).map(nodes.last.set(_, source)).sum
 
   def remove(target: Tag): Int =
-    path.dropRight(1).foldLeft(mutable.Buffer(target))(_ flatMap _.get).map(path.last.remove).sum
+    nodes.dropRight(1).foldLeft(mutable.Buffer(target))(_ flatMap _.get).map(nodes.last.remove).sum
