@@ -126,9 +126,8 @@ object DoubleTag:
   def apply(data: Double): DoubleTag = if data == 0.0 then Zero else new DoubleTag(data)
 
 sealed trait CollectionTag[T <: Tag] extends Tag with mutable.IndexedBuffer[T]:
-  def set(index: Int, element: T): T
-  def setTag(index: Int, tag: Tag): Boolean
-  def addTag(index: Int, tag: Tag): Boolean
+  def set(index: Int, tag: Tag): Boolean
+  def add(index: Int, tag: Tag): Boolean
 
 final case class ByteArrayTag(private var data: Array[Byte]) extends CollectionTag[ByteTag]:
   override def copy(): ByteArrayTag = ByteArrayTag(data.clone)
@@ -170,17 +169,12 @@ final case class ByteArrayTag(private var data: Array[Byte]) extends CollectionT
   override def update(index: Int, element: ByteTag): Unit =
     data(index) = element.asByte
 
-  def set(index: Int, element: ByteTag): ByteTag =
-    val old = data(index)
-    this(index) = element
-    ByteTag(old)
-
-  def setTag(index: Int, tag: Tag): Boolean =
+  def set(index: Int, tag: Tag): Boolean =
     tag match
     case tag: NumericTag => this(index) = ByteTag(tag.asByte); true
     case _ => false
 
-  def addTag(index: Int, tag: Tag): Boolean =
+  def add(index: Int, tag: Tag): Boolean =
     tag match
     case tag: NumericTag => insert(index, ByteTag(tag.asByte)); true
     case _ => false
@@ -225,17 +219,12 @@ final case class IntArrayTag(private var data: Array[Int]) extends CollectionTag
   override def update(index: Int, element: IntTag): Unit =
     data(index) = element.asInt
 
-  def set(index: Int, element: IntTag): IntTag =
-    val old = data(index)
-    this(index) = element
-    IntTag(old)
-
-  def setTag(index: Int, tag: Tag): Boolean =
+  def set(index: Int, tag: Tag): Boolean =
     tag match
     case tag: NumericTag => this(index) = IntTag(tag.asInt); true
     case _ => false
 
-  def addTag(index: Int, tag: Tag): Boolean =
+  def add(index: Int, tag: Tag): Boolean =
     tag match
     case tag: NumericTag => insert(index, IntTag(tag.asInt)); true
     case _ => false
@@ -280,17 +269,12 @@ final case class LongArrayTag(private var data: Array[Long]) extends CollectionT
   override def update(index: Int, element: LongTag): Unit =
     data(index) = element.asLong
 
-  def set(index: Int, element: LongTag): LongTag =
-    val old = data(index)
-    this(index) = element
-    LongTag(old)
-
-  def setTag(index: Int, tag: Tag): Boolean =
+  def set(index: Int, tag: Tag): Boolean =
     tag match
     case tag: NumericTag => this(index) = LongTag(tag.asLong); true
     case _ => false
 
-  def addTag(index: Int, tag: Tag): Boolean =
+  def add(index: Int, tag: Tag): Boolean =
     tag match
     case tag: NumericTag => insert(index, LongTag(tag.asLong)); true
     case _ => false
@@ -331,16 +315,11 @@ final case class ListTag private (data: mutable.Buffer[Tag], private var element
   override def update(index: Int, element: Tag): Unit =
     set(index, element)
 
-  def set(index: Int, element: Tag): Tag =
-    val old = data(index)
-    if setTag(index, element) then old
-    else throw UnsupportedOperationException()
-
-  def setTag(index: Int, tag: Tag): Boolean =
+  def set(index: Int, tag: Tag): Boolean =
     if !updateType(tag) then false
     else this(index) = tag; true
 
-  def addTag(index: Int, tag: Tag): Boolean =
+  def add(index: Int, tag: Tag): Boolean =
     if !updateType(tag) then false
     else insert(index, tag); true
 

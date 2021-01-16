@@ -49,7 +49,7 @@ enum Node:
     case (Node.AllElements, target: CollectionTag[?]) =>
       if target.isEmpty then
         val tag = source
-        if target.addTag(0, tag) then Seq(tag) else Seq.empty
+        if target.add(0, tag) then Seq(tag) else Seq.empty
       else target.toSeq
     case (Node.MatchElement(pattern), target: ListTag) =>
       val filtered = target.filter(pattern <= _)
@@ -91,15 +91,15 @@ enum Node:
       ).getOrElse(0)
     case (Node.AllElements, target: CollectionTag[?]) =>
       if target.isEmpty then
-        target.addTag(0, source); 1
+        target.add(0, source); 1
       else
         val size = target.size
         val result = size - target.count(source == _)
         if result != 0 then
           target.clear()
-          if !target.addTag(0, source) then 0
+          if !target.add(0, source) then 0
           else
-            for index <- 1 until size do target.addTag(index, source)
+            for index <- 1 until size do target.add(index, source)
             result
         else 0
     case (Node.MatchElement(pattern), target: ListTag) =>
@@ -110,13 +110,13 @@ enum Node:
         var result = 0
         for index <- 0 until size do
           val tag = source
-          if pattern <= target(index) && tag != target(index) && target.setTag(index, tag) then result += 1
+          if pattern <= target(index) && tag != target(index) && target.set(index, tag) then result += 1
         result
     case (Node.IndexedElement(index), target: CollectionTag[?]) =>
       val normalized = if index < 0 then target.size + index else index
       if 0 until target.size contains normalized then
         val tag = source
-        if tag != target(normalized) && target.setTag(normalized, tag) then 1 else 0
+        if tag != target(normalized) && target.set(normalized, tag) then 1 else 0
       else 0
     case (Node.CompoundChild(name), target: CompoundTag) =>
       val src = source
