@@ -1,10 +1,26 @@
 package nbts
 
 extension (target: CompoundTag)
-  def insert(index: Int, path: Path, source: Seq[Tag]): Option[Int] = ??? // TODO
+  def insert(index: Int, path: Path, sources: Seq[Tag]): Option[Int] =
+    // TODO: rewrite more declaratively
+    var result = 0
+    val targets = path.getOrCreate(target, ListTag())
+    for target <- targets do
+      target match
+      case target: CollectionTag[?] =>
+        var inserted = false
+        var normalized = if index < 0 then target.size + index + 1 else index
+        for source <- sources do
+          try if target.add(normalized, source.copy()) then
+            normalized += 1
+            inserted = true
+          catch case _: IndexOutOfBoundsException => return None
+        result += (if inserted then 1 else 0)
+      case _ => return None
+    Some(result)
 
-  def set(path: Path, source: Seq[Tag]): Option[Int] =
-    path.set(target, source.last) match
+  def set(path: Path, sources: Seq[Tag]): Option[Int] =
+    path.set(target, sources.last) match
     case 0 => None
     case result => Some(result)
 
