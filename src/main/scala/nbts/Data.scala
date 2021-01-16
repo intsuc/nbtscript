@@ -19,6 +19,12 @@ extension (target: CompoundTag)
       case _ => return None
     Some(result)
 
+  def prepend(path: Path, sources: Seq[Tag]): Option[Int] =
+    insert(0, path, sources)
+
+  def append(path: Path, sources: Seq[Tag]): Option[Int] =
+    insert(-1, path, sources)
+
   def set(path: Path, sources: Seq[Tag]): Option[Int] =
     path.set(target, sources.last) match
     case 0 => None
