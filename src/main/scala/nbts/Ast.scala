@@ -1,17 +1,17 @@
 package nbts
 
 object Ast:
-  final case class Access(tag: Tag, path: Option[Path])
+  final case class Access(tag: Tag, path: Path)
 
   enum Statement:
-    case Insert(index: Int, target: Access, source: Access)
-    case Prepend(target: Access, source: Access)
-    case Append(target: Access, source: Access)
-    case Set(target: Access, source: Access)
-    case Remove(target: Access)
-    case Get(target: Access)
-    case GetNumeric(target: Access, scale: Double)
-    case Merge(target: Access, source: Access)
-    case Print(target: Access)
+    case Insert(index: Int, targets: Access, sources: Access)
+    case Prepend(targets: Access, sources: Access)
+    case Append(targets: Access, sources: Access)
+    case Set(targets: Access, sources: Access)
+    case Remove(targets: Access)
+    case Get(targets: Access)
+    case GetNumeric(targets: Access, scale: Double)
+    case Merge(targets: Access, sources: Access)
+    case Print(targets: Access)
 
   final case class Source(statements: Seq[Statement])

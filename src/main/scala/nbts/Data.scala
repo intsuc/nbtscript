@@ -1,6 +1,6 @@
 package nbts
 
-extension (target: CompoundTag)
+extension (target: Tag)
   def insert(index: Int, path: Path, sources: Seq[Tag]): Option[Int] =
     // TODO: rewrite more declaratively
     var result = 0
@@ -60,14 +60,16 @@ extension (target: CompoundTag)
     case _ => None
 
   def merge(source: CompoundTag): Option[Int] =
-    source.keys foreach { name =>
-      source.get(name) map {
-        case source: CompoundTag =>
-          target.get(name) map {
-            case target: CompoundTag => target.merge(source)
-            case _ => target(name) = source.copy()
-          }
-        case source => target(name) = source.copy()
+    target match
+    case target: CompoundTag =>
+      source.keys foreach { name =>
+        source.get(name) map {
+          case source: CompoundTag =>
+            target.get(name) map {
+              case target: CompoundTag => target.merge(source)
+              case _ => target(name) = source.copy()
+            }
+          case source => target(name) = source.copy()
+        }
       }
-    }
     Some(1) // TODO: unchanged check
