@@ -16,10 +16,10 @@ object Ast:
     case List(data: Seq[Tag])
 
   enum Node:
-    case MatchRootObject(pattern: CompoundTag)
-    case MatchObject(name: String, pattern: CompoundTag)
+    case MatchRootObject(pattern: Tag.Compound)
+    case MatchObject(name: String, pattern: Tag.Compound)
     case AllElements
-    case MatchElement(pattern: CompoundTag)
+    case MatchElement(pattern: Tag.Compound)
     case IndexedElement(index: Int)
     case CompoundChild(name: String)
 
