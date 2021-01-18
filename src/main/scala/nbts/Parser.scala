@@ -1,6 +1,7 @@
 package nbts
 
 import nbts.Ast._
+import scala.collection.mutable
 import scala.util.parsing.combinator._
 
 object NbtsParsers extends RegexParsers:
@@ -29,17 +30,17 @@ object NbtsParsers extends RegexParsers:
 
   def tag: Parser[Tag]
     = compound
-    | "[B;" ~> repsep(byte, ",") <~ "]" ^^ { Tag.ByteArray(_) }
-    | "[I;" ~> repsep(int, ",") <~ "]" ^^ { Tag.IntArray(_) }
-    | "[L;" ~> repsep(long, ",") <~ "]" ^^ { Tag.LongArray(_) }
-    | "[" ~> repsep(tag, ",") <~ "]" ^^ { Tag.List(_) }
-    | byte ^^ { Tag.Byte(_) }
-    | short ^^ { Tag.Short(_) }
-    | long ^^ { Tag.Long(_) }
-    | float ^^ { Tag.Float(_) }
-    | double ^^ { Tag.Double(_) }
-    | int ^^ { Tag.Int(_) }
-    | string ^^ { Tag.String(_) }
+    | "[B;" ~> repsep(byte, ",") <~ "]" ^^ { data => ByteArrayTag(data.toArray) }
+    | "[I;" ~> repsep(int, ",") <~ "]" ^^ { data => IntArrayTag(data.toArray) }
+    | "[L;" ~> repsep(long, ",") <~ "]" ^^ { data => LongArrayTag(data.toArray) }
+    | "[" ~> repsep(tag, ",") <~ "]" ^^ { data => ListTag().addAll(data) }
+    | byte ^^ { ByteTag(_) }
+    | short ^^ { ShortTag(_) }
+    | long ^^ { LongTag(_) }
+    | float ^^ { FloatTag(_) }
+    | double ^^ { DoubleTag(_) }
+    | int ^^ { IntTag(_) }
+    | string ^^ { StringTag(_) }
 
   def path: Parser[Path] = repsep(node, ".") ^^ { Path(_) }
 
@@ -52,12 +53,12 @@ object NbtsParsers extends RegexParsers:
     | string ^^ { Node.CompoundChild(_) }
 
   def string: Parser[String] = "\"" ~> """([^"]|(?<=\\)")*""".r <~ "\""
-  def compound: Parser[Tag.Compound] = "{" ~> repsep((string <~ ":") ~ tag, ",") <~ "}" ^^ { entries => Tag.Compound(Map(entries.map(_ -> _) :_*)) }
+  def compound: Parser[CompoundTag] = "{" ~> repsep((string <~ ":") ~ tag, ",") <~ "}" ^^ { entries => CompoundTag(mutable.Map.empty ++ entries.map(_ -> _)) }
   def byte: Parser[Byte] = integer <~ "b" ^^ { _.toByte }
   def short: Parser[Short] = integer <~ "s" ^^ { _.toShort }
   def int: Parser[Int] = integer ^^ { _.toInt }
   def long: Parser[Long] = integer <~ "L" ^^ { _.toLong }
-  def float: Parser[Float] = real <~ "d" ^^ { _.toFloat }
+  def float: Parser[Float] = real <~ "f" ^^ { _.toFloat }
   def double: Parser[Double] = real <~ "d" ^^ { _.toDouble }
   def integer: Parser[String] = """[-+]?(?:0|[1-9][0-9]*)""".r
   def real: Parser[String] = """[-+]?(?:[0-9]+[.]|[0-9]*[.][0-9]+)(?:e[-+]?[0-9]+)?""".r
