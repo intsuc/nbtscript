@@ -51,7 +51,10 @@ object NbtsParser extends RegexParsers:
     | "[" ~> int <~ "]" ^^ { Node.IndexedElement(_) }
     | string ^^ { Node.CompoundChild(_) }
 
-  def string: Parser[String] = "\"" ~> """([^"]|(?<=\\)")*""".r <~ "\""
+  def string: Parser[String]
+    = "\"" ~> """([^"]|(?<=\\)")*""".r <~ "\"" ^^ { _.replace("\\\"", "\"") }
+    | """[^ "\[\].\{\}:]+""".r
+
   def compound: Parser[CompoundTag] = "{" ~> repsep((string <~ ":") ~ tag, ",") <~ "}" ^^ { entries => CompoundTag(mutable.Map.empty ++ entries.map(_ -> _)) }
   def byte: Parser[Byte] = integer <~ "b" ^^ { _.toByte }
   def short: Parser[Short] = integer <~ "s" ^^ { _.toShort }

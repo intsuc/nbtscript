@@ -1,6 +1,7 @@
 package nbts
 
 import nbts.Ast._
+import scala.Console.{CYAN, GREEN, YELLOW, MAGENTA, RESET}
 
 def interpret(statement: Statement): Option[Int] =
   statement match
@@ -32,11 +33,10 @@ def interpret(statement: Statement): Option[Int] =
 extension (access: Access) def apply(): Seq[Tag] = access.path.get(access.tag)
 
 def stringify(tag: Tag): String =
-  import scala.Console.{CYAN, GREEN, YELLOW, MAGENTA, RESET}
   tag match
   case EndTag => ""
-  case StringTag(data) => s""""$GREEN${quote(data)}$RESET""""
-  case CompoundTag(data) => data.map((name, tag) => s""""$CYAN${quote(name)}$RESET": ${stringify(tag)}""").mkString("{", ", ", "}")
+  case StringTag(data) => quote(data, GREEN)
+  case CompoundTag(data) => data.map((name, tag) => s"""${quote(name, CYAN)}: ${stringify(tag)}""").mkString("{", ", ", "}")
   case ByteTag(data) => s"$YELLOW$data${MAGENTA}b$RESET"
   case ShortTag(data) => s"$YELLOW$data${MAGENTA}s$RESET"
   case IntTag(data) => s"$YELLOW$data$RESET"
@@ -48,4 +48,8 @@ def stringify(tag: Tag): String =
   case LongArrayTag(data) => data.map(YELLOW + _.toString + s"${MAGENTA}L$RESET").mkString(s"[${MAGENTA}L$RESET; ", ", ", "]")
   case ListTag(data, _) => data.map(stringify).mkString("[", ", ", "]")
 
-def quote(string: String): String = string.replace("\"", "\\\"")
+def quote(string: String, color: String): String =
+  if """[^ "\[\].\{\}:]+""".r.matches(string) then
+    s"$color$string$RESET"
+  else
+    s""""$color${string.replace("\"", "\\\"")}$RESET""""
