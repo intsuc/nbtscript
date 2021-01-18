@@ -4,7 +4,7 @@ import nbts.Ast._
 import scala.collection.mutable
 import scala.util.parsing.combinator._
 
-object NbtsParsers extends RegexParsers:
+object NbtsParser extends RegexParsers:
   def apply(text: String): Source =
     parseAll(source, text) match
     case Success(matched, _) => matched
@@ -25,8 +25,7 @@ object NbtsParsers extends RegexParsers:
     | "print" ~> access ^^ { Statement.Print(_) }
 
   def access: Parser[Access]
-    = (tag <~ ".") ~ path ^^ { case tag ~ path => Access(tag, Some(path)) }
-    | tag ^^ { Access(_, None) }
+    = (tag <~ ".") ~ path ^^ { case tag ~ path => Access(tag, path) }
 
   def tag: Parser[Tag]
     = compound

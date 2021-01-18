@@ -21,7 +21,13 @@ def interpret(statement: Statement): Option[Int] =
   case Statement.Merge(Access(tag, path), source) =>
     ??? // TODO
   case Statement.Print(target) =>
-    target().map(stringify).foreach(println); Some(1)
+    val stringified = target().map(stringify).iterator
+    while
+      print(stringified.next)
+      stringified.hasNext
+    do print(", ")
+    println()
+    Some(1)
 
 extension (access: Access) def apply(): Seq[Tag] = access.path.get(access.tag)
 
@@ -41,4 +47,4 @@ def stringify(tag: Tag): String =
   case LongArrayTag(data) => data.map(_.toString + "L").mkString("[L;", ", ", "]")
   case ListTag(data, _) => data.map(stringify).mkString("[", ", ", "]")
 
-def quote(string: String): String = s""""${string.replaceAllLiterally("\"", "\\\"")}""""
+def quote(string: String): String = s""""${string.replace("\"", "\\\"")}""""
