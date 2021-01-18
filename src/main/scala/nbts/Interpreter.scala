@@ -32,19 +32,20 @@ def interpret(statement: Statement): Option[Int] =
 extension (access: Access) def apply(): Seq[Tag] = access.path.get(access.tag)
 
 def stringify(tag: Tag): String =
+  import scala.Console.{CYAN, GREEN, YELLOW, MAGENTA, RESET}
   tag match
   case EndTag => ""
-  case StringTag(data) => quote(data)
-  case CompoundTag(data) => data.map((name, tag) => s"${quote(name)}: ${stringify(tag)}").mkString("{", ", ", "}")
-  case ByteTag(data) => s"${data}b"
-  case ShortTag(data) => s"${data}s"
-  case IntTag(data) => s"$data"
-  case LongTag(data) => s"${data}L"
-  case FloatTag(data) => s"${data}f"
-  case DoubleTag(data) => s"${data}d"
-  case ByteArrayTag(data) => data.map(_.toString + "b").mkString("[B;", ", ", "]")
-  case IntArrayTag(data) => data.map(_.toString).mkString("[I;", ", ", "]")
-  case LongArrayTag(data) => data.map(_.toString + "L").mkString("[L;", ", ", "]")
+  case StringTag(data) => s""""$GREEN${quote(data)}$RESET""""
+  case CompoundTag(data) => data.map((name, tag) => s""""$CYAN${quote(name)}$RESET": ${stringify(tag)}""").mkString("{", ", ", "}")
+  case ByteTag(data) => s"$YELLOW$data${MAGENTA}b$RESET"
+  case ShortTag(data) => s"$YELLOW$data${MAGENTA}s$RESET"
+  case IntTag(data) => s"$YELLOW$data$RESET"
+  case LongTag(data) => s"$YELLOW$data${MAGENTA}L$RESET"
+  case FloatTag(data) => s"$YELLOW$data${MAGENTA}f$RESET"
+  case DoubleTag(data) => s"$YELLOW$data${MAGENTA}d$RESET"
+  case ByteArrayTag(data) => data.map(YELLOW + _.toString + s"${MAGENTA}b$RESET").mkString(s"[${MAGENTA}B$RESET; ", ", ", "]")
+  case IntArrayTag(data) => data.map(YELLOW + _.toString).mkString(s"[${MAGENTA}I$RESET; ", ", ", "]")
+  case LongArrayTag(data) => data.map(YELLOW + _.toString + s"${MAGENTA}L$RESET").mkString(s"[${MAGENTA}L$RESET; ", ", ", "]")
   case ListTag(data, _) => data.map(stringify).mkString("[", ", ", "]")
 
-def quote(string: String): String = s""""${string.replace("\"", "\\\"")}""""
+def quote(string: String): String = string.replace("\"", "\\\"")
