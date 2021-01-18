@@ -1,0 +1,20 @@
+print {a: 0b}.a;
+print {"b": {c: 1s}}.b."c";
+print [2, 3].[0];
+print [4L, 5L].[-1];
+print [6.0f, 7.0f].[];
+print [8.0d, 9.0d].[];
+print [B; 10b, 11b].[];
+print [I; 12, 13].[];
+print [L; 14L, 15L].[];
+
+print [
+    [[a, b], [c, d]],
+    [[e, f], [g, h]]
+].[].[].[];
+
+print [
+    {c: 1b, d: [a0, a1, a2]},
+    {c: 0b, d: [b0, b1, b2]},
+    {c: 1b, d: [c0, c1, c2]}
+].[{c: 1b}].d.[];
