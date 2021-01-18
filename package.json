@@ -1,0 +1,34 @@
+{
+    "name": "nbtscript",
+    "displayName": "NBTScript",
+    "description": "",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.52.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [
+            {
+                "id": "nbtscript",
+                "aliases": [
+                    "NBTScript",
+                    "nbtscript"
+                ],
+                "extensions": [
+                    ".nbts"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "nbtscript",
+                "scopeName": "source.nbtscript",
+                "path": "./syntaxes/nbtscript.tmLanguage.json"
+            }
+        ]
+    }
+}

@@ -1,0 +1,223 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "NBTScript",
+    "patterns": [
+        {
+            "include": "#comments"
+        },
+        {
+            "include": "#keywords"
+        },
+        {
+            "include": "#nodes"
+        },
+        {
+            "include": "#tags"
+        }
+    ],
+    "repository": {
+        "comments": {
+            "match": "^#.*$",
+            "name": "comment.line.nbtscript"
+        },
+        "keywords": {
+            "patterns": [
+                {
+                    "name": "keyword.operator.nbtscript",
+                    "match": "\\b(insert|prepend|append|set|remove|get|get_numeric|merge|print)\\b"
+                },
+                {
+                    "match": ";",
+                    "name": "punctuation.separator.statement.nbtscript"
+                }
+            ]
+        },
+        "nodes": {
+            "patterns": [
+                {
+                    "begin": "(?<=\\.)\"",
+                    "beginCaptures": {
+                        "0": {
+                            "name": "punctuation.support.type.property-name.begin.nbtscript"
+                        }
+                    },
+                    "end": "\"",
+                    "endCaptures": {
+                        "0": {
+                            "name": "punctuation.support.type.property-name.end.nbtscript"
+                        }
+                    },
+                    "name": "string.nbtscript support.type.property-name.nbtscript",
+                    "patterns": [
+                        {
+                            "include": "#stringcontent"
+                        }
+                    ]
+                },
+                {
+                    "match": "(?<=\\.)[^ \"\\[\\].\\{\\}:]+",
+                    "name": "string.nbtscript support.type.property-name.nbtscript"
+                }
+            ]
+        },
+        "tags": {
+            "patterns": [
+                {
+                    "begin": "(\\[)(?:([BIL]);)?",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "punctuation.definition.collection.begin.nbtscript"
+                        },
+                        "2": {
+                            "name": "keyword.collection.prefix.nbtscript"
+                        }
+                    },
+                    "end": "\\]",
+                    "endCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.collection.end.nbtscript"
+                        }
+                    },
+                    "name": "meta.structure.collection.nbtscript",
+                    "patterns": [
+                        {
+                            "include": "#tags"
+                        },
+                        {
+                            "match": ",",
+                            "name": "punctuation.separator.collection.nbtscript"
+                        }
+                    ]
+                },
+                {
+                    "begin": "\\{",
+                    "beginCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.compound.begin.nbtscript"
+                        }
+                    },
+                    "end": "\\}",
+                    "endCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.compound.end.nbtscript"
+                        }
+                    },
+                    "name": "meta.structure.compound.nbtscript",
+                    "patterns": [
+                        {
+                            "include": "#names"
+                        },
+                        {
+                            "begin": ":",
+                            "beginCaptures": {
+                                "0": {
+                                    "name": "punctuation.separator.compound.key-value.nbtscript"
+                                }
+                            },
+                            "end": "(,)|(?=\\})",
+                            "endCaptures": {
+                                "1": {
+                                    "name": "punctuation.separator.compound.pair.nbtscript"
+                                }
+                            },
+                            "name": "meta.structure.compound.value.nbtscript",
+                            "patterns": [
+                                {
+                                    "include": "#tags"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "include": "#numbers"
+                },
+                {
+                    "include": "#strings"
+                }
+            ]
+        },
+        "numbers": {
+            "patterns": [
+                {
+                    "match": "([-+]?(?:0|[1-9][0-9]*))([bsL]?)",
+                    "captures": {
+                        "1": {
+                            "name": "constant.numeric.nbtscript"
+                        },
+                        "2": {
+                            "name": "keyword.other.unit.nbtscript"
+                        }
+                    }
+                },
+                {
+                    "match": "([-+]?(?:[0-9]+[.]|[0-9]*[.][0-9]+)(?:e[-+]?[0-9]+)?)([fd]?)",
+                    "captures": {
+                        "1": {
+                            "name": "constant.numeric.nbtscript"
+                        },
+                        "2": {
+                            "name": "keyword.other.unit.nbtscript"
+                        }
+                    }
+                }
+            ]
+        },
+        "strings": {
+            "patterns": [
+                {
+                    "name": "string.quoted.double.nbtscript",
+                    "begin": "\"",
+                    "end": "\"",
+                    "patterns": [
+                        {
+                            "name": "constant.character.escape.nbtscript",
+                            "match": "\\\\."
+                        }
+                    ]
+                },
+                {
+                    "match": "[^ \"\\[\\].\\{\\}:]+",
+                    "name": "string.quoted.double.nbtscript"
+                }
+            ]
+        },
+        "names": {
+            "patterns": [
+                {
+                    "begin": "\"",
+                    "beginCaptures": {
+                        "0": {
+                            "name": "punctuation.support.type.property-name.begin.nbtscript"
+                        }
+                    },
+                    "end": "\"",
+                    "endCaptures": {
+                        "0": {
+                            "name": "punctuation.support.type.property-name.end.nbtscript"
+                        }
+                    },
+                    "name": "string.nbtscript support.type.property-name.nbtscript",
+                    "patterns": [
+                        {
+                            "include": "#stringcontent"
+                        }
+                    ]
+                },
+                {
+                    "match": "[^ \"\\[\\].\\{\\}:]+",
+                    "name": "string.nbtscript support.type.property-name.nbtscript"
+                }
+            ]
+        },
+        "stringcontent": {
+            "patterns": [
+                {
+                    "name": "constant.character.escape.nbtscript",
+                    "match": "\\\\."
+                }
+            ]
+        }
+    },
+    "scopeName": "source.nbtscript"
+}
