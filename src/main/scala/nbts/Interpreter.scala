@@ -49,7 +49,7 @@ def stringify(tag: Tag): String =
   case ListTag(data, _) => data.map(stringify).mkString("[", ", ", "]")
 
 def quote(string: String, color: String): String =
-  if """[^ "\[\].\{\}:]+""".r.matches(string) then
+  if """[^ "\[\].\{\}:;,]+""".r.matches(string) then
     s"$color$string$RESET"
   else
     s""""$color${string.replace("\"", "\\\"")}$RESET""""

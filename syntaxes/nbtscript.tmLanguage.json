@@ -25,10 +25,6 @@
                 {
                     "name": "keyword.operator.nbtscript",
                     "match": "\\b(insert|prepend|append|set|remove|get|get_numeric|merge|print)\\b"
-                },
-                {
-                    "match": ";",
-                    "name": "punctuation.separator.statement.nbtscript"
                 }
             ]
         },
@@ -55,7 +51,7 @@
                     ]
                 },
                 {
-                    "match": "(?<=\\.)[^ \"\\[\\].\\{\\}:]+",
+                    "match": "(?<=\\.)[^ \"\\[\\].\\{\\}:;,]+",
                     "name": "string.nbtscript support.type.property-name.nbtscript"
                 }
             ]
@@ -177,7 +173,7 @@
                     ]
                 },
                 {
-                    "match": "[^ \"\\[\\].\\{\\}:]+",
+                    "match": "[^ \"\\[\\].\\{\\}:;,]+",
                     "name": "string.quoted.double.nbtscript"
                 }
             ]
@@ -205,7 +201,7 @@
                     ]
                 },
                 {
-                    "match": "[^ \"\\[\\].\\{\\}:]+",
+                    "match": "[^ \"\\[\\].\\{\\}:;,]+",
                     "name": "string.nbtscript support.type.property-name.nbtscript"
                 }
             ]

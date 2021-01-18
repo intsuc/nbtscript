@@ -11,7 +11,7 @@ object NbtsParser extends RegexParsers:
     case Failure(message, _) => throw Exception(message)
     case Error(message, _) => throw Exception(message)
 
-  def source: Parser[Source] = repsep(statement, ";") ^^ { Source(_) }
+  def source: Parser[Source] = rep(statement <~ ";") ^^ { Source(_) }
 
   def statement: Parser[Statement]
     = "insert" ~> int ~ access ~ access ^^ { case index ~ target ~ source => Statement.Insert(index, target, source) }
@@ -25,7 +25,7 @@ object NbtsParser extends RegexParsers:
     | "print" ~> access ^^ { Statement.Print(_) }
 
   def access: Parser[Access]
-    = (tag <~ ".") ~ path ^^ { case tag ~ path => Access(tag, path) }
+    = tag ~ path ^^ { case tag ~ path => Access(tag, path) }
 
   def tag: Parser[Tag]
     = compound
@@ -41,7 +41,7 @@ object NbtsParser extends RegexParsers:
     | int ^^ { IntTag(_) }
     | string ^^ { StringTag(_) }
 
-  def path: Parser[Path] = repsep(node, ".") ^^ { Path(_) }
+  def path: Parser[Path] = rep("." ~> node) ^^ { Path(_) }
 
   def node: Parser[Node]
     = compound ^^ { Node.MatchRootObject(_) }
@@ -53,7 +53,7 @@ object NbtsParser extends RegexParsers:
 
   def string: Parser[String]
     = "\"" ~> """([^"]|(?<=\\)")*""".r <~ "\"" ^^ { _.replace("\\\"", "\"") }
-    | """[^ "\[\].\{\}:]+""".r
+    | """[^ "\[\].\{\}:;,]+""".r
 
   def compound: Parser[CompoundTag] = "{" ~> repsep((string <~ ":") ~ tag, ",") <~ "}" ^^ { entries => CompoundTag(mutable.Map.empty ++ entries.map(_ -> _)) }
   def byte: Parser[Byte] = integer <~ "b" ^^ { _.toByte }
@@ -62,5 +62,5 @@ object NbtsParser extends RegexParsers:
   def long: Parser[Long] = integer <~ "L" ^^ { _.toLong }
   def float: Parser[Float] = real <~ "f" ^^ { _.toFloat }
   def double: Parser[Double] = real <~ "d" ^^ { _.toDouble }
-  def integer: Parser[String] = """[-+]?(?:0|[1-9][0-9]*)""".r
-  def real: Parser[String] = """[-+]?(?:[0-9]+[.]|[0-9]*[.][0-9]+)(?:e[-+]?[0-9]+)?""".r
+  def integer: Parser[String] = """[-+]?[0-9]+""".r
+  def real: Parser[String] = integer ~ "." ~ integer ^^ { case s ~ _ ~ b => s"$s.$b" }
