@@ -38,7 +38,7 @@ object NbtsParsers extends RegexParsers:
     | long ^^ { Tag.Long(_) }
     | float ^^ { Tag.Float(_) }
     | double ^^ { Tag.Double(_) }
-    | int ^^ { data => Tag.Int(data.toInt) }
+    | int ^^ { Tag.Int(_) }
     | string ^^ { Tag.String(_) }
 
   def path: Parser[Path] = repsep(node, ".") ^^ { Path(_) }
