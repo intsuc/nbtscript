@@ -8,17 +8,34 @@ def interpret(statement: Statement): Option[Int] =
   case Statement.Insert(index, Access(tag, Some(path)), sources) =>
     tag.insert(index, path, sources())
   case Statement.Prepend(Access(tag, Some(path)), sources) =>
-    tag.prepend(path, sources())
+    tag.insert(0, path, sources())
   case Statement.Append(Access(tag, Some(path)), sources) =>
-    tag.append(path, sources())
+    tag.insert(-1, path, sources())
   case Statement.Set(Access(tag, Some(path)), sources) =>
-    tag.set(path, sources())
+    path.set(tag, sources().last) match
+    case 0 => None
+    case result => Some(result)
   case Statement.Remove(Access(tag, Some(path))) =>
-    tag.remove(path)
+    path.remove(tag) match
+    case 0 => None
+    case result => Some(result)
   case Statement.Get(Access(tag, Some(path))) =>
-    tag.get(path)
+    path.get(tag) match
+    case Seq(target) =>
+      target match
+      case target: NumericTag => Some(DoubleTag.floor(target.asDouble))
+      case target: CollectionTag[?] => Some(target.size)
+      case target: CompoundTag => Some(target.size)
+      case target: StringTag => Some(target.size)
+      case _ => None
+    case _ => None
   case Statement.GetNumeric(Access(tag, Some(path)), scale) =>
-    tag.getNumeric(path, scale)
+    path.get(tag) match
+    case Seq(target) =>
+      target match
+      case target: NumericTag => Some(DoubleTag.floor(target.asDouble * scale))
+      case _ => None
+    case _ => None
   case Statement.Merge(Access(tag, Some(path)), source) =>
     ??? // TODO
   case Statement.Print(target) =>
@@ -27,6 +44,24 @@ def interpret(statement: Statement): Option[Int] =
     tags.lastOption.map(print)
     println()
     Some(1)
+
+extension (target: Tag) def insert(index: Int, path: Path, sources: Seq[Tag]): Option[Int] =
+  // TODO: rewrite more declaratively
+  var result = 0
+  val targets = path.getOrCreate(target, ListTag())
+  for target <- targets do
+    target match
+    case target: CollectionTag[?] =>
+      var inserted = false
+      var normalized = if index < 0 then target.size + index + 1 else index
+      for source <- sources do
+        try if target.add(normalized, source.copy()) then
+          normalized += 1
+          inserted = true
+        catch case _: IndexOutOfBoundsException => return None
+      result += (if inserted then 1 else 0)
+    case _ => return None
+  Some(result)
 
 extension (access: Access) def apply(): Seq[Tag] =
   access match

@@ -100,9 +100,9 @@ object LongTag:
   def apply(data: Long): LongTag = Cache.lift(data.toInt - MinCache).getOrElse(new LongTag(data))
 
 final case class FloatTag private (data: Float) extends NumericTag:
-  def asByte: Byte = (floor(data) & 0xff).toByte
-  def asShort: Short = (floor(data) & 0xffff).toShort
-  def asInt: Int = floor(data)
+  def asByte: Byte = (FloatTag.floor(data) & 0xff).toByte
+  def asShort: Short = (FloatTag.floor(data) & 0xffff).toShort
+  def asInt: Int = FloatTag.floor(data)
   def asLong: Long = data.toLong
   def asFloat: Float = data
   def asDouble: Double = data
@@ -111,11 +111,14 @@ final case class FloatTag private (data: Float) extends NumericTag:
 object FloatTag:
   val Zero: FloatTag = new FloatTag(0.0f)
   def apply(data: Float): FloatTag = if data == 0.0f then Zero else new FloatTag(data)
+  def floor(value: Float): Int =
+    val int = value.toInt
+    int - (if value < int.toFloat then 1 else 0)
 
 final case class DoubleTag private (data: Double) extends NumericTag:
-  def asByte: Byte = (floor(data) & 0xff).toByte
-  def asShort: Short = (floor(data) & 0xffff).toShort
-  def asInt: Int = floor(data)
+  def asByte: Byte = (DoubleTag.floor(data) & 0xff).toByte
+  def asShort: Short = (DoubleTag.floor(data) & 0xffff).toShort
+  def asInt: Int = DoubleTag.floor(data)
   def asLong: Long = Math.floor(data).toLong
   def asFloat: Float = data.toFloat
   def asDouble: Double = data
@@ -124,6 +127,9 @@ final case class DoubleTag private (data: Double) extends NumericTag:
 object DoubleTag:
   val Zero: DoubleTag = new DoubleTag(0.0)
   def apply(data: Double): DoubleTag = if data == 0.0 then Zero else new DoubleTag(data)
+  def floor(value: Double): Int =
+    val int = value.toInt
+    int - (if value < int.toDouble then 1 else 0)
 
 sealed trait CollectionTag[T <: Tag] extends Tag with mutable.IndexedBuffer[T]:
   def set(index: Int, tag: Tag): Boolean
