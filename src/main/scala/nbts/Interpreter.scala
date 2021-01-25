@@ -5,32 +5,33 @@ import scala.Console.{CYAN, GREEN, YELLOW, MAGENTA, RESET}
 
 def interpret(statement: Statement): Option[Int] =
   statement match
-  case Statement.Insert(index, Access(tag, path), sources) =>
+  case Statement.Insert(index, Access(tag, Some(path)), sources) =>
     tag.insert(index, path, sources())
-  case Statement.Prepend(Access(tag, path), sources) =>
+  case Statement.Prepend(Access(tag, Some(path)), sources) =>
     tag.prepend(path, sources())
-  case Statement.Append(Access(tag, path), sources) =>
+  case Statement.Append(Access(tag, Some(path)), sources) =>
     tag.append(path, sources())
-  case Statement.Set(Access(tag, path), sources) =>
+  case Statement.Set(Access(tag, Some(path)), sources) =>
     tag.set(path, sources())
-  case Statement.Remove(Access(tag, path)) =>
+  case Statement.Remove(Access(tag, Some(path))) =>
     tag.remove(path)
-  case Statement.Get(Access(tag, path)) =>
+  case Statement.Get(Access(tag, Some(path))) =>
     tag.get(path)
-  case Statement.GetNumeric(Access(tag, path), scale) =>
+  case Statement.GetNumeric(Access(tag, Some(path)), scale) =>
     tag.getNumeric(path, scale)
-  case Statement.Merge(Access(tag, path), source) =>
+  case Statement.Merge(Access(tag, Some(path)), source) =>
     ??? // TODO
   case Statement.Print(target) =>
-    val stringified = target().map(stringify).iterator
-    while
-      print(stringified.next)
-      stringified.hasNext
-    do print(", ")
+    val tags = target().map(stringify)
+    tags.dropRight(1).foreach(tag => print(s"$tag, "))
+    tags.lastOption.map(print)
     println()
     Some(1)
 
-extension (access: Access) def apply(): Seq[Tag] = access.path.get(access.tag)
+extension (access: Access) def apply(): Seq[Tag] =
+  access match
+  case Access(tag, Some(path)) => path.get(tag)
+  case Access(tag, None) => Seq(tag)
 
 def stringify(tag: Tag): String =
   tag match

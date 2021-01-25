@@ -25,7 +25,8 @@ object NbtsParser extends RegexParsers:
     | "print" ~> access ^^ { Statement.Print(_) }
 
   def access: Parser[Access]
-    = tag ~ path ^^ { case tag ~ path => Access(tag, path) }
+    = tag ~ path ^^ { case tag ~ path => Access(tag, Some(path)) }
+    | tag ^^ { Access(_, None) }
 
   def tag: Parser[Tag]
     = compound

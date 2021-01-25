@@ -1,7 +1,7 @@
 package nbts
 
 object Ast:
-  final case class Access(tag: Tag, path: Path)
+  final case class Access(tag: Tag, path: Option[Path])
 
   enum Statement:
     case Insert(index: Int, targets: Access, sources: Access)
