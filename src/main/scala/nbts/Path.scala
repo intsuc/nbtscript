@@ -162,9 +162,10 @@ final case class Path(nodes: Seq[Node]):
     get(target).size
 
   private def getOrCreateParents(target: Tag): mutable.Buffer[Tag] =
-    nodes.dropRight(1).sliding(2).foldLeft(mutable.Buffer(target)) {
+    val targets = mutable.Buffer(target)
+    if nodes.size >= 2 then nodes.sliding(2).foldLeft(targets) {
       case (targets, Seq(left, right)) => targets.flatMap(left.getOrCreate(_, right.preferredParent))
-    }
+    } else targets
 
   def getOrCreate(target: Tag, source: => Tag): Seq[Tag] =
     getOrCreateParents(target).flatMap(nodes.last.getOrCreate(_, source)).toSeq

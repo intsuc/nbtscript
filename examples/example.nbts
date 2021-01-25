@@ -28,3 +28,10 @@ function foo {
 
 foo;
 foo;
+
+print .x;
+set .x {};
+set .x.y 0;
+print .{};
+print .x;
+print .x.y;

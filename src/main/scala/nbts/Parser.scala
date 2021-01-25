@@ -16,21 +16,22 @@ object NbtsParser extends RegexParsers:
   def statements: Parser[Seq[Statement]] = rep(statement <~ ";")
 
   def statement: Parser[Statement]
-    = "insert" ~> int ~ access ~ access ^^ { case index ~ target ~ source => Statement.Insert(index, target, source) }
-    | "prepend" ~> access ~ access ^^ { Statement.Prepend(_, _) }
-    | "append" ~> access ~ access ^^ { Statement.Append(_, _) }
-    | "set" ~> access ~ access ^^ { Statement.Set(_, _) }
-    | "remove" ~> access ^^ { Statement.Remove(_) }
-    | "get" ~> access ^^ { Statement.Get(_) }
-    | "get_numeric" ~> access ~ double ^^ { Statement.GetNumeric(_, _) }
-    | "merge" ~> access ~ access ^^ { Statement.Merge(_, _) }
-    | "print" ~> access ^^ { Statement.Print(_) }
+    = "insert" ~> int ~ accessor ~ accessor ^^ { case index ~ target ~ source => Statement.Insert(index, target, source) }
+    | "prepend" ~> accessor ~ accessor ^^ { Statement.Prepend(_, _) }
+    | "append" ~> accessor ~ accessor ^^ { Statement.Append(_, _) }
+    | "set" ~> accessor ~ accessor ^^ { Statement.Set(_, _) }
+    | "remove" ~> accessor ^^ { Statement.Remove(_) }
+    | "get" ~> accessor ^^ { Statement.Get(_) }
+    | "get_numeric" ~> accessor ~ double ^^ { Statement.GetNumeric(_, _) }
+    | "merge" ~> accessor ~ accessor ^^ { Statement.Merge(_, _) }
+    | "print" ~> accessor ^^ { Statement.Print(_) }
     | "function" ~> string ~ ("{" ~> statements) <~ "}" ^^ { Statement.Function(_, _) }
     | string ^^ { Statement.Call(_) }
 
-  def access: Parser[Access]
-    = tag ~ path ^^ { case tag ~ path => Access(tag, Some(path)) }
-    | tag ^^ { Access(_, None) }
+  def accessor: Parser[Accessor]
+    = path ^^ { Accessor.Global(_) }
+    | tag ~ path ^^ { Accessor.Local(_, _) }
+    | tag ^^ { Accessor.Single(_) }
 
   def tag: Parser[Tag]
     = compound
@@ -46,11 +47,11 @@ object NbtsParser extends RegexParsers:
     | int ^^ { IntTag(_) }
     | string ^^ { StringTag(_) }
 
-  def path: Parser[Path] = rep("." ~> node) ^^ { Path(_) }
+  def path: Parser[Path] = rep1("." ~> node) ^^ { Path(_) }
 
   def node: Parser[Node]
     = compound ^^ { Node.MatchRootObject(_) }
-    | string ~ compound ^^ { Node.MatchObject(_, _) }
+    | (string <~ not(' ')) ~ compound ^^ { Node.MatchObject(_, _) }
     | "[]" ^^ { _ => Node.AllElements }
     | "[" ~> compound <~ "]" ^^ { Node.MatchElement(_) }
     | "[" ~> int <~ "]" ^^ { Node.IndexedElement(_) }
