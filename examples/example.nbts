@@ -35,3 +35,6 @@ set .x.y 0;
 print .{};
 print .x;
 print .x.y;
+
+print false;
+print true;

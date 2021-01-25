@@ -94,7 +94,8 @@ object Interpreter:
     case EndTag => ""
     case StringTag(data) => quote(data, GREEN)
     case CompoundTag(data) => data.map((name, tag) => s"""${quote(name, CYAN)}: ${stringify(tag)}""").mkString("{", ", ", "}")
-    case ByteTag(data) => s"$YELLOW$data${MAGENTA}b$RESET"
+    case ByteTag(data, false) => s"$YELLOW$data${MAGENTA}b$RESET"
+    case ByteTag(data, true) => s"$YELLOW${if data == 1 then "true" else "false"}$RESET"
     case ShortTag(data) => s"$YELLOW$data${MAGENTA}s$RESET"
     case IntTag(data) => s"$YELLOW$data$RESET"
     case LongTag(data) => s"$YELLOW$data${MAGENTA}L$RESET"

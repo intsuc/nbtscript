@@ -39,6 +39,8 @@ object NbtsParser extends RegexParsers:
     | "[I;" ~> repsep(int, ",") <~ "]" ^^ { data => IntArrayTag(data.toArray) }
     | "[L;" ~> repsep(long, ",") <~ "]" ^^ { data => LongArrayTag(data.toArray) }
     | "[" ~> repsep(tag, ",") <~ "]" ^^ { data => ListTag().addAll(data) }
+    | "false" ^^ { _ => ByteTag.Zero }
+    | "true" ^^ { _ => ByteTag.One }
     | byte ^^ { ByteTag(_) }
     | short ^^ { ShortTag(_) }
     | long ^^ { LongTag(_) }

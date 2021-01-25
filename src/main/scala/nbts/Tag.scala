@@ -36,7 +36,7 @@ sealed trait NumericTag extends Tag:
   def asDouble: Double
   def asNumber: Number
 
-final case class ByteTag private (data: Byte) extends NumericTag:
+final case class ByteTag private (data: Byte, private val boolean: Boolean) extends NumericTag:
   def asByte: Byte = data
   def asShort: Short = data
   def asInt: Int = data
@@ -48,9 +48,9 @@ final case class ByteTag private (data: Byte) extends NumericTag:
 object ByteTag:
   inline val MinCache = -128
   inline val MaxCache = 127
-  private val Cache: Seq[ByteTag] = (MinCache to MaxCache).map(data => new ByteTag(data.toByte))
-  val Zero: ByteTag = ByteTag(0.toByte)
-  val One: ByteTag = ByteTag(1.toByte)
+  private val Cache: Seq[ByteTag] = (MinCache to MaxCache).map(data => new ByteTag(data.toByte, false))
+  val Zero: ByteTag = new ByteTag(0.toByte, true)
+  val One: ByteTag = new ByteTag(1.toByte, true)
   def apply(data: Byte): ByteTag = Cache(data + 128)
   def apply(data: Boolean): ByteTag = if data then One else Zero
 
