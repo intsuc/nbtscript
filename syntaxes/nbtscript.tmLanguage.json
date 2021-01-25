@@ -25,6 +25,25 @@
                 {
                     "name": "keyword.operator.nbtscript",
                     "match": "\\b(insert|prepend|append|set|remove|get|get_numeric|merge|print)\\b"
+                },
+                {
+                    "match": "\\b(function)\\s*([^ \"\\[\\].\\{\\}:;,]+)\\s*\\{",
+                    "captures": {
+                        "1": {
+                            "name": "keyword.operator.nbtscript"
+                        },
+                        "2": {
+                            "name": "entity.name.function.nbtscript"
+                        }
+                    }
+                },
+                {
+                    "match": "^\\s*([^ \"\\[\\].\\{\\}:;,]+)\\s*;",
+                    "captures": {
+                        "1": {
+                            "name": "entity.name.function.nbtscript"
+                        }
+                    }
                 }
             ]
         },
