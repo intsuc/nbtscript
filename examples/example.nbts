@@ -38,3 +38,34 @@ print .x.y;
 
 print false;
 print true;
+
+if false {
+    print "unreachable";
+};
+
+if true {
+    print "reachable";
+};
+
+if 1b {
+    print "unreachable (byte)";
+};
+
+set .x true;
+if .x {
+    print "reachable (global)";
+};
+
+if [false, true].[-1] {
+    print "reachable (local)";
+};
+
+function rec {
+    print "rec";
+    if .x {
+        set .x false;
+        rec;
+    };
+};
+set .x true;
+rec;

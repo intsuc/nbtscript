@@ -62,6 +62,14 @@ class Interpreter:
       functions.get(name) match
       case Some(body) => queue ++= body; Some(1)
       case None => None
+    case Statement.If(targets, body) =>
+      targets() match
+      case Seq(target) =>
+        target match
+        case ByteTag(1, true) =>
+          queue ++= body; Some(1)
+        case _ => None
+      case _ => None
 
   object Targets:
     def unapply(accessor: Accessor): (Tag, Path) =

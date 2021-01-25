@@ -26,6 +26,7 @@ object NbtsParser extends RegexParsers:
     | "merge" ~> accessor ~ accessor ^^ { Statement.Merge(_, _) }
     | "print" ~> accessor ^^ { Statement.Print(_) }
     | "function" ~> string ~ ("{" ~> statements) <~ "}" ^^ { Statement.Function(_, _) }
+    | "if" ~> accessor ~ ("{" ~> statements) <~ "}" ^^ { Statement.If(_, _) }
     | string ^^ { Statement.Call(_) }
 
   def accessor: Parser[Accessor]
