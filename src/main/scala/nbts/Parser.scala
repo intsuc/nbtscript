@@ -11,7 +11,9 @@ object NbtsParser extends RegexParsers:
     case Failure(message, _) => throw Exception(message)
     case Error(message, _) => throw Exception(message)
 
-  def source: Parser[Source] = rep(statement <~ ";") ^^ { Source(_) }
+  def source: Parser[Source] = statements ^^ { Source(_) }
+
+  def statements: Parser[Seq[Statement]] = rep(statement <~ ";")
 
   def statement: Parser[Statement]
     = "insert" ~> int ~ access ~ access ^^ { case index ~ target ~ source => Statement.Insert(index, target, source) }
@@ -23,6 +25,8 @@ object NbtsParser extends RegexParsers:
     | "get_numeric" ~> access ~ double ^^ { Statement.GetNumeric(_, _) }
     | "merge" ~> access ~ access ^^ { Statement.Merge(_, _) }
     | "print" ~> access ^^ { Statement.Print(_) }
+    | "function" ~> string ~ ("{" ~> statements) <~ "}" ^^ { Statement.Function(_, _) }
+    | string ^^ { Statement.Call(_) }
 
   def access: Parser[Access]
     = tag ~ path ^^ { case tag ~ path => Access(tag, Some(path)) }

@@ -20,3 +20,11 @@ print {
 }.a{b: [[$], []]}.c.[{d: 1b}].e.[-1].[];
 
 print 0;
+
+function foo {
+    print "foo-0";
+    print "foo-1";
+};
+
+foo;
+foo;

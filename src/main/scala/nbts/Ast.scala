@@ -1,7 +1,7 @@
 package nbts
 
 object Ast:
-  final case class Access(tag: Tag, path: Option[Path])
+  final case class Source(statements: Seq[Statement])
 
   enum Statement:
     case Insert(index: Int, targets: Access, sources: Access)
@@ -13,5 +13,7 @@ object Ast:
     case GetNumeric(targets: Access, scale: Double)
     case Merge(targets: Access, sources: Access)
     case Print(targets: Access)
+    case Function(name: String, body: Seq[Statement])
+    case Call(name: String)
 
-  final case class Source(statements: Seq[Statement])
+  final case class Access(tag: Tag, path: Option[Path])

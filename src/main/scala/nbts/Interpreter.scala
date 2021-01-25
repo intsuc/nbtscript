@@ -2,8 +2,9 @@ package nbts
 
 import nbts.Ast._
 import scala.Console.{CYAN, GREEN, YELLOW, MAGENTA, RESET}
+import scala.collection.mutable
 
-def interpret(statement: Statement): Option[Int] =
+def interpret(statement: Statement)(using context: mutable.Map[String, Seq[Statement]]): Option[Int] =
   statement match
   case Statement.Insert(index, Access(tag, Some(path)), sources) =>
     tag.insert(index, path, sources())
@@ -44,6 +45,13 @@ def interpret(statement: Statement): Option[Int] =
     tags.lastOption.map(print)
     println()
     Some(1)
+  case Statement.Function(name, body) =>
+    context(name) = body
+    Some(1)
+  case Statement.Call(name) =>
+    context.get(name) match
+    case Some(body) => body.foreach(interpret); Some(1)
+    case None => None
 
 extension (target: Tag) def insert(index: Int, path: Path, sources: Seq[Tag]): Option[Int] =
   // TODO: rewrite more declaratively
