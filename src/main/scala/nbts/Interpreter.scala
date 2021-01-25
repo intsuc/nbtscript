@@ -7,8 +7,14 @@ import scala.collection.mutable
 class Interpreter:
   private val functions: mutable.Map[String, Seq[Statement]] = mutable.Map.empty
   private val global: CompoundTag = CompoundTag()
+  private val queue: mutable.Queue[Statement] = mutable.Queue.empty
 
-  def interpret(statement: Statement): Option[Int] =
+  def interpret(statements: Seq[Statement]): Unit =
+    queue ++= statements
+    while queue.nonEmpty do
+      interpret(queue.dequeue())
+
+  private def interpret(statement: Statement): Option[Int] =
     statement match
     case Statement.Insert(index, Targets(tag, path), sources) =>
       Interpreter.insert(tag, index, path, sources())
@@ -54,7 +60,7 @@ class Interpreter:
       Some(1)
     case Statement.Call(name) =>
       functions.get(name) match
-      case Some(body) => body.foreach(interpret); Some(1)
+      case Some(body) => queue ++= body; Some(1)
       case None => None
 
   object Targets:
