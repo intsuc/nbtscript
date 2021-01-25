@@ -69,3 +69,12 @@ function rec {
 };
 set .x true;
 rec;
+
+store .x print "store";
+print .x;
+
+store .x set .x 1;
+print .x;
+
+store .x store .y print "store2";
+print .{};

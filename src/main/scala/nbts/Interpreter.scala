@@ -67,6 +67,12 @@ class Interpreter:
         case ByteTag(1, true) => interpret(body); Some(1)
         case _ => None
       case _ => None
+    case Statement.Store(Targets(tag, path), body) =>
+      val result = interpret(body)
+      result match
+      case Some(result) => path.set(tag, IntTag(result))
+      case None => path.remove(tag)
+      result
 
   object Targets:
     def unapply(accessor: Accessor): (Tag, Path) =

@@ -16,6 +16,7 @@ object Ast:
     case Function(name: String, body: Seq[Statement])
     case Call(name: String)
     case If(targets: Accessor, body: Seq[Statement])
+    case Store(targets: Accessor, body: Statement)
 
   enum Accessor:
     case Single(tag: Tag)
