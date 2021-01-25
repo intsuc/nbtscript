@@ -10,9 +10,7 @@ class Interpreter:
   private val queue: mutable.Queue[Statement] = mutable.Queue.empty
 
   def interpret(statements: Seq[Statement]): Unit =
-    queue ++= statements
-    while queue.nonEmpty do
-      interpret(queue.dequeue())
+    statements.foreach(interpret)
 
   private def interpret(statement: Statement): Option[Int] =
     statement match
@@ -60,14 +58,13 @@ class Interpreter:
       Some(1)
     case Statement.Call(name) =>
       functions.get(name) match
-      case Some(body) => queue ++= body; Some(1)
+      case Some(body) => interpret(body); Some(1)
       case None => None
     case Statement.If(targets, body) =>
       targets() match
       case Seq(target) =>
         target match
-        case ByteTag(1, true) =>
-          queue ++= body; Some(1)
+        case ByteTag(1, true) => interpret(body); Some(1)
         case _ => None
       case _ => None
 
