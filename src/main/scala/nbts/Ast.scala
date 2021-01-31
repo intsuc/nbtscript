@@ -23,4 +23,4 @@ object Ast:
     case Global(path: Path)
 
   enum Operator:
-    case +, -, *, /, %, <, >
+    case +, -, *, /, %, <, <=, >, >=

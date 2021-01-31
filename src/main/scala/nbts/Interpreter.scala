@@ -96,7 +96,9 @@ class Interpreter:
             case Operator./ => Math.floorDiv(left, right)
             case Operator.% => Math.floorMod(left, right)
             case Operator.< => if left < right then 1 else 0
+            case Operator.<= => if left <= right then 1 else 0
             case Operator.> => if left > right then 1 else 0
+            case Operator.>= => if left >= right then 1 else 0
           )(left.asInt, right.asInt)))
         case _ => Seq.empty
       case _ => Seq.empty
