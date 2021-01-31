@@ -11,24 +11,25 @@ object NbtsParser extends RegexParsers:
     case Failure(message, _) => throw Exception(message)
     case Error(message, _) => throw Exception(message)
 
-  def source: Parser[Source] = statements ^^ { Source(_) }
+  def source: Parser[Source] = expressions ^^ { Source(_) }
 
-  def statements: Parser[Seq[Statement]] = rep(statement <~ ";")
+  def expressions: Parser[Seq[Expression]] = rep(expression <~ ";")
 
-  def statement: Parser[Statement]
-    = "insert" ~> int ~ accessor ~ accessor ^^ { case index ~ target ~ source => Statement.Insert(index, target, source) }
-    | "prepend" ~> accessor ~ accessor ^^ { Statement.Prepend(_, _) }
-    | "append" ~> accessor ~ accessor ^^ { Statement.Append(_, _) }
-    | "set" ~> accessor ~ accessor ^^ { Statement.Set(_, _) }
-    | "remove" ~> accessor ^^ { Statement.Remove(_) }
-    | "get" ~> accessor ^^ { Statement.Get(_) }
-    | "get_numeric" ~> accessor ~ double ^^ { Statement.GetNumeric(_, _) }
-    | "merge" ~> accessor ~ accessor ^^ { Statement.Merge(_, _) }
-    | "print" ~> accessor ^^ { Statement.Print(_) }
-    | "function" ~> string ~ ("{" ~> statements) <~ "}" ^^ { Statement.Function(_, _) }
-    | "if" ~> accessor ~ ("{" ~> statements) <~ "}" ^^ { Statement.If(_, _) }
-    | "store" ~> accessor ~ statement ^^ { Statement.Store(_, _) }
-    | string ^^ { Statement.Call(_) }
+  def expression: Parser[Expression]
+    = "insert" ~> int ~ accessor ~ expression ^^ { case index ~ target ~ source => Expression.Insert(index, target, source) }
+    | "prepend" ~> accessor ~ expression ^^ { Expression.Insert(0, _, _) }
+    | "append" ~> accessor ~ expression ^^ { Expression.Insert(-1, _, _) }
+    | "set" ~> accessor ~ expression ^^ { Expression.Set(_, _) }
+    | "remove" ~> accessor ^^ { Expression.Remove(_) }
+    | "get" ~> expression ^^ { Expression.Get(_) }
+    | "get_numeric" ~> expression ~ double ^^ { Expression.GetNumeric(_, _) }
+    | "merge" ~> accessor ~ expression ^^ { Expression.Merge(_, _) }
+    | "print" ~> expression ^^ { Expression.Print(_) }
+    | "function" ~> string ~ ("{" ~> expressions) <~ "}" ^^ { Expression.Function(_, _) }
+    | "if" ~> expression ~ ("{" ~> expressions) <~ "}" ^^ { Expression.If(_, _) }
+    | "(" ~> expression <~ ")"
+    | accessor ^^ { Expression.Access(_) }
+    | string ^^ { Expression.Call(_) }
 
   def accessor: Parser[Accessor]
     = path ^^ { Accessor.Global(_) }

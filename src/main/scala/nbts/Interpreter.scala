@@ -5,74 +5,84 @@ import scala.Console.{CYAN, GREEN, YELLOW, MAGENTA, RESET}
 import scala.collection.mutable
 
 class Interpreter:
-  private val functions: mutable.Map[String, Seq[Statement]] = mutable.Map.empty
+  private val functions: mutable.Map[String, Seq[Expression]] = mutable.Map.empty
   private val global: CompoundTag = CompoundTag()
-  private val queue: mutable.Queue[Statement] = mutable.Queue.empty
 
-  def interpret(statements: Seq[Statement]): Unit =
-    statements.foreach(interpret)
+  def interpret(expressions: Seq[Expression]): Unit =
+    expressions.foreach(interpret)
 
-  private def interpret(statement: Statement): Option[Int] =
-    statement match
-    case Statement.Insert(index, Targets(tag, path), sources) =>
-      Interpreter.insert(tag, index, path, sources())
-    case Statement.Prepend(Targets(tag, path), sources) =>
-      Interpreter.insert(tag, 0, path, sources())
-    case Statement.Append(Targets(tag, path), sources) =>
-      Interpreter.insert(tag, -1, path, sources())
-    case Statement.Set(Targets(tag, path), sources) =>
-      path.set(tag, sources().last) match
-      case 0 => None
-      case result => Some(result)
-    case Statement.Remove(Targets(tag, path)) =>
+  private def interpret(expression: Expression): Seq[Tag] =
+    expression match
+    case Expression.Access(Accessor.Single(tag)) =>
+      Seq(tag)
+    case Expression.Access(Accessor.Local(tag, path)) =>
+      path.get(tag)
+    case Expression.Access(Accessor.Global(path)) =>
+      path.get(global)
+    case Expression.Insert(index, Targets(tag, path), source) =>
+      var result = 0
+      val targets = path.getOrCreate(tag, ListTag())
+      val sources = interpret(source)
+      for target <- targets do
+        target match
+        case target: CollectionTag[?] =>
+          var inserted = false
+          var normalized = if index < 0 then target.size + index + 1 else index
+          for source <- sources do
+            try if target.add(normalized, source.copy()) then
+              normalized += 1
+              inserted = true
+            catch case _: IndexOutOfBoundsException => return Seq.empty
+          result += (if inserted then 1 else 0)
+        case _ => return Seq.empty
+      Seq(IntTag(result))
+    case Expression.Set(Targets(tag, path), source) =>
+      interpret(source) match
+      case Seq() => Seq.empty
+      case source =>
+        path.set(tag, source.last) match
+        case 0 => Seq.empty
+        case result => Seq(IntTag(result))
+    case Expression.Remove(Targets(tag, path)) =>
       path.remove(tag) match
-      case 0 => None
-      case result => Some(result)
-    case Statement.Get(Targets(tag, path)) =>
-      path.get(tag) match
+      case 0 => Seq.empty
+      case result => Seq(IntTag(result))
+    case Expression.Get(target) =>
+      interpret(target) match
       case Seq(target) =>
         target match
-        case target: NumericTag => Some(DoubleTag.floor(target.asDouble))
-        case target: CollectionTag[?] => Some(target.size)
-        case target: CompoundTag => Some(target.size)
-        case target: StringTag => Some(target.size)
-        case _ => None
-      case _ => None
-    case Statement.GetNumeric(Targets(tag, path), scale) =>
-      path.get(tag) match
+        case target: NumericTag => Seq(IntTag(DoubleTag.floor(target.asDouble)))
+        case target: CollectionTag[?] => Seq(IntTag(target.size))
+        case target: CompoundTag => Seq(IntTag(target.size))
+        case target: StringTag => Seq(IntTag(target.size))
+        case _ => Seq.empty
+      case _ => Seq.empty
+    case Expression.GetNumeric(target, scale) =>
+      interpret(target) match
       case Seq(target) =>
         target match
-        case target: NumericTag => Some(DoubleTag.floor(target.asDouble * scale))
-        case _ => None
-      case _ => None
-    case Statement.Merge(Targets(tag, path), source) =>
+        case target: NumericTag => Seq(IntTag(DoubleTag.floor(target.asDouble * scale)))
+        case _ => Seq.empty
+      case _ => Seq.empty
+    case Expression.Merge(target, source) =>
       ??? // TODO
-    case Statement.Print(targets) =>
-      val tags = targets().map(Interpreter.stringify)
+    case Expression.Print(target) =>
+      val tags = interpret(target).map(Interpreter.stringify)
       tags.dropRight(1).foreach(tag => print(s"$tag, "))
       tags.lastOption.map(print)
       println()
-      Some(1)
-    case Statement.Function(name, body) =>
+      Seq(IntTag(1))
+    case Expression.Function(name, body) =>
       functions(name) = body
-      Some(1)
-    case Statement.Call(name) =>
+      Seq(IntTag(1))
+    case Expression.Call(name) =>
       functions.get(name) match
-      case Some(body) => interpret(body); Some(1)
-      case None => None
-    case Statement.If(targets, body) =>
-      targets() match
-      case Seq(target) =>
-        target match
-        case ByteTag(1, true) => interpret(body); Some(1)
-        case _ => None
-      case _ => None
-    case Statement.Store(Targets(tag, path), body) =>
-      val result = interpret(body)
-      result match
-      case Some(result) => path.set(tag, IntTag(result))
-      case None => path.remove(tag)
-      result
+      case Some(body) => interpret(body); Seq(IntTag(1))
+      case None => Seq.empty
+    case Expression.If(target, body) =>
+      interpret(target) match
+      case Seq() => Seq.empty
+      case _ => interpret(body); Seq(IntTag(1))
 
   object Targets:
     def unapply(accessor: Accessor): (Tag, Path) =
@@ -88,25 +98,7 @@ class Interpreter:
     case Accessor.Global(path) => path.get(global)
 
 object Interpreter:
-  def insert(target: Tag, index: Int, path: Path, sources: Seq[Tag]): Option[Int] =
-    // TODO: rewrite more declaratively
-    var result = 0
-    val targets = path.getOrCreate(target, ListTag())
-    for target <- targets do
-      target match
-      case target: CollectionTag[?] =>
-        var inserted = false
-        var normalized = if index < 0 then target.size + index + 1 else index
-        for source <- sources do
-          try if target.add(normalized, source.copy()) then
-            normalized += 1
-            inserted = true
-          catch case _: IndexOutOfBoundsException => return None
-        result += (if inserted then 1 else 0)
-      case _ => return None
-    Some(result)
-
-  def stringify(tag: Tag): String =
+  private def stringify(tag: Tag): String =
     tag match
     case EndTag => ""
     case StringTag(data) => quote(data, GREEN)
@@ -123,7 +115,7 @@ object Interpreter:
     case LongArrayTag(data) => data.map(YELLOW + _.toString + s"${MAGENTA}L$RESET").mkString(s"[${MAGENTA}L$RESET; ", ", ", "]")
     case ListTag(data, _) => data.map(stringify).mkString("[", ", ", "]")
 
-  def quote(string: String, color: String): String =
+  private def quote(string: String, color: String): String =
     if """[^ "\[\].\{\}:;,]+""".r.matches(string) then
       s"$color$string$RESET"
     else

@@ -1,22 +1,20 @@
 package nbts
 
 object Ast:
-  final case class Source(statements: Seq[Statement])
+  final case class Source(expressions: Seq[Expression])
 
-  enum Statement:
-    case Insert(index: Int, targets: Accessor, sources: Accessor)
-    case Prepend(targets: Accessor, sources: Accessor)
-    case Append(targets: Accessor, sources: Accessor)
-    case Set(targets: Accessor, sources: Accessor)
-    case Remove(targets: Accessor)
-    case Get(targets: Accessor)
-    case GetNumeric(targets: Accessor, scale: Double)
-    case Merge(targets: Accessor, sources: Accessor)
-    case Print(targets: Accessor)
-    case Function(name: String, body: Seq[Statement])
+  enum Expression:
+    case Access(accessor: Accessor)
+    case Insert(index: Int, target: Accessor, source: Expression)
+    case Set(target: Accessor, source: Expression)
+    case Remove(target: Accessor)
+    case Get(target: Expression)
+    case GetNumeric(target: Expression, scale: Double)
+    case Merge(target: Accessor, source: Expression)
+    case Print(target: Expression)
+    case Function(name: String, body: Seq[Expression])
     case Call(name: String)
-    case If(targets: Accessor, body: Seq[Statement])
-    case Store(targets: Accessor, body: Statement)
+    case If(target: Expression, body: Seq[Expression])
 
   enum Accessor:
     case Single(tag: Tag)

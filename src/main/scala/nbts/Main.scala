@@ -1,7 +1,7 @@
 package nbts
 
 import java.nio.file.{Path, Paths}
-import nbts.Ast.Statement
+import nbts.Ast.Expression
 import scala.collection.mutable
 import scala.io.Source
 import scala.util.CommandLineParser.FromString
@@ -12,4 +12,4 @@ given FromString[Path] = Paths.get(_)
   val text = Source.fromFile(path.toFile).mkString
   val source = NbtsParser(text)
   val interpreter = Interpreter()
-  interpreter.interpret(source.statements)
+  interpreter.interpret(source.expressions)

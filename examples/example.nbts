@@ -39,25 +39,14 @@ print .x.y;
 print false;
 print true;
 
-if false {
+remove .x;
+if .x {
     print "unreachable";
 };
 
-if true {
-    print "reachable";
-};
-
-if 1b {
-    print "unreachable (byte)";
-};
-
-set .x true;
+set .x (print (print "x"));
 if .x {
-    print "reachable (global)";
-};
-
-if [false, true].[-1] {
-    print "reachable (local)";
+    print "reachable";
 };
 
 function rec {
@@ -69,12 +58,3 @@ function rec {
 };
 set .x true;
 rec;
-
-store .x print "store";
-print .x;
-
-store .x set .x 1;
-print .x;
-
-store .x store .y print "store2";
-print .{};
