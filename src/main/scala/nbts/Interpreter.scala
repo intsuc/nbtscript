@@ -101,6 +101,7 @@ class Interpreter:
             case Operator.* => left * right
             case Operator./ => Math.floorDiv(left, right)
             case Operator.% => Math.floorMod(left, right)
+            case Operator.`=` => if left == right then 1 else 0
             case Operator.< => if left < right then 1 else 0
             case Operator.<= => if left <= right then 1 else 0
             case Operator.> => if left > right then 1 else 0

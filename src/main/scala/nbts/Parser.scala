@@ -45,6 +45,7 @@ object NbtsParser extends RegexParsers with PackratParsers:
     | "*" ^^ { _ => Operator.* }
     | "/" ^^ { _ => Operator./ }
     | "%" ^^ { _ => Operator.% }
+    | "=" ^^ { _ => Operator.`=` }
     | "<=" ^^ { _ => Operator.<= }
     | "<" ^^ { _ => Operator.< }
     | ">=" ^^ { _ => Operator.>= }

@@ -64,8 +64,11 @@ print (5 - 3);
 print (5 * 3);
 print (5 / 3);
 print (5 % 3);
+print (5 = 3);
 print (5 < 3);
+print (5 <= 3);
 print (5 > 3);
+print (5 >= 3);
 
 print (random 0.5f);
 print (random 0.5f);
