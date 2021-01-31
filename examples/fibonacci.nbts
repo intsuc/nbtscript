@@ -1,0 +1,49 @@
+function fibonacci {
+    set .c (.n <= 1);
+
+    if .{c: 1} {
+        set .result .n;
+    };
+
+    set .prev 0;
+    set .curr 1;
+    if .{c: 0} {
+        function aux {
+            set .next (.prev + .curr);
+            set .prev .curr;
+            set .curr .next;
+
+            set .n (.n - 1);
+            set .c (.n > 1);
+            if .{c: 1} {
+                run aux;
+            };
+        };
+        run aux;
+        set .result .curr;
+    };
+};
+
+set .n 0;
+run fibonacci;
+print .{};
+
+set .n 1;
+run fibonacci;
+print .{};
+
+set .n 2;
+run fibonacci;
+print .{};
+
+set .n 3;
+run fibonacci;
+print .{};
+
+set .n 4;
+run fibonacci;
+print .{};
+
+set .n 5;
+run fibonacci;
+print .{};
