@@ -15,8 +15,12 @@ object Ast:
     case Function(name: String, body: Seq[Expression])
     case Run(name: String)
     case If(target: Expression, body: Seq[Expression])
+    case Operate(left: Expression, operator: Operator, right: Expression)
 
   enum Accessor:
     case Single(tag: Tag)
     case Local(tag: Tag, path: Path)
     case Global(path: Path)
+
+  enum Operator:
+    case +, -, *, /, %, <, >

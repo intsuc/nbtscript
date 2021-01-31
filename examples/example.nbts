@@ -58,3 +58,11 @@ function rec {
 };
 set .x 0;
 run rec;
+
+print (5 + 3);
+print (5 - 3);
+print (5 * 3);
+print (5 / 3);
+print (5 % 3);
+print (5 < 3);
+print (5 > 3);

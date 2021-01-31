@@ -27,6 +27,10 @@
                     "match": "\\b(insert|prepend|append|set|remove|get|get_numeric|merge|print|if)\\b"
                 },
                 {
+                    "name": "keyword.operator.nbtscript",
+                    "match": "[+*/%<>-]"
+                },
+                {
                     "match": "\\b(function)\\s*([^ \"\\[\\].\\{\\}:;,]+)\\s*\\{",
                     "captures": {
                         "1": {

@@ -83,6 +83,23 @@ class Interpreter:
       interpret(target) match
       case Seq() => Seq.empty
       case _ => interpret(body); Seq(IntTag(1))
+    case Expression.Operate(left, operator, right) =>
+      (interpret(left), interpret(right)) match
+      case (Seq(left), Seq(right)) =>
+        (left, right) match
+        case (left: IntTag, right: IntTag) => Seq(IntTag(
+          ((left: Int, right: Int) =>
+            operator match
+            case Operator.+ => left + right
+            case Operator.- => left - right
+            case Operator.* => left * right
+            case Operator./ => Math.floorDiv(left, right)
+            case Operator.% => Math.floorMod(left, right)
+            case Operator.< => if left < right then 1 else 0
+            case Operator.> => if left > right then 1 else 0
+          )(left.asInt, right.asInt)))
+        case _ => Seq.empty
+      case _ => Seq.empty
 
   object Targets:
     def unapply(accessor: Accessor): (Tag, Path) =

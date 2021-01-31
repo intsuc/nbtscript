@@ -4,7 +4,7 @@ import nbts.Ast._
 import scala.collection.mutable
 import scala.util.parsing.combinator._
 
-object NbtsParser extends RegexParsers:
+object NbtsParser extends RegexParsers with PackratParsers:
   def apply(text: String): Source =
     parseAll(source, text) match
     case Success(matched, _) => matched
@@ -15,7 +15,7 @@ object NbtsParser extends RegexParsers:
 
   def expressions: Parser[Seq[Expression]] = rep(expression <~ ";")
 
-  def expression: Parser[Expression]
+  lazy val expression: PackratParser[Expression]
     = "insert" ~> int ~ accessor ~ expression ^^ { case index ~ target ~ source => Expression.Insert(index, target, source) }
     | "prepend" ~> accessor ~ expression ^^ { Expression.Insert(0, _, _) }
     | "append" ~> accessor ~ expression ^^ { Expression.Insert(-1, _, _) }
@@ -28,6 +28,7 @@ object NbtsParser extends RegexParsers:
     | "function" ~> string ~ ("{" ~> expressions) <~ "}" ^^ { Expression.Function(_, _) }
     | "run" ~> string ^^ { Expression.Run(_) }
     | "if" ~> expression ~ ("{" ~> expressions) <~ "}" ^^ { Expression.If(_, _) }
+    | expression ~ operator ~ expression ^^ { case left ~ operator ~ right => Expression.Operate(left, operator, right) }
     | "(" ~> expression <~ ")"
     | accessor ^^ { Expression.Access(_) }
 
@@ -35,6 +36,15 @@ object NbtsParser extends RegexParsers:
     = path ^^ { Accessor.Global(_) }
     | tag ~ path ^^ { Accessor.Local(_, _) }
     | tag ^^ { Accessor.Single(_) }
+
+  def operator: Parser[Operator]
+    = "+" ^^ { _ => Operator.+ }
+    | "-" ^^ { _ => Operator.- }
+    | "*" ^^ { _ => Operator.* }
+    | "/" ^^ { _ => Operator./ }
+    | "%" ^^ { _ => Operator.% }
+    | "<" ^^ { _ => Operator.< }
+    | ">" ^^ { _ => Operator.> }
 
   def tag: Parser[Tag]
     = compound
