@@ -17,6 +17,7 @@ object Ast:
     case If(target: Expression, body: Seq[Expression])
     case Unless(target: Expression, body: Seq[Expression])
     case Operate(left: Expression, operator: Operator, right: Expression)
+    case Matches(target: Expression, min: Int, max: Int)
     case Random(probability: Float)
 
   enum Accessor:

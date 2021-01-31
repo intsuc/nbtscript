@@ -109,6 +109,13 @@ class Interpreter:
           )(left.asInt, right.asInt)))
         case _ => Seq.empty
       case _ => Seq.empty
+    case Expression.Matches(target, min, max) =>
+      interpret(target) match
+      case Seq(target) =>
+        target match
+        case target: IntTag => Seq(IntTag(if min to max contains target.asInt then 1 else 0))
+        case _ => Seq.empty
+      case _ => Seq.empty
     case Expression.Random(probability) =>
       Seq(IntTag(if random.nextFloat() < probability then 1 else 0))
 

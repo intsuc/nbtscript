@@ -84,3 +84,6 @@ remove .x;
 unless .x {
     print "reachable";
 };
+
+print (0 matches 1..2);
+print (1 matches 1..2);

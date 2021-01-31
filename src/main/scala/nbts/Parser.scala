@@ -29,6 +29,7 @@ object NbtsParser extends RegexParsers with PackratParsers:
     | "run" ~> string ^^ { Expression.Run(_) }
     | "if" ~> expression ~ ("{" ~> expressions) <~ "}" ^^ { Expression.If(_, _) }
     | "unless" ~> expression ~ ("{" ~> expressions) <~ "}" ^^ { Expression.Unless(_, _) }
+    | (expression <~ "matches") ~ (int <~ "..") ~ int ^^ { case target ~ min ~ max => Expression.Matches(target, min, max) }
     | "random" ~> float ^^ { Expression.Random(_) }
     | expression ~ operator ~ expression ^^ { case left ~ operator ~ right => Expression.Operate(left, operator, right) }
     | "(" ~> expression <~ ")"
