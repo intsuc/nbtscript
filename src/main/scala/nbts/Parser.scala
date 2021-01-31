@@ -28,6 +28,7 @@ object NbtsParser extends RegexParsers with PackratParsers:
     | "function" ~> string ~ ("{" ~> expressions) <~ "}" ^^ { Expression.Function(_, _) }
     | "run" ~> string ^^ { Expression.Run(_) }
     | "if" ~> expression ~ ("{" ~> expressions) <~ "}" ^^ { Expression.If(_, _) }
+    | "random" ~> float ^^ { Expression.Random(_) }
     | expression ~ operator ~ expression ^^ { case left ~ operator ~ right => Expression.Operate(left, operator, right) }
     | "(" ~> expression <~ ")"
     | accessor ^^ { Expression.Access(_) }

@@ -16,6 +16,7 @@ object Ast:
     case Run(name: String)
     case If(target: Expression, body: Seq[Expression])
     case Operate(left: Expression, operator: Operator, right: Expression)
+    case Random(probability: Float)
 
   enum Accessor:
     case Single(tag: Tag)

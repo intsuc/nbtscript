@@ -3,10 +3,12 @@ package nbts
 import nbts.Ast._
 import scala.Console.{CYAN, GREEN, YELLOW, MAGENTA, RESET}
 import scala.collection.mutable
+import scala.util.Random
 
 class Interpreter:
   private val functions: mutable.Map[String, Seq[Expression]] = mutable.Map.empty
   private val global: CompoundTag = CompoundTag()
+  private val random: Random = Random()
 
   def interpret(expressions: Seq[Expression]): Unit =
     expressions.foreach(interpret)
@@ -102,6 +104,8 @@ class Interpreter:
           )(left.asInt, right.asInt)))
         case _ => Seq.empty
       case _ => Seq.empty
+    case Expression.Random(probability) =>
+      Seq(IntTag(if random.nextFloat() < probability then 1 else 0))
 
   object Targets:
     def unapply(accessor: Accessor): (Tag, Path) =
