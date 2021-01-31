@@ -18,6 +18,7 @@ object Ast:
     case Unless(target: Expression, body: Seq[Expression])
     case Operate(left: Expression, operator: Operator, right: Expression)
     case Matches(target: Expression, min: Int, max: Int)
+    case To(target: Expression, typ: Type, scale: Double)
     case Random(probability: Float)
 
   enum Accessor:
@@ -27,3 +28,11 @@ object Ast:
 
   enum Operator:
     case +, -, *, /, %, `=`, <, <=, >, >=
+
+  enum Type:
+    case Byte
+    case Short
+    case Int
+    case Long
+    case Float
+    case Double

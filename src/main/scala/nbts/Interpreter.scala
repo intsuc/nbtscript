@@ -93,27 +93,39 @@ class Interpreter:
       (interpret(left), interpret(right)) match
       case (Seq(left), Seq(right)) =>
         (left, right) match
-        case (left: IntTag, right: IntTag) => Seq(IntTag(
-          ((left: Int, right: Int) =>
-            operator match
-            case Operator.+ => left + right
-            case Operator.- => left - right
-            case Operator.* => left * right
-            case Operator./ => Math.floorDiv(left, right)
-            case Operator.% => Math.floorMod(left, right)
-            case Operator.`=` => if left == right then 1 else 0
-            case Operator.< => if left < right then 1 else 0
-            case Operator.<= => if left <= right then 1 else 0
-            case Operator.> => if left > right then 1 else 0
-            case Operator.>= => if left >= right then 1 else 0
-          )(left.asInt, right.asInt)))
+        case (IntTag(left), IntTag(right)) => Seq(IntTag(
+          operator match
+          case Operator.+ => left + right
+          case Operator.- => left - right
+          case Operator.* => left * right
+          case Operator./ => Math.floorDiv(left, right)
+          case Operator.% => Math.floorMod(left, right)
+          case Operator.`=` => if left == right then 1 else 0
+          case Operator.< => if left < right then 1 else 0
+          case Operator.<= => if left <= right then 1 else 0
+          case Operator.> => if left > right then 1 else 0
+          case Operator.>= => if left >= right then 1 else 0))
         case _ => Seq.empty
       case _ => Seq.empty
     case Expression.Matches(target, min, max) =>
       interpret(target) match
       case Seq(target) =>
         target match
-        case target: IntTag => Seq(IntTag(if min to max contains target.asInt then 1 else 0))
+        case IntTag(data) => Seq(IntTag(if min to max contains data then 1 else 0))
+        case _ => Seq.empty
+      case _ => Seq.empty
+    case Expression.To(target, typ, scale) =>
+      interpret(target) match
+      case Seq(target) =>
+        target match
+        case IntTag(data) => Seq(
+          typ match
+          case Type.Byte => ByteTag((data.toDouble * scale).toInt.toByte)
+          case Type.Short => ShortTag((data.toDouble * scale).toInt.toShort)
+          case Type.Int => IntTag((data.toDouble * scale).toInt)
+          case Type.Long => LongTag((data.toDouble * scale).toLong)
+          case Type.Float => FloatTag((data.toDouble * scale).toFloat)
+          case Type.Double => DoubleTag(data.toDouble * scale))
         case _ => Seq.empty
       case _ => Seq.empty
     case Expression.Random(probability) =>

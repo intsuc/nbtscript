@@ -30,6 +30,12 @@ object NbtsParser extends RegexParsers with PackratParsers:
     | "if" ~> expression ~ ("{" ~> expressions) <~ "}" ^^ { Expression.If(_, _) }
     | "unless" ~> expression ~ ("{" ~> expressions) <~ "}" ^^ { Expression.Unless(_, _) }
     | (expression <~ "matches") ~ (int <~ "..") ~ int ^^ { case target ~ min ~ max => Expression.Matches(target, min, max) }
+    | (expression <~ "to_byte") ~ double ^^ { Expression.To(_, Type.Byte, _) }
+    | (expression <~ "to_short") ~ double ^^ { Expression.To(_, Type.Short, _) }
+    | (expression <~ "to_int") ~ double ^^ { Expression.To(_, Type.Int, _) }
+    | (expression <~ "to_long") ~ double ^^ { Expression.To(_, Type.Long, _) }
+    | (expression <~ "to_float") ~ double ^^ { Expression.To(_, Type.Float, _) }
+    | (expression <~ "to_double") ~ double ^^ { Expression.To(_, Type.Double, _) }
     | "random" ~> float ^^ { Expression.Random(_) }
     | expression ~ operator ~ expression ^^ { case left ~ operator ~ right => Expression.Operate(left, operator, right) }
     | "(" ~> expression <~ ")"

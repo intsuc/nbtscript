@@ -87,3 +87,10 @@ unless .x {
 
 print (0 matches 1..2);
 print (1 matches 1..2);
+
+print (0 to_byte 1.0d);
+print (0 to_short 1.0d);
+print (0 to_int 1.0d);
+print (0 to_long 1.0d);
+print (0 to_float 1.0d);
+print (0 to_double 1.0d);
