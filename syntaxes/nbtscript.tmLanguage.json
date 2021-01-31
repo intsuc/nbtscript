@@ -31,7 +31,7 @@
                     "match": "[+*/%<>-]"
                 },
                 {
-                    "match": "\\b(function)\\s*([^ \"\\[\\].\\{\\}:;,]+)\\s*\\{",
+                    "match": "\\b(function)\\s*([^ \"\\(\\)\\[\\].\\{\\}:;,]+)\\s*\\{",
                     "captures": {
                         "1": {
                             "name": "keyword.operator.nbtscript"
@@ -42,7 +42,7 @@
                     }
                 },
                 {
-                    "match": "\\b(run)\\s*([^ \"\\[\\].\\{\\}:;,]+)",
+                    "match": "\\b(run)\\s*([^ \"\\(\\)\\[\\].\\{\\}:;,]+)",
                     "captures": {
                         "1": {
                             "name": "keyword.operator.nbtscript"
@@ -53,7 +53,7 @@
                     }
                 },
                 {
-                    "match": "^\\s*([^ \"\\[\\].\\{\\}:;,]+)\\s*;",
+                    "match": "^\\s*([^ \"\\(\\)\\[\\].\\{\\}:;,]+)\\s*;",
                     "captures": {
                         "1": {
                             "name": "entity.name.function.nbtscript"
@@ -85,7 +85,7 @@
                     ]
                 },
                 {
-                    "match": "(?<=\\.)[^ \"\\[\\].\\{\\}:;,]+",
+                    "match": "(?<=\\.)[^ \"\\(\\)\\[\\].\\{\\}:;,]+",
                     "name": "string.nbtscript support.type.property-name.nbtscript"
                 }
             ]
@@ -211,7 +211,7 @@
                     ]
                 },
                 {
-                    "match": "[^ \"\\[\\].\\{\\}:;,]+",
+                    "match": "[^ \"\\(\\)\\[\\].\\{\\}:;,]+",
                     "name": "string.quoted.double.nbtscript"
                 }
             ]

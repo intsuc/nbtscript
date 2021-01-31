@@ -34,7 +34,7 @@ object NbtsParser extends RegexParsers with PackratParsers:
 
   def accessor: Parser[Accessor]
     = path ^^ { Accessor.Global(_) }
-    | tag ~ path ^^ { Accessor.Local(_, _) }
+    | (tag <~ not(' ')) ~ path ^^ { Accessor.Local(_, _) }
     | tag ^^ { Accessor.Single(_) }
 
   def operator: Parser[Operator]
@@ -62,7 +62,7 @@ object NbtsParser extends RegexParsers with PackratParsers:
     | int ^^ { IntTag(_) }
     | string ^^ { StringTag(_) }
 
-  def path: Parser[Path] = rep1("." ~> node) ^^ { Path(_) }
+  def path: Parser[Path] = ("." ~> node) ~ rep(not(' ') ~> "." ~> node) ^^ { case head ~ tail => Path(head +: tail) }
 
   def node: Parser[Node]
     = compound ^^ { Node.MatchRootObject(_) }
@@ -74,7 +74,7 @@ object NbtsParser extends RegexParsers with PackratParsers:
 
   def string: Parser[String]
     = "\"" ~> """([^"]|(?<=\\)")*""".r <~ "\"" ^^ { _.replace("\\\"", "\"") }
-    | """[^ "\[\].\{\}:;,]+""".r
+    | """[^ "()\[\].\{\}:;,]+""".r
 
   def compound: Parser[CompoundTag] = "{" ~> repsep((string <~ ":") ~ tag, ",") <~ "}" ^^ { entries => CompoundTag(mutable.Map.empty ++ entries.map(_ -> _)) }
   def byte: Parser[Byte] = integer <~ "b" ^^ { _.toByte }
