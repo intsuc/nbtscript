@@ -85,6 +85,10 @@ class Interpreter:
       interpret(target) match
       case Seq() => Seq.empty
       case _ => interpret(body); Seq(IntTag(1))
+    case Expression.Unless(target, body) =>
+      interpret(target) match
+      case Seq() => interpret(body); Seq(IntTag(1))
+      case _ => Seq.empty
     case Expression.Operate(left, operator, right) =>
       (interpret(left), interpret(right)) match
       case (Seq(left), Seq(right)) =>

@@ -24,7 +24,7 @@
             "patterns": [
                 {
                     "name": "keyword.operator.nbtscript",
-                    "match": "\\b(insert|prepend|append|set|remove|get|get_numeric|merge|print|if|random)\\b"
+                    "match": "\\b(insert|prepend|append|set|remove|get|get_numeric|merge|print|if|unless|random)\\b"
                 },
                 {
                     "name": "keyword.operator.nbtscript",

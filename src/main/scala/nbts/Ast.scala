@@ -15,6 +15,7 @@ object Ast:
     case Function(name: String, body: Seq[Expression])
     case Run(name: String)
     case If(target: Expression, body: Seq[Expression])
+    case Unless(target: Expression, body: Seq[Expression])
     case Operate(left: Expression, operator: Operator, right: Expression)
     case Random(probability: Float)
 

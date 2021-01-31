@@ -71,3 +71,13 @@ print (random 0.5f);
 print (random 0.5f);
 print (random 0.5f);
 print (random 0.5f);
+
+set .x 0;
+unless .x {
+    print "unreachable";
+};
+
+remove .x;
+unless .x {
+    print "reachable";
+};
