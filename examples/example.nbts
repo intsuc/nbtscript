@@ -26,8 +26,8 @@ function foo {
     print "foo-1";
 };
 
-foo;
-foo;
+run foo;
+run foo;
 
 print .x;
 set .x {};
@@ -52,9 +52,9 @@ if .x {
 function rec {
     print "rec";
     if .x {
-        set .x false;
-        rec;
+        remove .x;
+        run rec;
     };
 };
-set .x true;
-rec;
+set .x 0;
+run rec;

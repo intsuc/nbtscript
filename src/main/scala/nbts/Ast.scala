@@ -13,7 +13,7 @@ object Ast:
     case Merge(target: Accessor, source: Expression)
     case Print(target: Expression)
     case Function(name: String, body: Seq[Expression])
-    case Call(name: String)
+    case Run(name: String)
     case If(target: Expression, body: Seq[Expression])
 
   enum Accessor:

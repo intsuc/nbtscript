@@ -26,10 +26,10 @@ object NbtsParser extends RegexParsers:
     | "merge" ~> accessor ~ expression ^^ { Expression.Merge(_, _) }
     | "print" ~> expression ^^ { Expression.Print(_) }
     | "function" ~> string ~ ("{" ~> expressions) <~ "}" ^^ { Expression.Function(_, _) }
+    | "run" ~> string ^^ { Expression.Run(_) }
     | "if" ~> expression ~ ("{" ~> expressions) <~ "}" ^^ { Expression.If(_, _) }
     | "(" ~> expression <~ ")"
     | accessor ^^ { Expression.Access(_) }
-    | string ^^ { Expression.Call(_) }
 
   def accessor: Parser[Accessor]
     = path ^^ { Accessor.Global(_) }

@@ -24,10 +24,21 @@
             "patterns": [
                 {
                     "name": "keyword.operator.nbtscript",
-                    "match": "\\b(insert|prepend|append|set|remove|get|get_numeric|merge|print|if|store)\\b"
+                    "match": "\\b(insert|prepend|append|set|remove|get|get_numeric|merge|print|if)\\b"
                 },
                 {
                     "match": "\\b(function)\\s*([^ \"\\[\\].\\{\\}:;,]+)\\s*\\{",
+                    "captures": {
+                        "1": {
+                            "name": "keyword.operator.nbtscript"
+                        },
+                        "2": {
+                            "name": "entity.name.function.nbtscript"
+                        }
+                    }
+                },
+                {
+                    "match": "\\b(run)\\s*([^ \"\\[\\].\\{\\}:;,]+)",
                     "captures": {
                         "1": {
                             "name": "keyword.operator.nbtscript"

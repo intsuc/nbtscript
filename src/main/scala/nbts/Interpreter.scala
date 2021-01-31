@@ -75,7 +75,7 @@ class Interpreter:
     case Expression.Function(name, body) =>
       functions(name) = body
       Seq(IntTag(1))
-    case Expression.Call(name) =>
+    case Expression.Run(name) =>
       functions.get(name) match
       case Some(body) => interpret(body); Seq(IntTag(1))
       case None => Seq.empty
