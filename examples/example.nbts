@@ -1,14 +1,14 @@
-print {a: 0b}.a;
-print {"b": {c: 1s}}.b."c";
-print [2, 3].[0];
-print [4L, 5L].[-1];
-print [6.0f, 7.0f].[];
-print [8.0d, 9.0d].[];
-print [B; 10b, 11b].[];
-print [I; 12, 13].[];
-print [L; 14L, 15L].[];
+(print {a: 0b}.a)
+(print {"b": {c: 1s}}.b."c")
+(print [2, 3].[0])
+(print [4L, 5L].[-1])
+(print [6.0f, 7.0f].[])
+(print [8.0d, 9.0d].[])
+(print [B; 10b, 11b].[])
+(print [I; 12, 13].[])
+(print [L; 14L, 15L].[])
 
-print {
+(print {
     a: {
         b: [[], [$], [$$]],
         c: [
@@ -17,80 +17,70 @@ print {
             {d: 1b, e: [[$6, $7], [$8]]}
         ]
     }
-}.a{b: [[$], []]}.c.[{d: 1b}].e.[-1].[];
+}.a{b: [[$], []]}.c.[{d: 1b}].e.[-1].[])
 
-print 0;
+(print 0)
 
-function foo {
-    print "foo-0";
-    print "foo-1";
-};
+(function foo
+    (print "foo-0")
+    (print "foo-1"))
 
-run foo;
-run foo;
+(run foo)
+(run foo)
 
-print .x;
-set .x {};
-set .x.y 0;
-print .{};
-print .x;
-print .x.y;
+(print .x)
+(set .x {})
+(set .x.y 0)
+(print .{})
+(print .x)
+(print .x.y)
 
-print false;
-print true;
+(print false)
+(print true)
 
-remove .x;
-if .x {
-    print "unreachable";
-};
+(remove .x)
+(if .x (print "unreachable"))
 
-set .x (print (print "x"));
-if .x {
-    print "reachable";
-};
+(set .x (print (print "x")))
+(if .x (print "reachable"))
 
-function rec {
-    print "rec";
-    if .x {
-        remove .x;
-        run rec;
-    };
-};
-set .x 0;
-run rec;
+(function rec
+    (print "rec")
+    (if .x
+        (remove .x)
+        (run rec)))
 
-print (5 + 3);
-print (5 - 3);
-print (5 * 3);
-print (5 / 3);
-print (5 % 3);
-print (5 = 3);
-print (5 < 3);
-print (5 <= 3);
-print (5 > 3);
-print (5 >= 3);
+(set .x 0)
+(run rec)
 
-print (random 0.5f);
-print (random 0.5f);
-print (random 0.5f);
-print (random 0.5f);
+(print (5 + 3))
+(print (5 - 3))
+(print (5 * 3))
+(print (5 / 3))
+(print (5 % 3))
+(print (5 = 3))
+(print (5 < 3))
+(print (5 <= 3))
+(print (5 > 3))
+(print (5 >= 3))
 
-set .x 0;
-unless .x {
-    print "unreachable";
-};
+(print (random 0.5f))
+(print (random 0.5f))
+(print (random 0.5f))
+(print (random 0.5f))
 
-remove .x;
-unless .x {
-    print "reachable";
-};
+(set .x 0)
+(unless .x (print "unreachable"))
 
-print (0 matches 1..2);
-print (1 matches 1..2);
+(remove .x)
+(unless .x (print "reachable"))
 
-print (0 to_byte 1.0d);
-print (0 to_short 1.0d);
-print (0 to_int 1.0d);
-print (0 to_long 1.0d);
-print (0 to_float 1.0d);
-print (0 to_double 1.0d);
+(print (0 matches 1..2))
+(print (1 matches 1..2))
+
+(print (0 to_byte 1.0d))
+(print (0 to_short 1.0d))
+(print (0 to_int 1.0d))
+(print (0 to_long 1.0d))
+(print (0 to_float 1.0d))
+(print (0 to_double 1.0d))

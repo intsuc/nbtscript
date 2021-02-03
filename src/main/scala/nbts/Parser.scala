@@ -13,7 +13,7 @@ object NbtsParser extends RegexParsers with PackratParsers:
 
   def source: Parser[Source] = expressions ^^ { Source(_) }
 
-  def expressions: Parser[Seq[Expression]] = rep(expression <~ ";")
+  def expressions: Parser[Seq[Expression]] = rep(expression)
 
   lazy val expression: PackratParser[Expression]
     = "insert" ~> int ~ accessor ~ expression ^^ { case index ~ target ~ source => Expression.Insert(index, target, source) }
@@ -25,10 +25,10 @@ object NbtsParser extends RegexParsers with PackratParsers:
     | "get_numeric" ~> expression ~ double ^^ { Expression.GetNumeric(_, _) }
     | "merge" ~> accessor ~ expression ^^ { Expression.Merge(_, _) }
     | "print" ~> expression ^^ { Expression.Print(_) }
-    | "function" ~> string ~ ("{" ~> expressions) <~ "}" ^^ { Expression.Function(_, _) }
+    | "function" ~> string ~ expressions ^^ { Expression.Function(_, _) }
     | "run" ~> string ^^ { Expression.Run(_) }
-    | "if" ~> expression ~ ("{" ~> expressions) <~ "}" ^^ { Expression.If(_, _) }
-    | "unless" ~> expression ~ ("{" ~> expressions) <~ "}" ^^ { Expression.Unless(_, _) }
+    | "if" ~> expression ~ expressions^^ { Expression.If(_, _) }
+    | "unless" ~> expression ~ expressions ^^ { Expression.Unless(_, _) }
     | (expression <~ "matches") ~ (int <~ "..") ~ int ^^ { case target ~ min ~ max => Expression.Matches(target, min, max) }
     | (expression <~ "to_byte") ~ double ^^ { Expression.To(_, Type.Byte, _) }
     | (expression <~ "to_short") ~ double ^^ { Expression.To(_, Type.Short, _) }
@@ -86,7 +86,7 @@ object NbtsParser extends RegexParsers with PackratParsers:
 
   def string: Parser[String]
     = "\"" ~> """([^"]|(?<=\\)")*""".r <~ "\"" ^^ { _.replace("\\\"", "\"") }
-    | """[^ "()\[\].\{\}:;,]+""".r
+    | """[^\s"()\[\].\{\}:;,]+""".r
 
   def compound: Parser[CompoundTag] = "{" ~> repsep((string <~ ":") ~ tag, ",") <~ "}" ^^ { entries => CompoundTag(mutable.Map.empty ++ entries.map(_ -> _)) }
   def byte: Parser[Byte] = integer <~ "b" ^^ { _.toByte }

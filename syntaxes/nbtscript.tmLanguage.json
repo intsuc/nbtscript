@@ -3,9 +3,6 @@
     "name": "NBTScript",
     "patterns": [
         {
-            "include": "#comments"
-        },
-        {
             "include": "#keywords"
         },
         {
@@ -13,13 +10,15 @@
         },
         {
             "include": "#tags"
+        },
+        {
+            "include": "#numbers"
+        },
+        {
+            "include": "#strings"
         }
     ],
     "repository": {
-        "comments": {
-            "match": "^#.*$",
-            "name": "comment.line.nbtscript"
-        },
         "keywords": {
             "patterns": [
                 {
@@ -31,31 +30,12 @@
                     "match": "[+*/%<=>-]"
                 },
                 {
-                    "match": "\\b(function)\\s*([^ \"\\(\\)\\[\\].\\{\\}:;,]+)\\s*\\{",
+                    "match": "\\b(function|run)\\s+([^\\s\"\\(\\)\\[\\].\\{\\}:;,]+)",
                     "captures": {
                         "1": {
                             "name": "keyword.operator.nbtscript"
                         },
                         "2": {
-                            "name": "entity.name.function.nbtscript"
-                        }
-                    }
-                },
-                {
-                    "match": "\\b(run)\\s*([^ \"\\(\\)\\[\\].\\{\\}:;,]+)",
-                    "captures": {
-                        "1": {
-                            "name": "keyword.operator.nbtscript"
-                        },
-                        "2": {
-                            "name": "entity.name.function.nbtscript"
-                        }
-                    }
-                },
-                {
-                    "match": "^\\s*([^ \"\\(\\)\\[\\].\\{\\}:;,]+)\\s*;",
-                    "captures": {
-                        "1": {
                             "name": "entity.name.function.nbtscript"
                         }
                     }
@@ -85,7 +65,7 @@
                     ]
                 },
                 {
-                    "match": "(?<=\\.)[^ \"\\(\\)\\[\\].\\{\\}:;,]+",
+                    "match": "(?<=\\.)[^\\s\"\\(\\)\\[\\].\\{\\}:;,]+",
                     "name": "string.nbtscript support.type.property-name.nbtscript"
                 }
             ]
