@@ -27,6 +27,16 @@ object Ast:
     case Local(tag: Tag, path: Path)
     case Global(path: Path)
 
+  final case class Path(nodes: Seq[Node])
+
+  enum Node:
+    case MatchRootObject(pattern: CompoundTag)
+    case MatchObject(name: String, pattern: CompoundTag)
+    case AllElements
+    case MatchElement(pattern: CompoundTag)
+    case IndexedElement(index: Int)
+    case CompoundChild(name: String)
+
   enum Operator:
     case +, -, *, /, %, `=`, <, <=, >, >=
 
