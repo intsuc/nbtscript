@@ -19,29 +19,20 @@ enum Node:
 
   def get(target: Tag): Seq[Tag] =
     (this, target) match
-    case (Node.MatchRootObject(pattern), target: CompoundTag) =>
-      if pattern <= target then Seq(target) else Seq.empty
-    case (Node.MatchObject(name, pattern), target: CompoundTag) =>
-      target.get(name).map(tag => if pattern <= tag then Seq(tag) else Seq.empty).getOrElse(Seq.empty)
-    case (Node.AllElements, target: CollectionTag[?]) =>
-      target.toSeq
-    case (Node.MatchElement(pattern), target: ListTag) =>
-      target.filter(pattern <= _).toSeq
-    case (Node.IndexedElement(index), target: CollectionTag[?]) =>
-      val normalized = if index < 0 then target.size + index else index
-      if 0 until target.size contains normalized then Seq(target(normalized)) else Seq.empty
-    case (Node.CompoundChild(name), target: CompoundTag) =>
-      target.get(name).toSeq
+    case (Node.MatchRootObject(pattern), target: CompoundTag) => Seq(target).filter(pattern <= _)
+    case (Node.MatchObject(name, pattern), target: CompoundTag) => target.get(name).toSeq.filter(pattern <= _)
+    case (Node.AllElements, target: CollectionTag[?]) => target.toSeq
+    case (Node.MatchElement(pattern), target: ListTag) => target.toSeq.filter(pattern <= _)
+    case (Node.IndexedElement(index), target: CollectionTag[?]) => target.lift(index).toSeq
+    case (Node.CompoundChild(name), target: CompoundTag) => target.get(name).toSeq
     case _ => Seq.empty
 
   def getOrCreate(target: Tag, source: => Tag): Seq[Tag] =
     (this, target) match
-    case (Node.MatchRootObject(_), _) =>
-      get(target)
+    case (Node.MatchRootObject(_), _) => get(target)
     case (Node.MatchObject(name, pattern), target: CompoundTag) =>
       target.get(name) match
-      case Some(tag) =>
-        if pattern <= tag then Seq(tag) else Seq.empty
+      case Some(tag) => Seq(tag).filter(pattern <= _)
       case None =>
         val tag = pattern.copy()
         target(name) = tag
@@ -58,8 +49,7 @@ enum Node:
         target += tag
         Seq(tag)
       else filtered.toSeq
-    case (Node.IndexedElement(_), target) =>
-      get(target)
+    case (Node.IndexedElement(_), target) => get(target)
     case (Node.CompoundChild(name), target: CompoundTag) =>
       val tag = target.get(name) match
       case Some(tag) => tag
@@ -84,9 +74,9 @@ enum Node:
     case (Node.MatchObject(name, pattern), target: CompoundTag) =>
       target.get(name).map(tag =>
         if pattern <= tag then
-          val tag = source
-          if target == tag then 0
-          else target(name) = tag; 1
+          val src = source
+          if target == src then 0
+          else target(name) = src; 1
         else 0
       ).getOrElse(0)
     case (Node.AllElements, target: CollectionTag[?]) =>
@@ -113,11 +103,11 @@ enum Node:
           if pattern <= target(index) && tag != target(index) && target.set(index, tag) then result += 1
         result
     case (Node.IndexedElement(index), target: CollectionTag[?]) =>
-      val normalized = if index < 0 then target.size + index else index
-      if 0 until target.size contains normalized then
-        val tag = source
-        if tag != target(normalized) && target.set(normalized, tag) then 1 else 0
-      else 0
+      target.lift(index) match
+      case Some(tag) =>
+        val src = source
+        if src != tag && target.set(index, src) then 1 else 0
+      case None => 0
     case (Node.CompoundChild(name), target: CompoundTag) =>
       val src = source
       target.put(name, src).map(tag => if src == tag then 0 else 1).getOrElse(1)
@@ -144,10 +134,9 @@ enum Node:
           result += 1
       result
     case (Node.IndexedElement(index), target: CollectionTag[?]) =>
-      val normalized = if index < 0 then target.size + index else index
-      if 0 until target.size contains normalized then
-        target.remove(normalized); 1
-      else 0
+      target.lift(index) match
+      case Some(_) => target.remove(index); 1
+      case None => 0
     case (Node.CompoundChild(name), target: CompoundTag) =>
       if target contains name then
         target -= name; 1
@@ -157,9 +146,6 @@ enum Node:
 final case class Path(nodes: Seq[Node]):
   def get(target: Tag): Seq[Tag] =
     nodes.foldLeft(mutable.Buffer(target))(_ flatMap _.get).toSeq
-
-  def count(target: Tag): Int =
-    get(target).size
 
   private def getOrCreateParents(target: Tag): mutable.Buffer[Tag] =
     val targets = mutable.Buffer(target)
