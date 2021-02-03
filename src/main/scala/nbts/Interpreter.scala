@@ -6,21 +6,20 @@ import scala.collection.mutable
 import scala.util.Random
 
 class Interpreter:
-  private val functions: mutable.Map[String, Seq[Expression]] = mutable.Map.empty
+  private val functions: mutable.Map[String, (Seq[String], Seq[Expression])] = mutable.Map.empty
   private val global: CompoundTag = CompoundTag()
   private val random: Random = Random()
 
-  def interpret(expressions: Seq[Expression]): Unit =
+  def interpret(expressions: Seq[Expression])(using quotations: Map[String, Expression]): Unit =
     expressions.foreach(interpret)
 
-  private def interpret(expression: Expression): Seq[Tag] =
+  private def interpret(expression: Expression)(using quotations: Map[String, Expression]): Seq[Tag] =
     expression match
-    case Expression.Access(Accessor.Single(tag)) =>
-      Seq(tag)
-    case Expression.Access(Accessor.Local(tag, path)) =>
-      path.get(tag)
-    case Expression.Access(Accessor.Global(path)) =>
-      path.get(global)
+    case Expression.Access(accessor) =>
+      accessor match
+      case Accessor.Single(tag) => Seq(tag)
+      case Accessor.Local(tag, path) => path.get(tag)
+      case Accessor.Global(path) => path.get(global)
     case Expression.Insert(index, Targets(tag, path), source) =>
       var result = 0
       val targets = path.getOrCreate(tag, ListTag())
@@ -74,12 +73,16 @@ class Interpreter:
       tags.lastOption.map(print)
       println()
       Seq(IntTag(1))
-    case Expression.Function(name, body) =>
-      functions(name) = body
+    case Expression.Function(name, parameters, body) =>
+      functions(name) = (parameters, body)
       Seq(IntTag(1))
-    case Expression.Run(name) =>
+    case Expression.Run(name, arguments) =>
       functions.get(name) match
-      case Some(body) => interpret(body); Seq(IntTag(1))
+      case Some((parameters, body)) => interpret(body)(using parameters.zip(arguments).toMap); Seq(IntTag(1))
+      case None => Seq.empty
+    case Expression.Quotation(name) =>
+      quotations.get(name) match
+      case Some(expression) => interpret(expression)
       case None => Seq.empty
     case Expression.If(target, body) =>
       interpret(target) match

@@ -1,0 +1,5 @@
+(function twice `e:
+    (`e)
+    (`e))
+
+(run twice (print hello))
