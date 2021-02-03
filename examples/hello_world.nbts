@@ -1,0 +1,4 @@
+(function hello_world
+    (print [hello, world].[]))
+
+(run hello_world)
