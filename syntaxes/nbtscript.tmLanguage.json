@@ -26,10 +26,6 @@
                     "match": "\\b(insert|prepend|append|set|remove|get|get_numeric|merge|print|if|unless|matches|\\.\\.|to_byte|to_short|to_int|to_long|to_float|to_double|random)\\b"
                 },
                 {
-                    "name": "string.regexp.nbtscript",
-                    "match": "`([^\\s\"\\(\\)\\[\\].\\{\\}:;,]+)"
-                },
-                {
                     "name": "keyword.operator.nbtscript",
                     "match": "[+*/%<=>-]"
                 },

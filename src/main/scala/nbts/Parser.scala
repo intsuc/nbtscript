@@ -25,8 +25,8 @@ object NbtsParser extends RegexParsers with PackratParsers:
     | "get_numeric" ~> expression ~ double ^^ { Expression.GetNumeric(_, _) }
     | "merge" ~> accessor ~ expression ^^ { Expression.Merge(_, _) }
     | "print" ~> expression ^^ { Expression.Print(_) }
-    | "function" ~> string ~ rep(quotation <~ ":") ~ expressions ^^ { case name ~ parameters ~ body => Expression.Function(name, parameters, body) }
-    | "run" ~> string ~ expressions ^^ { Expression.Run(_, _) }
+    | "function" ~> string ~ expressions ^^ { Expression.Function(_, _) }
+    | "run" ~> string ^^ { Expression.Run(_) }
     | "if" ~> expression ~ expressions^^ { Expression.If(_, _) }
     | "unless" ~> expression ~ expressions ^^ { Expression.Unless(_, _) }
     | (expression <~ "matches") ~ (int <~ "..") ~ int ^^ { case target ~ min ~ max => Expression.Matches(target, min, max) }
@@ -38,7 +38,6 @@ object NbtsParser extends RegexParsers with PackratParsers:
     | (expression <~ "to_double") ~ double ^^ { Expression.To(_, Type.Double, _) }
     | "random" ~> float ^^ { Expression.Random(_) }
     | expression ~ operator ~ expression ^^ { case left ~ operator ~ right => Expression.Operate(left, operator, right) }
-    | quotation ^^ { Expression.Quotation(_) }
     | "(" ~> expression <~ ")"
     | accessor ^^ { Expression.Access(_) }
 
@@ -98,4 +97,3 @@ object NbtsParser extends RegexParsers with PackratParsers:
   def double: Parser[Double] = real <~ "d" ^^ { _.toDouble }
   def integer: Parser[String] = """[-+]?[0-9]+""".r
   def real: Parser[String] = integer ~ "." ~ integer ^^ { case s ~ _ ~ b => s"$s.$b" }
-  def quotation: Parser[String] = "`" ~> string

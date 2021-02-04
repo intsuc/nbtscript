@@ -7,14 +7,14 @@ import scala.util.Random
 
 class Interpreter:
   import Interpreter._
-  private val functions: mutable.Map[String, (Seq[String], Seq[Expression])] = mutable.Map.empty
+  private val functions: mutable.Map[String, Seq[Expression]] = mutable.Map.empty
   private val global: CompoundTag = CompoundTag()
   private val random: Random = Random()
 
-  def interpret(expressions: Seq[Expression])(using quotations: Map[String, Expression]): Unit =
+  def interpret(expressions: Seq[Expression]): Unit =
     expressions.foreach(interpret)
 
-  private def interpret(expression: Expression)(using quotations: Map[String, Expression]): Seq[Tag] =
+  private def interpret(expression: Expression): Seq[Tag] =
     expression match
     case Expression.Access(accessor) =>
       accessor match
@@ -74,16 +74,12 @@ class Interpreter:
       tags.lastOption.map(print)
       println()
       Seq(IntTag(1))
-    case Expression.Function(name, parameters, body) =>
-      functions(name) = (parameters, body)
+    case Expression.Function(name, body) =>
+      functions(name) = body
       Seq(IntTag(1))
-    case Expression.Run(name, arguments) =>
+    case Expression.Run(name) =>
       functions.get(name) match
-      case Some((parameters, body)) => interpret(body)(using parameters.zip(arguments).toMap); Seq(IntTag(1))
-      case None => Seq.empty
-    case Expression.Quotation(name) =>
-      quotations.get(name) match
-      case Some(expression) => interpret(expression)
+      case Some(body) => interpret(body); Seq(IntTag(1))
       case None => Seq.empty
     case Expression.If(target, body) =>
       interpret(target) match
