@@ -84,3 +84,6 @@
 (print (0 to_long 1.0d))
 (print (0 to_float 1.0d))
 (print (0 to_double 1.0d))
+
+(print 2.0e10d)
+(print 2.0e100d)

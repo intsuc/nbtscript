@@ -96,4 +96,4 @@ object NbtsParser extends RegexParsers with PackratParsers:
   def float: Parser[Float] = real <~ "f" ^^ { _.toFloat }
   def double: Parser[Double] = real <~ "d" ^^ { _.toDouble }
   def integer: Parser[String] = """[-+]?[0-9]+""".r
-  def real: Parser[String] = integer ~ "." ~ integer ^^ { case s ~ _ ~ b => s"$s.$b" }
+  def real: Parser[String] = """[-+]?([0-9]*\.[0-9]+)(e[-+]?[0-9]+)?""".r
