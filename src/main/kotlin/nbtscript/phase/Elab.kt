@@ -241,9 +241,9 @@ class Elab private constructor() {
         }
 
         term is S.TermS.Var && type == null -> {
-            when (val level = ctx.types.indexOfLast { it.first == term.name }) {
-                -1 -> messages.errorS(NotFound(term.name, term.range))
-                else -> C.TermS.Var(term.name, level, ctx.types[level].second)
+            when (val level = ctx.levels[term.name]) {
+                null -> messages.errorS(NotFound(term.name, term.range))
+                else -> C.TermS.Var(term.name, level, ctx.types[level])
             }
         }
 
@@ -548,7 +548,8 @@ class Elab private constructor() {
     ): C.Value = reflect(env + argument, body.value)
 
     private class Context private constructor(
-        val types: PersistentList<Pair<String?, TypeS>>,
+        val levels: PersistentMap<String, Int>,
+        val types: PersistentList<TypeS>,
         val values: PersistentList<Lazy<C.Value>>,
     ) {
         val size: Int get() = types.size
@@ -558,12 +559,13 @@ class Elab private constructor() {
             type: TypeS,
             value: Lazy<C.Value>? = null,
         ): Context = Context(
-            types = types + (name to type),
-            values = values + (value ?: lazyOf(C.Value.Var(name, values.size, lazyOf(type))))
+            levels = name?.let { levels + (name to size) } ?: levels,
+            types = types + type,
+            values = values + (value ?: lazyOf(C.Value.Var(name, size, lazyOf(type))))
         )
 
         companion object {
-            operator fun invoke(): Context = Context(persistentListOf(), persistentListOf())
+            operator fun invoke(): Context = Context(persistentMapOf(), persistentListOf(), persistentListOf())
         }
     }
 
