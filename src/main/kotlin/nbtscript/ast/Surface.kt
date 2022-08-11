@@ -18,7 +18,7 @@ sealed interface Surface {
         data class ByteArrayZ(override val range: Range) : TypeZ
         data class IntArrayZ(override val range: Range) : TypeZ
         data class LongArrayZ(override val range: Range) : TypeZ
-        data class ListZ(val elements: List<TypeZ>, override val range: Range) : TypeZ
+        data class ListZ(val element: TypeZ, override val range: Range) : TypeZ
         data class CompoundZ(val elements: Map<String, TypeZ>, override val range: Range) : TypeZ
     }
 
@@ -52,7 +52,7 @@ sealed interface Surface {
         data class ByteArrayS(override val range: Range) : TermS
         data class IntArrayS(override val range: Range) : TermS
         data class LongArrayS(override val range: Range) : TermS
-        data class ListS(val elements: List<TermS>, override val range: Range) : TermS
+        data class ListS(val element: TermS, override val range: Range) : TermS
         data class CompoundS(val elements: Map<String, TermS>, override val range: Range) : TermS
         data class FunctionS(val name: String, val dom: TermS, val cod: TermS, override val range: Range) : TermS
         data class CodeS(val element: Surface.TypeZ, override val range: Range) : TermS

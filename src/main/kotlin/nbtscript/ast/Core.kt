@@ -14,7 +14,7 @@ sealed interface Core {
         object ByteArrayZ : TypeZ
         object IntArrayZ : TypeZ
         object LongArrayZ : TypeZ
-        data class ListZ(val elements: List<TypeZ>) : TypeZ
+        data class ListZ(val element: TypeZ) : TypeZ
         data class CompoundZ(val elements: Map<String, TypeZ>) : TypeZ
     }
 
@@ -52,7 +52,7 @@ sealed interface Core {
         data class ByteArrayS(override val type: ValueS) : TermS
         data class IntArrayS(override val type: ValueS) : TermS
         data class LongArrayS(override val type: ValueS) : TermS
-        data class ListS(val elements: List<TermS>, override val type: ValueS) : TermS
+        data class ListS(val element: TermS, override val type: ValueS) : TermS
         data class CompoundS(val elements: Map<String, TermS>, override val type: ValueS) : TermS
         data class FunctionS(val name: String, val dom: TermS, val cod: TermS, override val type: ValueS) : TermS
         data class CodeS(val element: Core.TypeZ, override val type: ValueS) : TermS
@@ -88,7 +88,7 @@ sealed interface Core {
         object ByteArrayS : ValueS
         object IntArrayS : ValueS
         object LongArrayS : ValueS
-        data class ListS(val elements: List<Lazy<ValueS>>) : ValueS
+        data class ListS(val element: Lazy<ValueS>) : ValueS
         data class CompoundS(val elements: Map<String, Lazy<ValueS>>) : ValueS
         data class FunctionS(val name: String, val dom: Lazy<ValueS>, val cod: TermS) : ValueS
         data class CodeS(val element: Core.TypeZ) : ValueS
