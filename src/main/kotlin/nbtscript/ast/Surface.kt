@@ -55,7 +55,7 @@ sealed interface Surface {
         data class ListS(val elements: List<TermS>, override val range: Range) : TermS
         data class CompoundS(val elements: Map<String, TermS>, override val range: Range) : TermS
         data class FunctionS(val name: String, val dom: TermS, val cod: TermS, override val range: Range) : TermS
-        data class CodeS(val element: TypeZ, override val range: Range) : TermS
+        data class CodeS(val element: Surface.TypeZ, override val range: Range) : TermS
         data class TypeZ(override val range: Range) : TermS
         data class ByteTag(val data: Byte, override val range: Range) : TermS
         data class ShortTag(val data: Short, override val range: Range) : TermS
