@@ -1,15 +1,18 @@
 package nbtscript.phase
 
 import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.plus
 import nbtscript.ast.Core.*
 
 typealias Environment = PersistentList<Lazy<Value>>
 
 fun normalize(
-    env: Environment,
     term: TermS,
-): TermS = reify(env, reflect(env, term))
+): TermS {
+    val env: Environment = persistentListOf()
+    return reify(env, reflect(env, term))
+}
 
 fun reflect(
     env: Environment,
