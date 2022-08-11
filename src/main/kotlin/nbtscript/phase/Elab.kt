@@ -10,7 +10,7 @@ class Elab private constructor() {
     private val messages: Messages = Messages()
 
     private fun elabRoot(
-        root: S.Root
+        root: S.Root,
     ): C.Root {
         val body = elabTermZ(persistentMapOf(), root.body)
         return C.Root(body)
@@ -455,10 +455,6 @@ class Elab private constructor() {
         is C.TermS.Var -> env[term.level].value
     }
 
-    private operator fun C.Clos.invoke(
-        argument: Lazy<C.Value>,
-    ): C.Value = reflect(env + argument, body.value)
-
     private fun reify(
         env: PersistentList<Lazy<C.Value>>,
         value: C.Value,
@@ -547,6 +543,10 @@ class Elab private constructor() {
         is C.Value.Var -> C.TermS.Var(value.name, value.level, value.type.value)
     }
 
+    private operator fun C.Clos.invoke(
+        argument: Lazy<C.Value>,
+    ): C.Value = reflect(env + argument, body.value)
+
     private class Context private constructor(
         val types: PersistentList<Pair<String?, TypeS>>,
         val values: PersistentList<Lazy<C.Value>>,
@@ -571,14 +571,14 @@ class Elab private constructor() {
         private val messages: MutableList<Message> = mutableListOf()
 
         fun errorZ(
-            message: Message.Error
+            message: Message.Error,
         ): C.TermZ {
             messages += message
             return C.TermZ.EndTag(C.TypeZ.EndZ)
         }
 
         fun errorS(
-            message: Message.Error
+            message: Message.Error,
         ): C.TermS {
             messages += message
             return C.TermS.EndTag(TypeS.EndS)
@@ -586,6 +586,8 @@ class Elab private constructor() {
     }
 
     companion object {
-        operator fun invoke(root: S.Root): C.Root = Elab().elabRoot(root)
+        operator fun invoke(
+            root: S.Root,
+        ): C.Root = Elab().elabRoot(root)
     }
 }
