@@ -42,6 +42,7 @@ sealed interface Surface {
 
     sealed interface TermS : Surface {
         data class TypeS(override val range: Range) : TermS
+        data class EndS(override val range: Range) : TermS
         data class ByteS(override val range: Range) : TermS
         data class ShortS(override val range: Range) : TermS
         data class IntS(override val range: Range) : TermS
@@ -54,7 +55,7 @@ sealed interface Surface {
         data class LongArrayS(override val range: Range) : TermS
         data class ListS(val element: TermS, override val range: Range) : TermS
         data class CompoundS(val elements: Map<String, TermS>, override val range: Range) : TermS
-        data class FunctionS(val name: String, val dom: TermS, val cod: TermS, override val range: Range) : TermS
+        data class ArrowS(val name: String?, val dom: TermS, val cod: TermS, override val range: Range) : TermS
         data class CodeS(val element: Surface.TypeZ, override val range: Range) : TermS
         data class TypeZ(override val range: Range) : TermS
         data class ByteTag(val data: Byte, override val range: Range) : TermS
@@ -69,8 +70,8 @@ sealed interface Surface {
         data class LongArrayTag(val elements: List<TermS>, override val range: Range) : TermS
         data class ListTag(val elements: List<TermS>, override val range: Range) : TermS
         data class CompoundTag(val elements: Map<String, TermS>, override val range: Range) : TermS
-        data class Function(val name: String, val body: TermS, override val range: Range) : TermS
-        data class Run(val function: TermS, val argument: TermS, override val range: Range) : TermS
+        data class Abs(val name: String, val anno: TermS, val body: TermS, override val range: Range) : TermS
+        data class Apply(val operator: TermS, val operand: TermS, override val range: Range) : TermS
         data class Quote(val element: TermZ, override val range: Range) : TermS
         data class Let(val name: String, val init: TermS, val next: TermS, override val range: Range) : TermS
         data class Var(val name: String, override val range: Range) : TermS

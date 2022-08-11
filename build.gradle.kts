@@ -11,6 +11,7 @@ repositories {
 }
 
 dependencies {
+    implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable-jvm:0.3.5")
     implementation("org.eclipse.lsp4j:org.eclipse.lsp4j:0.15.0")
     testImplementation(kotlin("test"))
 }
