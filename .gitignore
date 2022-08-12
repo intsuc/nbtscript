@@ -2,3 +2,5 @@
 .idea
 **/build/
 !src/**/build/
+/dist/
+/node_modules/
