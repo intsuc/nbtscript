@@ -1,9 +1,6 @@
 package nbtscript.lsp
 
-import org.eclipse.lsp4j.DidChangeTextDocumentParams
-import org.eclipse.lsp4j.DidCloseTextDocumentParams
-import org.eclipse.lsp4j.DidOpenTextDocumentParams
-import org.eclipse.lsp4j.DidSaveTextDocumentParams
+import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.services.LanguageClient
 import org.eclipse.lsp4j.services.LanguageClientAware
 import org.eclipse.lsp4j.services.TextDocumentService
@@ -20,6 +17,7 @@ class NbtScriptTextDocumentService : TextDocumentService, LanguageClientAware {
         val uri = Uri(params.textDocument.uri)
         val text = params.textDocument.text
         texts[uri] = text
+        client.showMessage(MessageParams(MessageType.Info, uri.uri))
     }
 
     override fun didChange(params: DidChangeTextDocumentParams) {

@@ -10,6 +10,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletableFuture.completedFuture
 
 class NbtScriptLanguageServer : LanguageServer, LanguageClientAware {
+    private val notebooks: NbtScriptNotebookDocumentService = NbtScriptNotebookDocumentService()
     private val documents: NbtScriptTextDocumentService = NbtScriptTextDocumentService()
     private val workspaces: NbtScriptWorkspaceService = NbtScriptWorkspaceService()
 
@@ -29,6 +30,8 @@ class NbtScriptLanguageServer : LanguageServer, LanguageClientAware {
     override fun shutdown(): CompletableFuture<Any> = completedFuture(null)
 
     override fun exit(): Unit = Unit
+
+    override fun getNotebookDocumentService(): NotebookDocumentService = notebooks
 
     override fun getTextDocumentService(): TextDocumentService = documents
 
