@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.7.10"
+    application
 }
 
 version = "0.1.0"
@@ -23,4 +24,8 @@ tasks.test {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "18"
+}
+
+application {
+    mainClass.set("nbtscript.cli.MainKt")
 }
