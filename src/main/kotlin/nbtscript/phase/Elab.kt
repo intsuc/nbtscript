@@ -6,9 +6,9 @@ import nbtscript.ast.Core as C
 import nbtscript.ast.Core.Value as TypeS
 import nbtscript.ast.Surface as S
 
-class Elab private constructor() {
-    private val messages: Messages = Messages()
-
+class Elab private constructor(
+    private val messages: Messages = Messages(),
+) {
     private fun elabRoot(
         root: S.Root,
     ): C.Root {
@@ -92,14 +92,14 @@ class Elab private constructor() {
 
         term is S.TermZ.Run -> {
             if (ctx.contains(term.name)) C.TermZ.Run(term.name, ctx[term.name]!!)
-            else messages.errorZ(NotFound(term.name, term.range))
+            else errorZ(NotFound(term.name, term.range))
         }
 
         term is S.TermZ.Splice -> {
             val element = elabTermS(Context(), term.element, type?.let { TypeS.CodeS(it) })
             when (val elementType = element.type) {
                 is TypeS.CodeS -> C.TermZ.Splice(element, elementType.element)
-                else -> messages.errorZ(CodeExpected(elementType, term.range))
+                else -> errorZ(CodeExpected(elementType, term.range))
             }
         }
 
@@ -108,7 +108,7 @@ class Elab private constructor() {
             else {
                 val inferred = elabTermZ(ctx, term)
                 if (convZ(inferred.type, type)) inferred
-                else messages.errorZ(TypeZMismatched(type, inferred.type, term.range))
+                else errorZ(TypeZMismatched(type, inferred.type, term.range))
             }
         }
     }
@@ -214,7 +214,7 @@ class Elab private constructor() {
                         C.TermS.Apply(operator, operand, cod)
                     }
 
-                    else -> messages.errorS(ArrowExpected(operatorType, term.operator.range))
+                    else -> errorS(ArrowExpected(operatorType, term.operator.range))
                 }
             } else {
                 val operand = elabTermS(ctx, term.operand)
@@ -242,7 +242,7 @@ class Elab private constructor() {
 
         term is S.TermS.Var && type == null -> {
             when (val level = ctx.levels[term.name]) {
-                null -> messages.errorS(NotFound(term.name, term.range))
+                null -> errorS(NotFound(term.name, term.range))
                 else -> C.TermS.Var(term.name, level, ctx.types[level])
             }
         }
@@ -252,7 +252,7 @@ class Elab private constructor() {
             else {
                 val inferred = elabTermS(ctx, term)
                 if (convS(ctx.size, inferred.type, type)) inferred
-                else messages.errorS(TypeSMismatched(type, inferred.type, term.range))
+                else errorS(TypeSMismatched(type, inferred.type, term.range))
             }
         }
     }
@@ -373,35 +373,36 @@ class Elab private constructor() {
         ): Context = Context(
             levels = name?.let { levels + (name to size) } ?: levels,
             types = types + type,
-            values = values + (value ?: lazyOf(C.Value.Var(name, size, lazyOf(type))))
+            values = values + (value ?: lazyOf(C.Value.Var(name, size, lazyOf(type)))),
         )
 
         companion object {
-            operator fun invoke(): Context = Context(persistentMapOf(), persistentListOf(), persistentListOf())
+            operator fun invoke(): Context = Context(
+                persistentMapOf(),
+                persistentListOf(),
+                persistentListOf(),
+            )
         }
     }
 
-    private inner class Messages {
-        private val messages: MutableList<Message> = mutableListOf()
-
-        fun errorZ(
-            message: Message.Error,
-        ): C.TermZ {
-            messages += message
-            return C.TermZ.EndTag(C.TypeZ.EndZ)
-        }
-
-        fun errorS(
-            message: Message.Error,
-        ): C.TermS {
-            messages += message
-            return C.TermS.EndTag(TypeS.EndS)
-        }
+    private fun errorZ(
+        message: Message.Error,
+    ): C.TermZ {
+        messages += message
+        return C.TermZ.EndTag(C.TypeZ.EndZ)
     }
 
-    companion object {
-        operator fun invoke(
-            root: S.Root,
-        ): C.Root = Elab().elabRoot(root)
+    private fun errorS(
+        message: Message.Error,
+    ): C.TermS {
+        messages += message
+        return C.TermS.EndTag(TypeS.EndS)
+    }
+
+    companion object : Phase<S.Root, C.Root> {
+        override operator fun invoke(
+            messages: Messages,
+            input: S.Root,
+        ): C.Root = Elab(messages).elabRoot(input)
     }
 }

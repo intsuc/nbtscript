@@ -4,12 +4,12 @@ import nbtscript.ast.Surface.*
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 
+// TODO: error reporting
 @Suppress("NOTHING_TO_INLINE")
 class Parse private constructor(
+    private val messages: Messages,
     private val text: String,
 ) {
-    // TODO: error reporting
-    private val messages: MutableList<Message> = mutableListOf()
     private var cursor: Int = 0
     private var line: Int = 0
     private var character: Int = 0
@@ -380,7 +380,10 @@ class Parse private constructor(
         inline fun range(): Range = Range(start, position())
     }
 
-    companion object {
-        operator fun invoke(text: String): Root = Parse(text).parseRoot()
+    companion object : Phase<String, Root> {
+        override operator fun invoke(
+            messages: Messages,
+            input: String,
+        ): Root = Parse(messages, input).parseRoot()
     }
 }
