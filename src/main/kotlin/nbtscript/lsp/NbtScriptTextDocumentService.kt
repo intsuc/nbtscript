@@ -10,24 +10,28 @@ import org.eclipse.lsp4j.services.TextDocumentService
 
 class NbtScriptTextDocumentService : TextDocumentService, LanguageClientAware {
     private lateinit var client: LanguageClient
+    private val texts: MutableMap<Uri, String> = mutableMapOf()
 
     override fun connect(client: LanguageClient) {
         this.client = client
     }
 
     override fun didOpen(params: DidOpenTextDocumentParams) {
-        TODO("Not yet implemented")
+        val uri = Uri(params.textDocument.uri)
+        val text = params.textDocument.text
+        texts[uri] = text
     }
 
     override fun didChange(params: DidChangeTextDocumentParams) {
-        TODO("Not yet implemented")
+        val uri = Uri(params.textDocument.uri)
+        val text = params.contentChanges.last().text
+        texts[uri] = text
     }
 
     override fun didClose(params: DidCloseTextDocumentParams) {
-        TODO("Not yet implemented")
+        val uri = Uri(params.textDocument.uri)
+        texts -= uri
     }
 
-    override fun didSave(params: DidSaveTextDocumentParams) {
-        TODO("Not yet implemented")
-    }
+    override fun didSave(params: DidSaveTextDocumentParams): Unit = Unit
 }
