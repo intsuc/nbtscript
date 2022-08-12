@@ -41,7 +41,7 @@ sealed interface Surface {
     }
 
     sealed interface TermS : Surface {
-        data class TypeS(override val range: Range) : TermS
+        data class UniverseS(override val range: Range) : TermS
         data class EndS(override val range: Range) : TermS
         data class ByteS(override val range: Range) : TermS
         data class ShortS(override val range: Range) : TermS

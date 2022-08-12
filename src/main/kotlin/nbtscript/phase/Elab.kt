@@ -118,7 +118,7 @@ class Elab private constructor() {
         term: S.TermS,
         type: TypeS? = null,
     ): C.TermS = when {
-        term is S.TermS.TypeS && type is TypeS.TypeS? -> C.TermS.TypeS(TypeS.TypeS)
+        term is S.TermS.UniverseS && type is TypeS.TypeS? -> C.TermS.TypeS(TypeS.TypeS)
         term is S.TermS.EndS && type is TypeS.TypeS? -> C.TermS.EndS(TypeS.TypeS)
         term is S.TermS.ByteS && type is TypeS.TypeS? -> C.TermS.ByteS(TypeS.TypeS)
         term is S.TermS.ShortS && type is TypeS.TypeS? -> C.TermS.ShortS(TypeS.TypeS)
