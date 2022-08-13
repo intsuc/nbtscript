@@ -26,6 +26,11 @@ tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "18"
 }
 
+kotlin {
+    sourceSets["main"].kotlin.srcDir("server/main/kotlin")
+    sourceSets["test"].kotlin.srcDir("server/test/kotlin")
+}
+
 application {
     mainClass.set("nbtscript.cli.MainKt")
 }

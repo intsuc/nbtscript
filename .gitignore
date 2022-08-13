@@ -1,6 +1,6 @@
 .gradle
 .idea
 **/build/
-!src/**/build/
+!server/**/build/
 /dist/
 /node_modules/
