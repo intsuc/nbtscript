@@ -3,26 +3,34 @@
   "name": "nbtscript",
   "patterns": [
     {
-      "include": "#keywords"
+      "name": "keyword.operator.nbtscript",
+      "match": "[$\\\\@`]"
     },
     {
-      "include": "#strings"
-    }
-  ],
-  "repository": {
-    "keywords": {
-      "patterns": [
-        {
-          "name": "keyword.operator.nbtscript",
-          "match": "[$\\\\@`]"
-        },
-        {
-          "name": "keyword.nbtscript",
-          "match": "\\b(byte|short|int|long|float|double|string|byte_array|int_array|long_array|list|compound|universe|end|arrow|code)\\b"
-        }
-      ]
+      "name": "keyword.control.nbtscript",
+      "match": "\\b(function|let)\\b"
     },
-    "strings": {
+    {
+      "name": "keyword.nbtscript",
+      "match": "\\b(byte|short|int|long|float|double|string|byte_array|int_array|long_array|list|compound|universe|end|arrow|code)\\b"
+    },
+    {
+      "match": "\\b(?<=function)\\s+([^\\s]+)",
+      "captures": {
+        "1": {
+          "name": "entity.name.function.nbtscript"
+        }
+      }
+    },
+    {
+      "match": "\\b(?<=let)\\s+([^\\s]+)",
+      "captures": {
+        "1": {
+          "name": "variable.nbtscript"
+        }
+      }
+    },
+    {
       "name": "string.quoted.double.nbtscript",
       "begin": "\"",
       "end": "\"",
@@ -33,6 +41,6 @@
         }
       ]
     }
-  },
+  ],
   "scopeName": "source.nbtscript"
 }
