@@ -51,7 +51,7 @@ sealed class Report(
     }
 
     data class TypeZMismatched(val expected: C.TypeZ, val actual: C.TypeZ, override val range: Range) : Report(Error) {
-        override val message: String get() = "expected: '$expected'\nactual: '$actual'"
+        override val message: String get() = "expected: '${stringifyTypeZ(expected)}'\nactual: '${stringifyTypeZ(actual)}'"
     }
 
     data class TypeSMismatched(val expected: TypeS, val actual: TypeS, override val range: Range) : Report(Error) {

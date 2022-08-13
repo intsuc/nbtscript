@@ -3,7 +3,9 @@ package nbtscript.phase
 import kotlinx.collections.immutable.*
 import nbtscript.phase.Report.*
 import org.eclipse.lsp4j.InlayHint
+import org.eclipse.lsp4j.InlayHintLabelPart
 import org.eclipse.lsp4j.jsonrpc.messages.Either.forLeft
+import org.eclipse.lsp4j.jsonrpc.messages.Either.forRight
 import nbtscript.ast.Core as C
 import nbtscript.ast.Core.Value as TypeS
 import nbtscript.ast.Surface as S
@@ -109,7 +111,12 @@ class Elab private constructor(
         }
 
         term is S.TermZ.Hole -> {
-            context.addInlayHint(InlayHint(term.range.start, forLeft(type.toString())))
+            type?.let {
+                val part = InlayHintLabelPart(" ").apply {
+                    tooltip = forRight(markup(stringifyTypeZ(it)))
+                }
+                context.addInlayHint(InlayHint(term.range.start, forRight(listOf(part))))
+            }
             C.TermZ.Hole(C.TypeZ.EndZ)
         }
 
