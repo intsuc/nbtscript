@@ -242,6 +242,7 @@ class Parse private constructor(
             }
 
             '`' -> {
+                skip()
                 val element = parseTermZ()
                 TermS.Quote(element, range())
             }
