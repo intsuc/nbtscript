@@ -1,7 +1,7 @@
 package nbtscript.phase
 
 fun interface Phase<A, B> {
-    operator fun invoke(messages: Messages, input: A): B
+    operator fun invoke(reports: Reports, input: A): B
 }
 
 @Suppress("NOTHING_TO_INLINE")

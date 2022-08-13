@@ -1,13 +1,13 @@
 package nbtscript.phase
 
 import kotlinx.collections.immutable.*
-import nbtscript.phase.Message.Error.*
+import nbtscript.phase.Report.*
 import nbtscript.ast.Core as C
 import nbtscript.ast.Core.Value as TypeS
 import nbtscript.ast.Surface as S
 
 class Elab private constructor(
-    private val messages: Messages = Messages(),
+    private val reports: Reports = Reports(),
 ) {
     private fun elabRoot(
         root: S.Root,
@@ -386,23 +386,23 @@ class Elab private constructor(
     }
 
     private fun errorZ(
-        message: Message.Error,
+        report: Report,
     ): C.TermZ {
-        messages += message
+        reports += report
         return C.TermZ.EndTag(C.TypeZ.EndZ)
     }
 
     private fun errorS(
-        message: Message.Error,
+        report: Report,
     ): C.TermS {
-        messages += message
+        reports += report
         return C.TermS.EndTag(TypeS.EndS)
     }
 
     companion object : Phase<S.Root, C.Root> {
         override operator fun invoke(
-            messages: Messages,
+            reports: Reports,
             input: S.Root,
-        ): C.Root = Elab(messages).elabRoot(input)
+        ): C.Root = Elab(reports).elabRoot(input)
     }
 }

@@ -1,4 +1,4 @@
 package nbtscript.lsp
 
 @JvmInline
-value class Uri(val uri: String)
+value class Uri(val value: String)

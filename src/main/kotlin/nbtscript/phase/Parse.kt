@@ -7,7 +7,7 @@ import org.eclipse.lsp4j.Range
 // TODO: error reporting
 @Suppress("NOTHING_TO_INLINE")
 class Parse private constructor(
-    private val messages: Messages,
+    private val reports: Reports,
     private val text: String,
 ) {
     private var cursor: Int = 0
@@ -17,7 +17,9 @@ class Parse private constructor(
     private fun parseRoot(): Root = ranged {
         try {
             val body = parseTermZ()
-            Root(body, range())
+            val root = Root(body, range())
+            skipWhitespace()
+            root
         } catch (e: StringIndexOutOfBoundsException) {
             TODO()
         }
@@ -328,7 +330,10 @@ class Parse private constructor(
         else -> !isWhitespace()
     }
 
-    private inline fun <A> ranged(block: RangeContext.() -> A): A = RangeContext().block()
+    private inline fun <A> ranged(block: RangeContext.() -> A): A {
+        skipWhitespace()
+        return RangeContext().block()
+    }
 
     private tailrec fun skipWhitespace() {
         when (val char = text[cursor]) {
@@ -382,8 +387,8 @@ class Parse private constructor(
 
     companion object : Phase<String, Root> {
         override operator fun invoke(
-            messages: Messages,
+            reports: Reports,
             input: String,
-        ): Root = Parse(messages, input).parseRoot()
+        ): Root = Parse(reports, input).parseRoot()
     }
 }

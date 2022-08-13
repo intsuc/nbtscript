@@ -1,9 +1,10 @@
 package nbtscript.lsp
 
-import org.eclipse.lsp4j.DidChangeTextDocumentParams
-import org.eclipse.lsp4j.DidCloseTextDocumentParams
-import org.eclipse.lsp4j.DidOpenTextDocumentParams
-import org.eclipse.lsp4j.DidSaveTextDocumentParams
+import nbtscript.phase.Elab
+import nbtscript.phase.Parse
+import nbtscript.phase.Reports
+import nbtscript.phase.rangeTo
+import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.services.LanguageClient
 import org.eclipse.lsp4j.services.LanguageClientAware
 import org.eclipse.lsp4j.services.TextDocumentService
@@ -20,12 +21,14 @@ class NbtScriptTextDocumentService : TextDocumentService, LanguageClientAware {
         val uri = Uri(params.textDocument.uri)
         val text = params.textDocument.text
         texts[uri] = text
+        diagnose(uri, text)
     }
 
     override fun didChange(params: DidChangeTextDocumentParams) {
         val uri = Uri(params.textDocument.uri)
         val text = params.contentChanges.last().text
         texts[uri] = text
+        diagnose(uri, text)
     }
 
     override fun didClose(params: DidCloseTextDocumentParams) {
@@ -34,4 +37,10 @@ class NbtScriptTextDocumentService : TextDocumentService, LanguageClientAware {
     }
 
     override fun didSave(params: DidSaveTextDocumentParams): Unit = Unit
+
+    private fun diagnose(uri: Uri, text: String) {
+        val reports = Reports()
+        (Parse..Elab)(reports, text) // TODO: cache
+        client.publishDiagnostics(PublishDiagnosticsParams(uri.value, reports.diagnostics))
+    }
 }
