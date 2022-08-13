@@ -13,7 +13,6 @@ class Stage private constructor() {
     private fun stageTermZ(
         term: TermZ,
     ): TermZ = when (term) {
-        is TermZ.EndTag -> term
         is TermZ.ByteTag -> term
         is TermZ.ShortTag -> term
         is TermZ.IntTag -> term
@@ -56,9 +55,11 @@ class Stage private constructor() {
         is TermZ.Splice -> {
             when (val element = normalize(term.element)) {
                 is TermS.Quote -> element.element
-                else -> error("quote expected")
+                else -> error("expected: quote")
             }
         }
+
+        is TermZ.Hole -> error("unexpected: hole")
     }
 
     companion object {

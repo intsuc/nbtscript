@@ -19,12 +19,12 @@ sealed interface Core {
         object LongArrayZ : TypeZ
         data class ListZ(val element: TypeZ) : TypeZ
         data class CompoundZ(val elements: Map<String, TypeZ>) : TypeZ
+        object Hole : TypeZ
     }
 
     sealed interface TermZ : Core {
         val type: TypeZ
 
-        data class EndTag(override val type: TypeZ) : TermZ
         data class ByteTag(val data: Byte, override val type: TypeZ) : TermZ
         data class ShortTag(val data: Short, override val type: TypeZ) : TermZ
         data class IntTag(val data: Int, override val type: TypeZ) : TermZ
@@ -40,6 +40,7 @@ sealed interface Core {
         data class Function(val name: String, val body: TermZ, val next: TermZ, override val type: TypeZ) : TermZ
         data class Run(val name: String, override val type: TypeZ) : TermZ
         data class Splice(val element: TermS, override val type: TypeZ) : TermZ
+        data class Hole(override val type: TypeZ) : TermZ
     }
 
     sealed interface TermS : Core {
@@ -80,6 +81,7 @@ sealed interface Core {
         data class Quote(val element: TermZ, override val type: Value) : TermS
         data class Let(val name: String, val init: TermS, val next: TermS, override val type: Value) : TermS
         data class Var(val name: String?, val level: Int, override val type: Value) : TermS
+        data class Hole(override val type: Value) : TermS
     }
 
     sealed interface Value : Core {
@@ -117,7 +119,8 @@ sealed interface Core {
         data class Apply(val operator: Value, val operand: Lazy<Value>) : Value
         data class Quote(val element: TermZ) : Value
         data class Var(val name: String?, val level: Int, val type: Lazy<Value>) : Value
+        object Hole : Value
     }
 
-    data class Clos(val env: PersistentList<Lazy<Value>>, val body: Lazy<TermS>)
+    data class Clos(val env: PersistentList<Lazy<Value>>, val body: Lazy<TermS>) : Core
 }

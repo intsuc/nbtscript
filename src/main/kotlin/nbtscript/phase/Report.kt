@@ -14,6 +14,30 @@ sealed class Report(
     abstract val message: String
     fun toDiagnostic(): Diagnostic = Diagnostic(range, message, severity, "nbtscript")
 
+    data class CharExpected(val expected: Char, override val range: Range) : Report(Error) {
+        override val message: String get() = "expected: '$expected'"
+    }
+
+    data class WordExpected(override val range: Range) : Report(Error) {
+        override val message: String get() = "expected: word"
+    }
+
+    data class EndOfFileExpected(override val range: Range) : Report(Error) {
+        override val message: String get() = "expected: end of file"
+    }
+
+    data class TypeZExpected(override val range: Range) : Report(Error) {
+        override val message: String get() = "expected: type₀"
+    }
+
+    data class TermZExpected(override val range: Range) : Report(Error) {
+        override val message: String get() = "expected: term₀"
+    }
+
+    data class TermSExpected(override val range: Range) : Report(Error) {
+        override val message: String get() = "expected: term₁"
+    }
+
     data class NotFound(val name: String, override val range: Range) : Report(Error) {
         override val message: String get() = "not found: '$name'"
     }

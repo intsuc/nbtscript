@@ -1,10 +1,10 @@
 package nbtscript.phase
 
 import nbtscript.ast.Surface.*
+import nbtscript.phase.Report.*
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 
-// TODO: error reporting
 @Suppress("NOTHING_TO_INLINE")
 class Parse private constructor(
     private val reports: Reports,
@@ -15,18 +15,18 @@ class Parse private constructor(
     private var character: Int = 0
 
     private fun parseRoot(): Root = ranged {
-        try {
-            val body = parseTermZ()
-            val root = Root(body, range())
-            skipWhitespace()
-            root
-        } catch (e: StringIndexOutOfBoundsException) {
-            TODO()
+        val body = parseTermZ()
+        val root = Root(body, range())
+        skipWhitespace()
+        if (cursor != text.length) {
+            val end = position()
+            reports += EndOfFileExpected(Range(end, end))
         }
+        root
     }
 
     private fun parseTypeZ(): TypeZ = ranged {
-        when (parseWord()) {
+        when (readString()) {
             "byte" -> TypeZ.ByteZ(range())
             "short" -> TypeZ.ShortZ(range())
             "int" -> TypeZ.IntZ(range())
@@ -53,7 +53,11 @@ class Parse private constructor(
                 TypeZ.CompoundZ(elements, range())
             }
 
-            else -> TODO()
+            else -> {
+                val range = range()
+                reports += TypeZExpected(range)
+                TypeZ.Hole(range)
+            }
         }
     }
 
@@ -68,14 +72,14 @@ class Parse private constructor(
 
             '"' -> {
                 skip()
-                val data = parseWord() // TODO: escape
+                val data = readString() // TODO: escape
                 expect('"')
                 TermZ.StringTag(data, range())
             }
 
             '[' -> {
                 skip()
-                when (text[cursor + 1]) {
+                when (text.getOrNull(cursor)) {
                     'B' -> {
                         skip()
                         expect(';')
@@ -121,8 +125,14 @@ class Parse private constructor(
                 TermZ.Splice(element, range())
             }
 
+            null -> {
+                val range = range()
+                reports += TermZExpected(range)
+                TermZ.Hole(range)
+            }
+
             else -> {
-                val word = parseWord()
+                val word = readString()
                 if (start.isNumericStart()) {
                     when {
                         word.endsWith('b') -> TermZ.ByteTag(word.dropLast(1).toByte(), range())
@@ -143,6 +153,12 @@ class Parse private constructor(
                             TermZ.Function(name, body, next, range())
                         }
 
+                        "" -> {
+                            val range = range()
+                            reports += TermZExpected(range)
+                            TermZ.Hole(range)
+                        }
+
                         else -> TermZ.Run(word, range())
                     }
                 }
@@ -161,14 +177,14 @@ class Parse private constructor(
 
             '"' -> {
                 skip()
-                val data = parseWord() // TODO: escape
+                val data = readString() // TODO: escape
                 expect('"')
                 TermS.StringTag(data, range())
             }
 
             '[' -> {
                 skip()
-                when (text[cursor + 1]) {
+                when (text.getOrNull(cursor)) {
                     'B' -> {
                         skip()
                         expect(';')
@@ -230,8 +246,14 @@ class Parse private constructor(
                 TermS.Quote(element, range())
             }
 
+            null -> {
+                val range = range()
+                reports += TermSExpected(range)
+                TermS.Hole(range)
+            }
+
             else -> {
-                val word = parseWord()
+                val word = readString()
                 if (start.isNumericStart()) {
                     when {
                         word.endsWith('b') -> TermS.ByteTag(word.dropLast(1).toByte(), range())
@@ -295,6 +317,12 @@ class Parse private constructor(
                             TermS.Let(name, init, next, range())
                         }
 
+                        "" -> {
+                            val range = range()
+                            reports += TermSExpected(range)
+                            TermS.Hole(range)
+                        }
+
                         else -> TermS.Var(word, range())
                     }
                 }
@@ -304,19 +332,30 @@ class Parse private constructor(
 
     private inline fun <A> parseList(close: Char, element: () -> A): List<A> {
         val elements = mutableListOf<A>()
-        while (peek() != close) {
+        while (true) {
+            when (peek()) {
+                null, close -> break
+            }
             elements += element()
-            if (peek() == close) break
-            else expect(',')
+            when (peek()) {
+                null, close -> {}
+                else -> expect(',')
+            }
         }
-        skip()
+        expect(close)
         return elements
     }
 
-    private fun parseWord(): String {
+    private fun parseWord(): String = ranged {
+        val word = readString()
+        if (word.isEmpty()) reports += WordExpected(range())
+        word
+    }
+
+    private fun readString(): String {
         skipWhitespace()
         val start = cursor
-        while (text[cursor].isWordPart()) skip()
+        while (text.getOrNull(cursor)?.isWordPart() == true) skip()
         return text.substring(start, cursor)
     }
 
@@ -335,17 +374,32 @@ class Parse private constructor(
         return RangeContext().block()
     }
 
+    private inline fun expect(expected: Char) {
+        if (peek() == expected) skip()
+        else {
+            val position = position()
+            reports += CharExpected(expected, Range(position, position))
+        }
+    }
+
+    private inline fun peek(): Char? {
+        skipWhitespace()
+        return text.getOrNull(cursor)
+    }
+
     private tailrec fun skipWhitespace() {
+        if (!canRead()) return
         when (val char = text[cursor]) {
-            '\n' -> linebreak()
+            '\n' -> breakLine()
             '\r' -> {
+                if (!canRead(1)) return
                 when (text[cursor + 1]) {
                     '\n' -> {
                         cursor += 1
-                        linebreak()
+                        breakLine()
                     }
 
-                    else -> linebreak()
+                    else -> breakLine()
                 }
             }
 
@@ -357,17 +411,7 @@ class Parse private constructor(
         skipWhitespace()
     }
 
-    private inline fun peek(): Char {
-        skipWhitespace()
-        return text[cursor]
-    }
-
-    private inline fun expect(expected: Char) {
-        if (peek() == expected) skip()
-        else TODO()
-    }
-
-    private inline fun linebreak() {
+    private inline fun breakLine() {
         cursor += 1
         line += 1
         character = 0
@@ -377,6 +421,8 @@ class Parse private constructor(
         cursor += size
         character += size
     }
+
+    private inline fun canRead(offset: Int = 0): Boolean = cursor + offset <= text.lastIndex
 
     private inline fun position(): Position = Position(line, character)
 

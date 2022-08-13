@@ -38,6 +38,8 @@ class Elab private constructor(
             val elements = type.elements.map { it.key to elabTypeZ(it.value) }.toMap()
             C.TypeZ.CompoundZ(elements)
         }
+
+        is S.TypeZ.Hole -> C.TypeZ.Hole
     }
 
     private fun elabTermZ(
@@ -103,8 +105,9 @@ class Elab private constructor(
             }
         }
 
+        term is S.TermZ.Hole -> C.TermZ.Hole(C.TypeZ.EndZ)
         else -> {
-            if (type == null) error("inference failed unexpectedly")
+            if (type == null) error("failed: inference")
             else {
                 val inferred = elabTermZ(ctx, term)
                 if (convZ(inferred.type, type)) inferred
@@ -247,8 +250,9 @@ class Elab private constructor(
             }
         }
 
+        term is S.TermS.Hole -> C.TermS.Hole(TypeS.EndS)
         else -> {
-            if (type == null) error("inference failed unexpectedly")
+            if (type == null) error("failed: inference")
             else {
                 val inferred = elabTermS(ctx, term)
                 if (convS(ctx.size, inferred.type, type)) inferred
@@ -290,7 +294,7 @@ class Elab private constructor(
     ): Boolean = when {
         value1 == value2 -> true
         value1 is C.Value.TypeS && value2 is C.Value.TypeS -> true
-        value1 is C.Value.EndS && value2 is C.Value.EndS -> true // ?
+        value1 is C.Value.EndS && value2 is C.Value.EndS -> true
         value1 is C.Value.ByteS && value2 is C.Value.ByteS -> true
         value1 is C.Value.ShortS && value2 is C.Value.ShortS -> true
         value1 is C.Value.IntS && value2 is C.Value.IntS -> true
@@ -315,7 +319,7 @@ class Elab private constructor(
         }
 
         value1 is C.Value.TypeZ && value2 is C.Value.TypeZ -> true
-        value1 is C.Value.EndTag && value2 is C.Value.EndTag -> true // ?
+        value1 is C.Value.EndTag && value2 is C.Value.EndTag -> true
         value1 is C.Value.ByteTag && value2 is C.Value.ByteTag -> value1.data == value2.data
         value1 is C.Value.ShortTag && value2 is C.Value.ShortTag -> value1.data == value2.data
         value1 is C.Value.IntTag && value2 is C.Value.IntTag -> value1.data == value2.data
@@ -356,6 +360,7 @@ class Elab private constructor(
 
         value1 is C.Value.Quote && value2 is C.Value.Quote -> false // ?
         value1 is C.Value.Var && value2 is C.Value.Var -> value1.level == value2.level
+        value1 is C.Value.Hole && value2 is C.Value.Hole -> false // ?
         else -> false
     }
 
@@ -389,14 +394,14 @@ class Elab private constructor(
         report: Report,
     ): C.TermZ {
         reports += report
-        return C.TermZ.EndTag(C.TypeZ.EndZ)
+        return C.TermZ.Hole(C.TypeZ.EndZ)
     }
 
     private fun errorS(
         report: Report,
     ): C.TermS {
         reports += report
-        return C.TermS.EndTag(TypeS.EndS)
+        return C.TermS.Hole(TypeS.EndS)
     }
 
     companion object : Phase<S.Root, C.Root> {

@@ -108,6 +108,7 @@ fun reflect(
     }
 
     is TermS.Var -> env[term.level].value
+    is TermS.Hole -> Value.Hole
 }
 
 fun reify(
@@ -196,6 +197,7 @@ fun reify(
 
     is Value.Quote -> TermS.Quote(value.element, Value.CodeS(value.element.type))
     is Value.Var -> TermS.Var(value.name, value.level, value.type.value)
+    is Value.Hole -> TermS.Hole(Value.EndS)
 }
 
 operator fun Clos.invoke(

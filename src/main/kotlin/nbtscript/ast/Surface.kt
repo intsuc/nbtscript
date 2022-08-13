@@ -20,6 +20,7 @@ sealed interface Surface {
         data class LongArrayZ(override val range: Range) : TypeZ
         data class ListZ(val element: TypeZ, override val range: Range) : TypeZ
         data class CompoundZ(val elements: Map<String, TypeZ>, override val range: Range) : TypeZ
+        data class Hole(override val range: Range) : TypeZ
     }
 
     sealed interface TermZ : Surface {
@@ -38,6 +39,7 @@ sealed interface Surface {
         data class Function(val name: String, val body: TermZ, val next: TermZ, override val range: Range) : TermZ
         data class Run(val name: String, override val range: Range) : TermZ
         data class Splice(val element: TermS, override val range: Range) : TermZ
+        data class Hole(override val range: Range) : TermZ
     }
 
     sealed interface TermS : Surface {
@@ -75,5 +77,6 @@ sealed interface Surface {
         data class Quote(val element: TermZ, override val range: Range) : TermS
         data class Let(val name: String, val init: TermS, val next: TermS, override val range: Range) : TermS
         data class Var(val name: String, override val range: Range) : TermS
+        data class Hole(override val range: Range) : TermS
     }
 }
