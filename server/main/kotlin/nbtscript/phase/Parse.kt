@@ -146,11 +146,13 @@ class Parse private constructor(
                     when (word) {
                         "function" -> {
                             val name = parseWord()
+                            expect(':')
+                            val anno = parseTypeZ()
                             expect('=')
                             val body = parseTermZ()
                             expect(';')
                             val next = parseTermZ()
-                            TermZ.Function(name, body, next, range())
+                            TermZ.Function(name, anno, body, next, range())
                         }
 
                         "" -> {
@@ -311,11 +313,13 @@ class Parse private constructor(
                         "type" -> TermS.TypeZ(range())
                         "let" -> {
                             val name = parseWord()
+                            expect(':')
+                            val anno = parseTermS()
                             expect('=')
                             val init = parseTermS()
                             expect(';')
                             val next = parseTermS()
-                            TermS.Let(name, init, next, range())
+                            TermS.Let(name, anno, init, next, range())
                         }
 
                         "" -> {

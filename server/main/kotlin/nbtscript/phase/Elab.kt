@@ -89,7 +89,8 @@ class Elab private constructor(
         }
 
         term is S.TermZ.Function -> {
-            val body = elabTermZ(ctx, term.body)
+            val anno = elabTypeZ(term.anno)
+            val body = elabTermZ(ctx, term.body, anno)
             val next = elabTermZ(ctx + (term.name to body.type), term.next, type)
             C.TermZ.Function(term.name, body, next, next.type)
         }
@@ -244,7 +245,8 @@ class Elab private constructor(
         }
 
         term is S.TermS.Let -> {
-            val init = elabTermS(ctx, term.init)
+            val anno = elabTermS(ctx, term.anno, TypeS.TypeS)
+            val init = elabTermS(ctx, term.init, reflect(ctx.values, anno))
             val next = elabTermS(ctx.bind(term.name, init.type, lazy { reflect(ctx.values, init) }), term.next, type)
             C.TermS.Let(term.name, init, next, type ?: next.type)
         }
@@ -257,7 +259,7 @@ class Elab private constructor(
         }
 
         term is S.TermS.Hole -> {
-
+            context.addInlayHint(InlayHint(term.range.start, forLeft(type.toString())))
             C.TermS.Hole(TypeS.EndS)
         }
 
