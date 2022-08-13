@@ -2,12 +2,14 @@ package nbtscript.lsp
 
 import nbtscript.phase.Elab
 import nbtscript.phase.Parse
-import nbtscript.phase.Reports
+import nbtscript.phase.PhaseContext
 import nbtscript.phase.rangeTo
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.services.LanguageClient
 import org.eclipse.lsp4j.services.LanguageClientAware
 import org.eclipse.lsp4j.services.TextDocumentService
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletableFuture.supplyAsync
 
 class NbtScriptTextDocumentService : TextDocumentService, LanguageClientAware {
     private lateinit var client: LanguageClient
@@ -38,9 +40,17 @@ class NbtScriptTextDocumentService : TextDocumentService, LanguageClientAware {
 
     override fun didSave(params: DidSaveTextDocumentParams): Unit = Unit
 
+    override fun inlayHint(params: InlayHintParams): CompletableFuture<List<InlayHint>> = supplyAsync {
+        val uri = Uri(params.textDocument.uri)
+        val text = texts[uri]!!
+        val ctx = PhaseContext()
+        (Parse..Elab)(ctx, text)
+        ctx.inlayHints
+    }
+
     private fun diagnose(uri: Uri, text: String) {
-        val reports = Reports()
-        (Parse..Elab)(reports, text) // TODO: cache
-        client.publishDiagnostics(PublishDiagnosticsParams(uri.value, reports.diagnostics))
+        val ctx = PhaseContext()
+        (Parse..Elab)(ctx, text) // TODO: cache
+        client.publishDiagnostics(PublishDiagnosticsParams(uri.value, ctx.diagnostics))
     }
 }

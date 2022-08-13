@@ -2,12 +2,14 @@ package nbtscript.phase
 
 import kotlinx.collections.immutable.*
 import nbtscript.phase.Report.*
+import org.eclipse.lsp4j.InlayHint
+import org.eclipse.lsp4j.jsonrpc.messages.Either.forLeft
 import nbtscript.ast.Core as C
 import nbtscript.ast.Core.Value as TypeS
 import nbtscript.ast.Surface as S
 
 class Elab private constructor(
-    private val reports: Reports = Reports(),
+    private val context: PhaseContext = PhaseContext(),
 ) {
     private fun elabRoot(
         root: S.Root,
@@ -105,7 +107,11 @@ class Elab private constructor(
             }
         }
 
-        term is S.TermZ.Hole -> C.TermZ.Hole(C.TypeZ.EndZ)
+        term is S.TermZ.Hole -> {
+            context.addInlayHint(InlayHint(term.range.start, forLeft(type.toString())))
+            C.TermZ.Hole(C.TypeZ.EndZ)
+        }
+
         else -> {
             if (type == null) error("failed: inference")
             else {
@@ -250,7 +256,11 @@ class Elab private constructor(
             }
         }
 
-        term is S.TermS.Hole -> C.TermS.Hole(TypeS.EndS)
+        term is S.TermS.Hole -> {
+
+            C.TermS.Hole(TypeS.EndS)
+        }
+
         else -> {
             if (type == null) error("failed: inference")
             else {
@@ -393,21 +403,21 @@ class Elab private constructor(
     private fun errorZ(
         report: Report,
     ): C.TermZ {
-        reports += report
+        context.addReport(report)
         return C.TermZ.Hole(C.TypeZ.EndZ)
     }
 
     private fun errorS(
         report: Report,
     ): C.TermS {
-        reports += report
+        context.addReport(report)
         return C.TermS.Hole(TypeS.EndS)
     }
 
     companion object : Phase<S.Root, C.Root> {
         override operator fun invoke(
-            reports: Reports,
+            context: PhaseContext,
             input: S.Root,
-        ): C.Root = Elab(reports).elabRoot(input)
+        ): C.Root = Elab(context).elabRoot(input)
     }
 }

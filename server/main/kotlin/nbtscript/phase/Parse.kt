@@ -7,7 +7,7 @@ import org.eclipse.lsp4j.Range
 
 @Suppress("NOTHING_TO_INLINE")
 class Parse private constructor(
-    private val reports: Reports,
+    private val context: PhaseContext,
     private val text: String,
 ) {
     private var cursor: Int = 0
@@ -20,7 +20,7 @@ class Parse private constructor(
         skipWhitespace()
         if (cursor != text.length) {
             val end = position()
-            reports += EndOfFileExpected(Range(end, end))
+            context.addReport(EndOfFileExpected(Range(end, end)))
         }
         root
     }
@@ -55,7 +55,7 @@ class Parse private constructor(
 
             else -> {
                 val range = range()
-                reports += TypeZExpected(range)
+                context.addReport(TypeZExpected(range))
                 TypeZ.Hole(range)
             }
         }
@@ -127,7 +127,7 @@ class Parse private constructor(
 
             null -> {
                 val range = range()
-                reports += TermZExpected(range)
+                context.addReport(TermZExpected(range))
                 TermZ.Hole(range)
             }
 
@@ -155,7 +155,7 @@ class Parse private constructor(
 
                         "" -> {
                             val range = range()
-                            reports += TermZExpected(range)
+                            context.addReport(TermZExpected(range))
                             TermZ.Hole(range)
                         }
 
@@ -249,7 +249,7 @@ class Parse private constructor(
 
             null -> {
                 val range = range()
-                reports += TermSExpected(range)
+                context.addReport(TermSExpected(range))
                 TermS.Hole(range)
             }
 
@@ -320,7 +320,7 @@ class Parse private constructor(
 
                         "" -> {
                             val range = range()
-                            reports += TermSExpected(range)
+                            context.addReport(TermSExpected(range))
                             TermS.Hole(range)
                         }
 
@@ -349,7 +349,7 @@ class Parse private constructor(
 
     private fun parseWord(): String = ranged {
         val word = readString()
-        if (word.isEmpty()) reports += WordExpected(range())
+        if (word.isEmpty()) context.addReport(WordExpected(range()))
         word
     }
 
@@ -379,7 +379,7 @@ class Parse private constructor(
         if (peek() == expected) skip()
         else {
             val position = position()
-            reports += CharExpected(expected, Range(position, position))
+            context.addReport(CharExpected(expected, Range(position, position)))
         }
     }
 
@@ -434,8 +434,8 @@ class Parse private constructor(
 
     companion object : Phase<String, Root> {
         override operator fun invoke(
-            reports: Reports,
+            context: PhaseContext,
             input: String,
-        ): Root = Parse(reports, input).parseRoot()
+        ): Root = Parse(context, input).parseRoot()
     }
 }
