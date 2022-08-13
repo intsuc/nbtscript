@@ -7,7 +7,7 @@ import org.eclipse.lsp4j.Range
 
 @Suppress("NOTHING_TO_INLINE")
 class Parse private constructor(
-    private val context: PhaseContext,
+    private val context: Phase.Context,
     private val text: String,
 ) {
     private var cursor: Int = 0
@@ -438,7 +438,7 @@ class Parse private constructor(
 
     companion object : Phase<String, Root> {
         override operator fun invoke(
-            context: PhaseContext,
+            context: Phase.Context,
             input: String,
         ): Root = Parse(context, input).parseRoot()
     }

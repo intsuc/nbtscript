@@ -11,7 +11,7 @@ import nbtscript.ast.Surface as S
 
 // TODO: create report messages lazily
 class Elab private constructor(
-    private val context: PhaseContext = PhaseContext(),
+    private val context: Phase.Context = Phase.Context(),
 ) {
     private fun elabRoot(
         root: S.Root,
@@ -430,7 +430,7 @@ class Elab private constructor(
 
     companion object : Phase<S.Root, C.Root> {
         override operator fun invoke(
-            context: PhaseContext,
+            context: Phase.Context,
             input: S.Root,
         ): C.Root = Elab(context).elabRoot(input)
     }
