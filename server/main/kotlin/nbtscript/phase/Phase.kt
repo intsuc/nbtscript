@@ -7,14 +7,14 @@ fun interface Phase<A, B> {
     operator fun invoke(context: Context, input: A): B
 
     class Context {
-        private val reports: MutableList<Report> = mutableListOf()
+        private val _diagnostics: MutableList<Diagnostic> = mutableListOf()
         private val _inlayHints: MutableList<InlayHint> = mutableListOf()
 
-        val diagnostics: List<Diagnostic> get() = reports.map { it.toDiagnostic() }
+        val diagnostics: List<Diagnostic> = _diagnostics
         val inlayHints: List<InlayHint> = _inlayHints
 
-        fun addReport(report: Report) {
-            reports += report
+        fun addDiagnostic(diagnostic: Diagnostic) {
+            _diagnostics += diagnostic
         }
 
         fun addInlayHint(hint: InlayHint) {

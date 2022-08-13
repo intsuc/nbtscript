@@ -1,7 +1,7 @@
 package nbtscript.phase
 
 import kotlinx.collections.immutable.*
-import nbtscript.phase.Report.*
+import org.eclipse.lsp4j.Diagnostic
 import org.eclipse.lsp4j.InlayHint
 import org.eclipse.lsp4j.InlayHintLabelPart
 import org.eclipse.lsp4j.jsonrpc.messages.Either.forRight
@@ -99,14 +99,14 @@ class Elab private constructor(
 
         term is S.TermZ.Run -> {
             if (ctx.contains(term.name)) C.TermZ.Run(term.name, ctx[term.name]!!)
-            else errorZ(NotFound(term.name, term.range))
+            else errorZ(notFound(term.name, term.range))
         }
 
         term is S.TermZ.Splice -> {
             val element = elabTermS(Context(), term.element, type?.let { TypeS.CodeS(it) })
             when (val elementType = element.type) {
                 is TypeS.CodeS -> C.TermZ.Splice(element, elementType.element)
-                else -> errorZ(CodeExpected(reify(persistentListOf(), elementType), term.range))
+                else -> errorZ(codeExpected(reify(persistentListOf(), elementType), term.range))
             }
         }
 
@@ -125,7 +125,7 @@ class Elab private constructor(
             else {
                 val inferred = elabTermZ(ctx, term)
                 if (convZ(inferred.type, type)) inferred
-                else errorZ(TypeZMismatched(type, inferred.type, term.range))
+                else errorZ(typeZMismatched(type, inferred.type, term.range))
             }
         }
     }
@@ -231,7 +231,7 @@ class Elab private constructor(
                         C.TermS.Apply(operator, operand, cod)
                     }
 
-                    else -> errorS(ArrowExpected(reify(ctx.values, operatorType), term.operator.range))
+                    else -> errorS(arrowExpected(reify(ctx.values, operatorType), term.operator.range))
                 }
             } else {
                 val operand = elabTermS(ctx, term.operand)
@@ -260,7 +260,7 @@ class Elab private constructor(
 
         term is S.TermS.Var && type == null -> {
             when (val level = ctx.levels[term.name]) {
-                null -> errorS(NotFound(term.name, term.range))
+                null -> errorS(notFound(term.name, term.range))
                 else -> C.TermS.Var(term.name, level, ctx.types[level])
             }
         }
@@ -280,7 +280,7 @@ class Elab private constructor(
             else {
                 val inferred = elabTermS(ctx, term)
                 if (convS(ctx.size, inferred.type, type)) inferred
-                else errorS(TypeSMismatched(reify(ctx.values, type), reify(ctx.values, inferred.type), term.range))
+                else errorS(typeSMismatched(reify(ctx.values, type), reify(ctx.values, inferred.type), term.range))
             }
         }
     }
@@ -415,16 +415,16 @@ class Elab private constructor(
     }
 
     private fun errorZ(
-        report: Report,
+        diagnostic: Diagnostic,
     ): C.TermZ {
-        context.addReport(report)
+        context.addDiagnostic(diagnostic)
         return C.TermZ.Hole(C.TypeZ.EndZ)
     }
 
     private fun errorS(
-        report: Report,
+        diagnostic: Diagnostic,
     ): C.TermS {
-        context.addReport(report)
+        context.addDiagnostic(diagnostic)
         return C.TermS.Hole(TypeS.EndS)
     }
 

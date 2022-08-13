@@ -1,7 +1,6 @@
 package nbtscript.phase
 
 import nbtscript.ast.Surface.*
-import nbtscript.phase.Report.*
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 
@@ -20,7 +19,7 @@ class Parse private constructor(
         skipWhitespace()
         if (cursor != text.length) {
             val end = position()
-            context.addReport(EndOfFileExpected(Range(end, end)))
+            context.addDiagnostic(endOfFileExpected(Range(end, end)))
         }
         root
     }
@@ -55,7 +54,7 @@ class Parse private constructor(
 
             else -> {
                 val range = range()
-                context.addReport(TypeZExpected(range))
+                context.addDiagnostic(typeZExpected(range))
                 TypeZ.Hole(range)
             }
         }
@@ -127,7 +126,7 @@ class Parse private constructor(
 
             null -> {
                 val range = range()
-                context.addReport(TermZExpected(range))
+                context.addDiagnostic(termZExpected(range))
                 TermZ.Hole(range)
             }
 
@@ -157,7 +156,7 @@ class Parse private constructor(
 
                         "" -> {
                             val range = range()
-                            context.addReport(TermZExpected(range))
+                            context.addDiagnostic(termZExpected(range))
                             TermZ.Hole(range)
                         }
 
@@ -251,7 +250,7 @@ class Parse private constructor(
 
             null -> {
                 val range = range()
-                context.addReport(TermSExpected(range))
+                context.addDiagnostic(termSExpected(range))
                 TermS.Hole(range)
             }
 
@@ -324,7 +323,7 @@ class Parse private constructor(
 
                         "" -> {
                             val range = range()
-                            context.addReport(TermSExpected(range))
+                            context.addDiagnostic(termSExpected(range))
                             TermS.Hole(range)
                         }
 
@@ -353,7 +352,7 @@ class Parse private constructor(
 
     private fun parseWord(): String = ranged {
         val word = readString()
-        if (word.isEmpty()) context.addReport(WordExpected(range()))
+        if (word.isEmpty()) context.addDiagnostic(wordExpected(range()))
         word
     }
 
@@ -383,7 +382,7 @@ class Parse private constructor(
         if (peek() == expected) skip()
         else {
             val position = position()
-            context.addReport(CharExpected(expected, Range(position, position)))
+            context.addDiagnostic(charExpected(expected, Range(position, position)))
         }
     }
 
