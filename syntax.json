@@ -1,0 +1,38 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "nbtscript",
+  "patterns": [
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#strings"
+    }
+  ],
+  "repository": {
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.operator.nbtscript",
+          "match": "[$\\\\@`]"
+        },
+        {
+          "name": "keyword.nbtscript",
+          "match": "\\b(byte|short|int|long|float|double|string|byte_array|int_array|long_array|list|compound|universe|end|arrow|code)\\b"
+        }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted.double.nbtscript",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.nbtscript",
+          "match": "\\\\."
+        }
+      ]
+    }
+  },
+  "scopeName": "source.nbtscript"
+}
