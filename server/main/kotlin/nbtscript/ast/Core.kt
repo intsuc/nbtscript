@@ -46,7 +46,7 @@ sealed interface Core {
     sealed interface TermS : Core {
         val type: Value
 
-        data class TypeS(override val type: Value) : TermS
+        data class UniverseS(override val type: Value) : TermS
         data class EndS(override val type: Value) : TermS
         data class ByteS(override val type: Value) : TermS
         data class ShortS(override val type: Value) : TermS

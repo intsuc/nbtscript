@@ -18,7 +18,7 @@ fun reflect(
     env: Environment,
     term: TermS,
 ): Value = when (term) {
-    is TermS.TypeS -> Value.TypeS
+    is TermS.UniverseS -> Value.TypeS
     is TermS.EndS -> Value.EndS
     is TermS.ByteS -> Value.ByteS
     is TermS.ShortS -> Value.ShortS
@@ -115,7 +115,7 @@ fun reify(
     env: Environment,
     value: Value,
 ): TermS = when (value) {
-    is Value.TypeS -> TermS.TypeS(Value.TypeS)
+    is Value.TypeS -> TermS.UniverseS(Value.TypeS)
     is Value.EndS -> TermS.EndS(Value.TypeS)
     is Value.ByteS -> TermS.ByteS(Value.TypeS)
     is Value.ShortS -> TermS.ShortS(Value.TypeS)

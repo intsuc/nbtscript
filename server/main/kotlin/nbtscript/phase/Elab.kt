@@ -4,12 +4,12 @@ import kotlinx.collections.immutable.*
 import nbtscript.phase.Report.*
 import org.eclipse.lsp4j.InlayHint
 import org.eclipse.lsp4j.InlayHintLabelPart
-import org.eclipse.lsp4j.jsonrpc.messages.Either.forLeft
 import org.eclipse.lsp4j.jsonrpc.messages.Either.forRight
 import nbtscript.ast.Core as C
 import nbtscript.ast.Core.Value as TypeS
 import nbtscript.ast.Surface as S
 
+// TODO: create report messages lazily
 class Elab private constructor(
     private val context: PhaseContext = PhaseContext(),
 ) {
@@ -106,7 +106,7 @@ class Elab private constructor(
             val element = elabTermS(Context(), term.element, type?.let { TypeS.CodeS(it) })
             when (val elementType = element.type) {
                 is TypeS.CodeS -> C.TermZ.Splice(element, elementType.element)
-                else -> errorZ(CodeExpected(elementType, term.range))
+                else -> errorZ(CodeExpected(reify(persistentListOf(), elementType), term.range))
             }
         }
 
@@ -135,7 +135,7 @@ class Elab private constructor(
         term: S.TermS,
         type: TypeS? = null,
     ): C.TermS = when {
-        term is S.TermS.UniverseS && type is TypeS.TypeS? -> C.TermS.TypeS(TypeS.TypeS)
+        term is S.TermS.UniverseS && type is TypeS.TypeS? -> C.TermS.UniverseS(TypeS.TypeS)
         term is S.TermS.EndS && type is TypeS.TypeS? -> C.TermS.EndS(TypeS.TypeS)
         term is S.TermS.ByteS && type is TypeS.TypeS? -> C.TermS.ByteS(TypeS.TypeS)
         term is S.TermS.ShortS && type is TypeS.TypeS? -> C.TermS.ShortS(TypeS.TypeS)
@@ -231,7 +231,7 @@ class Elab private constructor(
                         C.TermS.Apply(operator, operand, cod)
                     }
 
-                    else -> errorS(ArrowExpected(operatorType, term.operator.range))
+                    else -> errorS(ArrowExpected(reify(ctx.values, operatorType), term.operator.range))
                 }
             } else {
                 val operand = elabTermS(ctx, term.operand)
@@ -266,7 +266,12 @@ class Elab private constructor(
         }
 
         term is S.TermS.Hole -> {
-            context.addInlayHint(InlayHint(term.range.start, forLeft(type.toString())))
+            type?.let {
+                val part = InlayHintLabelPart(" ").apply {
+                    tooltip = forRight(markup(stringifyTermS(reify(ctx.values, it))))
+                }
+                context.addInlayHint(InlayHint(term.range.start, forRight(listOf(part))))
+            }
             C.TermS.Hole(TypeS.EndS)
         }
 
@@ -275,7 +280,7 @@ class Elab private constructor(
             else {
                 val inferred = elabTermS(ctx, term)
                 if (convS(ctx.size, inferred.type, type)) inferred
-                else errorS(TypeSMismatched(type, inferred.type, term.range))
+                else errorS(TypeSMismatched(reify(ctx.values, type), reify(ctx.values, inferred.type), term.range))
             }
         }
     }
