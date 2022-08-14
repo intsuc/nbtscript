@@ -22,6 +22,7 @@ class NbtScriptLanguageServer : LanguageServer, LanguageClientAware {
         val result = InitializeResult().apply {
             capabilities = ServerCapabilities().apply {
                 textDocumentSync = forLeft(TextDocumentSyncKind.Full)
+                hoverProvider = forLeft(true)
                 inlayHintProvider = forLeft(true)
             }
         }

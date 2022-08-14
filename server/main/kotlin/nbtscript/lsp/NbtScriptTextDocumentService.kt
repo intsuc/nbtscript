@@ -40,6 +40,14 @@ class NbtScriptTextDocumentService : TextDocumentService, LanguageClientAware {
 
     override fun didSave(params: DidSaveTextDocumentParams): Unit = Unit
 
+    override fun hover(params: HoverParams): CompletableFuture<Hover> = supplyAsync {
+        val uri = Uri(params.textDocument.uri)
+        val text = texts[uri]!!
+        Phase.Context(params.position).apply {
+            (Parse..Elab)(this, text)
+        }.hover?.value
+    }
+
     override fun inlayHint(params: InlayHintParams): CompletableFuture<List<InlayHint>> = supplyAsync {
         val uri = Uri(params.textDocument.uri)
         val text = texts[uri]!!

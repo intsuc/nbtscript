@@ -2,6 +2,7 @@ package nbtscript.phase
 
 import kotlinx.collections.immutable.*
 import org.eclipse.lsp4j.Diagnostic
+import org.eclipse.lsp4j.Hover
 import org.eclipse.lsp4j.InlayHint
 import org.eclipse.lsp4j.InlayHintLabelPart
 import org.eclipse.lsp4j.jsonrpc.messages.Either.forRight
@@ -44,6 +45,8 @@ class Elab private constructor(
         }
 
         is S.TypeZ.Hole -> C.TypeZ.Hole
+    }.also {
+        context.setHover(type.range, lazy { Hover(markup("universe")) })
     }
 
     private fun elabTermZ(
@@ -128,6 +131,8 @@ class Elab private constructor(
                 else errorZ(typeZMismatched(type, inferred.type, term.range))
             }
         }
+    }.also {
+        context.setHover(term.range, lazy { Hover(markup(stringifyTypeZ(it.type))) })
     }
 
     private fun elabTermS(
@@ -283,6 +288,8 @@ class Elab private constructor(
                 else errorS(typeSMismatched(reify(ctx.values, type), reify(ctx.values, inferred.type), term.range))
             }
         }
+    }.also {
+        context.setHover(term.range, lazy { Hover(markup(stringifyTermS(reify(ctx.values, it.type)))) })
     }
 
     private fun convZ(

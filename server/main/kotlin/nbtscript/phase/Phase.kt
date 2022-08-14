@@ -1,17 +1,27 @@
 package nbtscript.phase
 
-import org.eclipse.lsp4j.Diagnostic
-import org.eclipse.lsp4j.InlayHint
+import org.eclipse.lsp4j.*
+import org.eclipse.lsp4j.util.Ranges
 
 fun interface Phase<A, B> {
     operator fun invoke(context: Context, input: A): B
 
-    class Context {
+    class Context(
+        private var position: Position? = null,
+    ) {
         private val _diagnostics: MutableList<Diagnostic> = mutableListOf()
         private val _inlayHints: MutableList<InlayHint> = mutableListOf()
 
+        var hover: Lazy<Hover>? = null
+            private set
         val diagnostics: List<Diagnostic> = _diagnostics
         val inlayHints: List<InlayHint> = _inlayHints
+
+        fun setHover(range: Range, hover: Lazy<Hover>) {
+            if (this.hover == null && position != null && Ranges.containsPosition(range, position)) {
+                this.hover = hover
+            }
+        }
 
         fun addDiagnostic(diagnostic: Diagnostic) {
             _diagnostics += diagnostic
