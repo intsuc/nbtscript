@@ -52,11 +52,7 @@ class Parse private constructor(
                 TypeZ.CompoundZ(elements, range())
             }
 
-            else -> {
-                val range = range()
-                context.addDiagnostic(typeZExpected(range))
-                TypeZ.Hole(range)
-            }
+            else -> typeZHole()
         }
     }
 
@@ -124,12 +120,7 @@ class Parse private constructor(
                 TermZ.Splice(element, range())
             }
 
-            null -> {
-                val range = range()
-                context.addDiagnostic(termZExpected(range))
-                TermZ.Hole(range)
-            }
-
+            null -> termZHole()
             else -> {
                 val word = readString()
                 if (start.isNumericStart()) {
@@ -139,7 +130,12 @@ class Parse private constructor(
                         word.endsWith('L') -> TermZ.LongTag(word.dropLast(1).toLong(), range())
                         word.endsWith('f') -> TermZ.FloatTag(word.dropLast(1).toFloat(), range())
                         word.endsWith('d') -> TermZ.DoubleTag(word.dropLast(1).toDouble(), range())
-                        else -> TermZ.IntTag(word.toInt(), range())
+                        else -> {
+                            when (val int = word.toIntOrNull()) {
+                                null -> termZHole()
+                                else -> TermZ.IntTag(int, range())
+                            }
+                        }
                     }
                 } else {
                     when (word) {
@@ -160,12 +156,7 @@ class Parse private constructor(
                             TermZ.Function(name, anno, body, next, range())
                         }
 
-                        "" -> {
-                            val range = range()
-                            context.addDiagnostic(termZExpected(range))
-                            TermZ.Hole(range)
-                        }
-
+                        "" -> termZHole()
                         else -> TermZ.Run(word, range())
                     }
                 }
@@ -174,6 +165,73 @@ class Parse private constructor(
     }
 
     private fun parseTermS(): TermS = ranged {
+        when (peek()) {
+            '(' -> {
+                skip()
+                val left = parseTermS1()
+                when (peek()) {
+                    ':' -> {
+                        skip()
+                        val type = parseTermS()
+                        expect(')')
+                        when (peek()) {
+                            '=' -> {
+                                skip()
+                                expect('>')
+                                val body = parseTermS()
+                                when (left) {
+                                    is TermS.Var -> TermS.Abs(left.name, type, body, range())
+                                    else -> termSHole()
+                                }
+                            }
+
+                            '-' -> {
+                                skip()
+                                expect('>')
+                                val cod = parseTermS()
+                                when (left) {
+                                    is TermS.Var -> TermS.ArrowS(left.name, type, cod, range())
+                                    else -> termSHole()
+                                }
+                            }
+
+                            else -> termSHole()
+                        }
+                    }
+
+                    ')' -> {
+                        skip()
+                        left
+                    }
+
+                    else -> termSHole()
+                }
+            }
+
+            else -> {
+                val left = parseTermS1()
+                when (peek()) {
+                    '-' -> {
+                        skip()
+                        expect('>')
+                        val cod = parseTermS()
+                        TermS.ArrowS(null, left, cod, range())
+                    }
+
+                    '(' -> {
+                        skip()
+                        val operand = parseTermS()
+                        expect(')')
+                        TermS.Apply(left, operand, range())
+                    }
+
+                    else -> left
+                }
+            }
+        }
+    }
+
+    private fun parseTermS1(): TermS = ranged {
         when (val start = peek()) {
             '(' -> {
                 skip()
@@ -231,35 +289,13 @@ class Parse private constructor(
                 TermS.CompoundTag(elements, range())
             }
 
-            '\\' -> {
-                skip()
-                val name = parseWord()
-                expect(':')
-                val anno = parseTermS()
-                expect('.')
-                val body = parseTermS()
-                TermS.Abs(name, anno, body, range())
-            }
-
-            '@' -> {
-                skip()
-                val operator = parseTermS()
-                val operand = parseTermS()
-                TermS.Apply(operator, operand, range())
-            }
-
             '`' -> {
                 skip()
                 val element = parseTermZ()
                 TermS.Quote(element, range())
             }
 
-            null -> {
-                val range = range()
-                context.addDiagnostic(termSExpected(range))
-                TermS.Hole(range)
-            }
-
+            null -> termSHole()
             else -> {
                 val word = readString()
                 if (start.isNumericStart()) {
@@ -269,7 +305,12 @@ class Parse private constructor(
                         word.endsWith('L') -> TermS.LongTag(word.dropLast(1).toLong(), range())
                         word.endsWith('f') -> TermS.FloatTag(word.dropLast(1).toFloat(), range())
                         word.endsWith('d') -> TermS.DoubleTag(word.dropLast(1).toDouble(), range())
-                        else -> TermS.IntTag(word.toInt(), range())
+                        else -> {
+                            when (val int = word.toIntOrNull()) {
+                                null -> termSHole()
+                                else -> TermS.IntTag(int, range())
+                            }
+                        }
                     }
                 } else {
                     when (word) {
@@ -301,15 +342,6 @@ class Parse private constructor(
                             TermS.CompoundS(elements, range())
                         }
 
-                        "arrow" -> {
-                            val name = parseWord() // TODO
-                            expect(':')
-                            val dom = parseTermS()
-                            expect('.')
-                            val cod = parseTermS()
-                            TermS.ArrowS(name, dom, cod, range())
-                        }
-
                         "code" -> {
                             val element = parseTypeZ()
                             TermS.CodeS(element, range())
@@ -333,17 +365,30 @@ class Parse private constructor(
                             TermS.Let(name, anno, init, next, range())
                         }
 
-                        "" -> {
-                            val range = range()
-                            context.addDiagnostic(termSExpected(range))
-                            TermS.Hole(range)
-                        }
-
+                        "" -> termSHole()
                         else -> TermS.Var(word, range())
                     }
                 }
             }
         }
+    }
+
+    private fun RangeContext.typeZHole(): TypeZ {
+        val range = range()
+        context.addDiagnostic(typeZExpected(range))
+        return TypeZ.Hole(range)
+    }
+
+    private fun RangeContext.termZHole(): TermZ {
+        val range = range()
+        context.addDiagnostic(termZExpected(range))
+        return TermZ.Hole(range)
+    }
+
+    private fun RangeContext.termSHole(): TermS {
+        val range = range()
+        context.addDiagnostic(termSExpected(range))
+        return TermS.Hole(range)
     }
 
     private inline fun <A> parseList(close: Char, element: () -> A): List<A> {

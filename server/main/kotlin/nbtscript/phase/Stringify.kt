@@ -55,7 +55,7 @@ fun stringifyTermS(term: TermS): String = when (term) {
     is TermS.LongArrayS -> "long_array"
     is TermS.ListS -> "list ${stringifyTermS(term.element)}"
     is TermS.CompoundS -> term.elements.entries.joinToString(", ", "compound {", "}") { "${it.key}: ${stringifyTermS(it.value)}" }
-    is TermS.ArrowS -> "arrow ${term.name?.let { "$it: " } ?: ""}${stringifyTermS(term.dom)}. ${stringifyTermS(term.cod)}"
+    is TermS.ArrowS -> "${term.name?.let { "($it: ${stringifyTermS(term.dom)})" } ?: stringifyTermS(term.dom)} -> ${stringifyTermS(term.cod)}"
     is TermS.CodeS -> "code ${stringifyTypeZ(term.element)}"
     is TermS.TypeZ -> "type"
     is TermS.EndTag -> ""
@@ -71,8 +71,8 @@ fun stringifyTermS(term: TermS): String = when (term) {
     is TermS.LongArrayTag -> term.elements.joinToString(", ", "[L;", "]") { stringifyTermS(it) }
     is TermS.ListTag -> term.elements.joinToString(", ", "[", "]") { stringifyTermS(it) }
     is TermS.CompoundTag -> term.elements.entries.joinToString(", ", "{", "}") { "${it.key}: ${stringifyTermS(it.value)}" }
-    is TermS.Abs -> "\\${term.name}: ${stringifyTermS(term.anno)}. ${stringifyTermS(term.body)}"
-    is TermS.Apply -> "@${stringifyTermS(term.operator)} ${stringifyTermS(term.operand)}"
+    is TermS.Abs -> "(${term.name}: ${stringifyTermS(term.anno)}) => ${stringifyTermS(term.body)}"
+    is TermS.Apply -> "${stringifyTermS(term.operator)}(${stringifyTermS(term.operand)})"
     is TermS.Quote -> "`${stringifyTermZ(term.element)}"
     is TermS.Let -> "let ${term.name} = ${stringifyTermS(term.init)};\n${stringifyTermS(term.next)}"
     is TermS.Var -> term.name ?: ""
