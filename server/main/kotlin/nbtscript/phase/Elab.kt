@@ -97,7 +97,7 @@ class Elab private constructor(
             C.TermZ.Function(term.name, body, next, next.type)
         }
 
-        term is S.TermZ.Run -> {
+        term is S.TermZ.Run && type == null -> {
             if (ctx.contains(term.name)) C.TermZ.Run(term.name, ctx[term.name]!!)
             else errorZ(notFound(term.name, term.range))
         }
