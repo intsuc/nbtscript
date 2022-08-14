@@ -5,6 +5,8 @@ import nbtscript.phase.Parse
 import nbtscript.phase.Phase
 import nbtscript.phase.rangeTo
 import org.eclipse.lsp4j.*
+import org.eclipse.lsp4j.jsonrpc.messages.Either
+import org.eclipse.lsp4j.jsonrpc.messages.Either.forLeft
 import org.eclipse.lsp4j.services.LanguageClient
 import org.eclipse.lsp4j.services.LanguageClientAware
 import org.eclipse.lsp4j.services.TextDocumentService
@@ -43,9 +45,7 @@ class NbtScriptTextDocumentService : TextDocumentService, LanguageClientAware {
     override fun hover(params: HoverParams): CompletableFuture<Hover> = supplyAsync {
         val uri = Uri(params.textDocument.uri)
         val text = texts[uri]!!
-        Phase.Context(params.position).apply {
-            (Parse..Elab)(this, text)
-        }.hover?.value
+        run(text, params.position).hover?.value
     }
 
     override fun inlayHint(params: InlayHintParams): CompletableFuture<List<InlayHint>> = supplyAsync {
@@ -54,12 +54,21 @@ class NbtScriptTextDocumentService : TextDocumentService, LanguageClientAware {
         run(text).inlayHints
     }
 
+    override fun completion(params: CompletionParams): CompletableFuture<Either<List<CompletionItem>, CompletionList>> = supplyAsync {
+        val uri = Uri(params.textDocument.uri)
+        val text = texts[uri]!!
+        forLeft(run(text, params.position).completionItems?.map { it.value })
+    }
+
     private fun diagnose(uri: Uri, text: String) {
         client.publishDiagnostics(PublishDiagnosticsParams(uri.value, run(text).diagnostics))
     }
 
     // TODO: cache
-    private fun run(text: String): Phase.Context = Phase.Context().apply {
+    private fun run(
+        text: String,
+        position: Position? = null,
+    ): Phase.Context = Phase.Context(position).apply {
         (Parse..Elab)(this, text)
     }
 }

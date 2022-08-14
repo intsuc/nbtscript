@@ -1,10 +1,7 @@
 package nbtscript.phase
 
 import kotlinx.collections.immutable.*
-import org.eclipse.lsp4j.Diagnostic
-import org.eclipse.lsp4j.Hover
-import org.eclipse.lsp4j.InlayHint
-import org.eclipse.lsp4j.InlayHintLabelPart
+import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either.forRight
 import nbtscript.ast.Core as C
 import nbtscript.ast.Core.Value as TypeS
@@ -96,7 +93,7 @@ class Elab private constructor(
         term is S.TermZ.Function -> {
             val anno = elabTypeZ(term.anno)
             val body = elabTermZ(ctx, term.body, anno)
-            val next = elabTermZ(ctx + (term.name to body.type), term.next, type)
+            val next = elabTermZ(ctx + (term.name to anno), term.next, type)
             C.TermZ.Function(term.name, body, next, next.type)
         }
 
@@ -133,6 +130,16 @@ class Elab private constructor(
         }
     }.also {
         context.setHover(term.range, lazy { Hover(markup(stringifyTypeZ(it.type))) })
+        context.setCompletionItems(term.range, ctx.entries.map { (name, type) ->
+            lazy {
+                CompletionItem(name).apply {
+                    kind = CompletionItemKind.Function
+                    labelDetails = CompletionItemLabelDetails().apply {
+                        detail = " : ${stringifyTypeZ(type)}"
+                    }
+                }
+            }
+        })
     }
 
     private fun elabTermS(
@@ -290,6 +297,17 @@ class Elab private constructor(
         }
     }.also {
         context.setHover(term.range, lazy { Hover(markup(stringifyTermS(reify(ctx.values, it.type)))) })
+        context.setCompletionItems(term.range, ctx.levels.map { (name, level) ->
+            lazy {
+                CompletionItem(name).apply {
+                    kind = CompletionItemKind.Variable
+                    labelDetails = CompletionItemLabelDetails().apply {
+                        detail = " : ${stringifyTermS(reify(ctx.values, ctx.types[level]))}"
+                    }
+                    detail = stringifyTermS(reify(ctx.values, ctx.values[level].value))
+                }
+            }
+        })
     }
 
     private fun convZ(

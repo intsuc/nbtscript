@@ -16,6 +16,8 @@ fun interface Phase<A, B> {
             private set
         val diagnostics: List<Diagnostic> = _diagnostics
         val inlayHints: List<InlayHint> = _inlayHints
+        var completionItems: List<Lazy<CompletionItem>>? = null
+            private set
 
         fun setHover(range: Range, hover: Lazy<Hover>) {
             if (this.hover == null && position != null && Ranges.containsPosition(range, position)) {
@@ -29,6 +31,12 @@ fun interface Phase<A, B> {
 
         fun addInlayHint(hint: InlayHint) {
             _inlayHints += hint
+        }
+
+        fun setCompletionItems(range: Range, items: List<Lazy<CompletionItem>>) {
+            if (completionItems == null && position != null && Ranges.containsPosition(range, position)) {
+                completionItems = items
+            }
         }
     }
 }

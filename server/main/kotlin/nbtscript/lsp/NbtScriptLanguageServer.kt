@@ -1,9 +1,6 @@
 package nbtscript.lsp
 
-import org.eclipse.lsp4j.InitializeParams
-import org.eclipse.lsp4j.InitializeResult
-import org.eclipse.lsp4j.ServerCapabilities
-import org.eclipse.lsp4j.TextDocumentSyncKind
+import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either.forLeft
 import org.eclipse.lsp4j.services.*
 import java.util.concurrent.CompletableFuture
@@ -24,6 +21,7 @@ class NbtScriptLanguageServer : LanguageServer, LanguageClientAware {
                 textDocumentSync = forLeft(TextDocumentSyncKind.Full)
                 hoverProvider = forLeft(true)
                 inlayHintProvider = forLeft(true)
+                completionProvider = CompletionOptions(false, emptyList())
             }
         }
         return completedFuture(result)
