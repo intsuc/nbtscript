@@ -223,11 +223,12 @@ class Elab private constructor(
 
         term is S.TermS.Abs && type == null -> {
             val anno = elabTermS(ctx, term.anno, TypeS.UniverseS)
-            val body = elabTermS(ctx, term.body)
+            val a = reflect(ctx.values, anno)
+            val body = elabTermS(ctx.bind(term.name, a), term.body)
             C.TermS.Abs(
                 term.name, anno, body, TypeS.ArrowS(
                     null,
-                    lazy { reflect(ctx.values, anno) },
+                    lazyOf(a),
                     C.Clos(ctx.values, lazy { reify(ctx.values, body.type) })
                 )
             )
