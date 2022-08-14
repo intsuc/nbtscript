@@ -36,7 +36,7 @@ sealed interface Surface {
         data class LongArrayTag(val elements: List<TermZ>, override val range: Range) : TermZ
         data class ListTag(val elements: List<TermZ>, override val range: Range) : TermZ
         data class CompoundTag(val elements: Map<String, TermZ>, override val range: Range) : TermZ
-        data class Function(val name: String, val anno: TypeZ, val body: TermZ, val next: TermZ, override val range: Range) : TermZ
+        data class Function(val name: String, val anno: TypeZ?, val body: TermZ, val next: TermZ, override val range: Range) : TermZ
         data class Run(val name: String, override val range: Range) : TermZ
         data class Splice(val element: TermS, override val range: Range) : TermZ
         data class Hole(override val range: Range) : TermZ
@@ -75,7 +75,7 @@ sealed interface Surface {
         data class Abs(val name: String, val anno: TermS, val body: TermS, override val range: Range) : TermS
         data class Apply(val operator: TermS, val operand: TermS, override val range: Range) : TermS
         data class Quote(val element: TermZ, override val range: Range) : TermS
-        data class Let(val name: String, val anno: TermS, val init: TermS, val next: TermS, override val range: Range) : TermS
+        data class Let(val name: String, val anno: TermS?, val init: TermS, val next: TermS, override val range: Range) : TermS
         data class Var(val name: String, override val range: Range) : TermS
         data class Hole(override val range: Range) : TermS
     }

@@ -145,8 +145,14 @@ class Parse private constructor(
                     when (word) {
                         "function" -> {
                             val name = parseWord()
-                            expect(':')
-                            val anno = parseTypeZ()
+                            val anno = when (peek()) {
+                                ':' -> {
+                                    skip()
+                                    parseTypeZ()
+                                }
+
+                                else -> null
+                            }
                             expect('=')
                             val body = parseTermZ()
                             expect(';')
@@ -312,8 +318,14 @@ class Parse private constructor(
                         "type" -> TermS.TypeZ(range())
                         "let" -> {
                             val name = parseWord()
-                            expect(':')
-                            val anno = parseTermS()
+                            val anno = when (peek()) {
+                                ':' -> {
+                                    skip()
+                                    parseTermS()
+                                }
+
+                                else -> null
+                            }
                             expect('=')
                             val init = parseTermS()
                             expect(';')

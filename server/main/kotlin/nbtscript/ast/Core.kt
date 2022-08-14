@@ -85,7 +85,7 @@ sealed interface Core {
     }
 
     sealed interface Value : Core {
-        object TypeS : Value
+        object UniverseS : Value
         object EndS : Value
         object ByteS : Value
         object ShortS : Value

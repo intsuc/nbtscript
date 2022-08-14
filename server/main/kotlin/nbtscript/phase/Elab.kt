@@ -91,9 +91,9 @@ class Elab private constructor(
         }
 
         term is S.TermZ.Function -> {
-            val anno = elabTypeZ(term.anno)
+            val anno = term.anno?.let { elabTypeZ(it) }
             val body = elabTermZ(ctx, term.body, anno)
-            val next = elabTermZ(ctx + (term.name to anno), term.next, type)
+            val next = elabTermZ(ctx + (term.name to (anno ?: body.type)), term.next, type)
             C.TermZ.Function(term.name, body, next, next.type)
         }
 
@@ -147,40 +147,40 @@ class Elab private constructor(
         term: S.TermS,
         type: TypeS? = null,
     ): C.TermS = when {
-        term is S.TermS.UniverseS && type is TypeS.TypeS? -> C.TermS.UniverseS(TypeS.TypeS)
-        term is S.TermS.EndS && type is TypeS.TypeS? -> C.TermS.EndS(TypeS.TypeS)
-        term is S.TermS.ByteS && type is TypeS.TypeS? -> C.TermS.ByteS(TypeS.TypeS)
-        term is S.TermS.ShortS && type is TypeS.TypeS? -> C.TermS.ShortS(TypeS.TypeS)
-        term is S.TermS.IntS && type is TypeS.TypeS? -> C.TermS.IntS(TypeS.TypeS)
-        term is S.TermS.LongS && type is TypeS.TypeS? -> C.TermS.LongS(TypeS.TypeS)
-        term is S.TermS.FloatS && type is TypeS.TypeS? -> C.TermS.FloatS(TypeS.TypeS)
-        term is S.TermS.DoubleS && type is TypeS.TypeS? -> C.TermS.DoubleS(TypeS.TypeS)
-        term is S.TermS.StringS && type is TypeS.TypeS? -> C.TermS.StringS(TypeS.TypeS)
-        term is S.TermS.ByteArrayS && type is TypeS.TypeS? -> C.TermS.ByteArrayS(TypeS.TypeS)
-        term is S.TermS.IntArrayS && type is TypeS.TypeS? -> C.TermS.IntArrayS(TypeS.TypeS)
-        term is S.TermS.LongArrayS && type is TypeS.TypeS? -> C.TermS.LongArrayS(TypeS.TypeS)
-        term is S.TermS.ListS && type is TypeS.TypeS? -> {
-            val element = elabTermS(ctx, term.element, TypeS.TypeS)
-            C.TermS.ListS(element, TypeS.TypeS)
+        term is S.TermS.UniverseS && type is TypeS.UniverseS? -> C.TermS.UniverseS(TypeS.UniverseS)
+        term is S.TermS.EndS && type is TypeS.UniverseS? -> C.TermS.EndS(TypeS.UniverseS)
+        term is S.TermS.ByteS && type is TypeS.UniverseS? -> C.TermS.ByteS(TypeS.UniverseS)
+        term is S.TermS.ShortS && type is TypeS.UniverseS? -> C.TermS.ShortS(TypeS.UniverseS)
+        term is S.TermS.IntS && type is TypeS.UniverseS? -> C.TermS.IntS(TypeS.UniverseS)
+        term is S.TermS.LongS && type is TypeS.UniverseS? -> C.TermS.LongS(TypeS.UniverseS)
+        term is S.TermS.FloatS && type is TypeS.UniverseS? -> C.TermS.FloatS(TypeS.UniverseS)
+        term is S.TermS.DoubleS && type is TypeS.UniverseS? -> C.TermS.DoubleS(TypeS.UniverseS)
+        term is S.TermS.StringS && type is TypeS.UniverseS? -> C.TermS.StringS(TypeS.UniverseS)
+        term is S.TermS.ByteArrayS && type is TypeS.UniverseS? -> C.TermS.ByteArrayS(TypeS.UniverseS)
+        term is S.TermS.IntArrayS && type is TypeS.UniverseS? -> C.TermS.IntArrayS(TypeS.UniverseS)
+        term is S.TermS.LongArrayS && type is TypeS.UniverseS? -> C.TermS.LongArrayS(TypeS.UniverseS)
+        term is S.TermS.ListS && type is TypeS.UniverseS? -> {
+            val element = elabTermS(ctx, term.element, TypeS.UniverseS)
+            C.TermS.ListS(element, TypeS.UniverseS)
         }
 
-        term is S.TermS.CompoundS && type is TypeS.TypeS? -> {
-            val elements = term.elements.map { it.key to elabTermS(ctx, it.value, TypeS.TypeS) }.toMap()
-            C.TermS.CompoundS(elements, TypeS.TypeS)
+        term is S.TermS.CompoundS && type is TypeS.UniverseS? -> {
+            val elements = term.elements.map { it.key to elabTermS(ctx, it.value, TypeS.UniverseS) }.toMap()
+            C.TermS.CompoundS(elements, TypeS.UniverseS)
         }
 
-        term is S.TermS.ArrowS && type is TypeS.TypeS? -> {
-            val dom = elabTermS(ctx, term.dom, TypeS.TypeS)
-            val cod = elabTermS(ctx.bind(term.name, dom.type), term.cod, TypeS.TypeS)
-            C.TermS.ArrowS(term.name, dom, cod, TypeS.TypeS)
+        term is S.TermS.ArrowS && type is TypeS.UniverseS? -> {
+            val dom = elabTermS(ctx, term.dom, TypeS.UniverseS)
+            val cod = elabTermS(ctx.bind(term.name, dom.type), term.cod, TypeS.UniverseS)
+            C.TermS.ArrowS(term.name, dom, cod, TypeS.UniverseS)
         }
 
-        term is S.TermS.CodeS && type is TypeS.TypeS? -> {
+        term is S.TermS.CodeS && type is TypeS.UniverseS? -> {
             val element = elabTypeZ(term.element)
-            C.TermS.CodeS(element, TypeS.TypeS)
+            C.TermS.CodeS(element, TypeS.UniverseS)
         }
 
-        term is S.TermS.TypeZ && type is TypeS.TypeS? -> C.TermS.TypeZ(TypeS.TypeS)
+        term is S.TermS.TypeZ && type is TypeS.UniverseS? -> C.TermS.TypeZ(TypeS.UniverseS)
         term is S.TermS.ByteTag && type is TypeS.ByteS? -> C.TermS.ByteTag(term.data, TypeS.ByteS)
         term is S.TermS.ShortTag && type is TypeS.ShortS? -> C.TermS.ShortTag(term.data, TypeS.ShortS)
         term is S.TermS.IntTag && type is TypeS.IntS? -> C.TermS.IntTag(term.data, TypeS.IntS)
@@ -222,7 +222,7 @@ class Elab private constructor(
         }
 
         term is S.TermS.Abs && type == null -> {
-            val anno = elabTermS(ctx, term.anno)
+            val anno = elabTermS(ctx, term.anno, TypeS.UniverseS)
             val body = elabTermS(ctx, term.body)
             C.TermS.Abs(
                 term.name, anno, body, TypeS.ArrowS(
@@ -264,9 +264,9 @@ class Elab private constructor(
         }
 
         term is S.TermS.Let -> {
-            val anno = elabTermS(ctx, term.anno, TypeS.TypeS)
-            val init = elabTermS(ctx, term.init, reflect(ctx.values, anno))
-            val next = elabTermS(ctx.bind(term.name, init.type, lazy { reflect(ctx.values, init) }), term.next, type)
+            val anno = term.anno?.let { reflect(ctx.values, elabTermS(ctx, it, TypeS.UniverseS)) }
+            val init = elabTermS(ctx, term.init, anno)
+            val next = elabTermS(ctx.bind(term.name, anno ?: init.type, lazy { reflect(ctx.values, init) }), term.next, type)
             C.TermS.Let(term.name, init, next, type ?: next.type)
         }
 
@@ -342,7 +342,7 @@ class Elab private constructor(
         value2: C.Value,
     ): Boolean = when {
         value1 == value2 -> true
-        value1 is C.Value.TypeS && value2 is C.Value.TypeS -> true
+        value1 is C.Value.UniverseS && value2 is C.Value.UniverseS -> true
         value1 is C.Value.EndS && value2 is C.Value.EndS -> true
         value1 is C.Value.ByteS && value2 is C.Value.ByteS -> true
         value1 is C.Value.ShortS && value2 is C.Value.ShortS -> true

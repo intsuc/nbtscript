@@ -18,7 +18,7 @@ fun reflect(
     env: Environment,
     term: TermS,
 ): Value = when (term) {
-    is TermS.UniverseS -> Value.TypeS
+    is TermS.UniverseS -> Value.UniverseS
     is TermS.EndS -> Value.EndS
     is TermS.ByteS -> Value.ByteS
     is TermS.ShortS -> Value.ShortS
@@ -115,37 +115,37 @@ fun reify(
     env: Environment,
     value: Value,
 ): TermS = when (value) {
-    is Value.TypeS -> TermS.UniverseS(Value.TypeS)
-    is Value.EndS -> TermS.EndS(Value.TypeS)
-    is Value.ByteS -> TermS.ByteS(Value.TypeS)
-    is Value.ShortS -> TermS.ShortS(Value.TypeS)
-    is Value.IntS -> TermS.IntS(Value.TypeS)
-    is Value.LongS -> TermS.LongS(Value.TypeS)
-    is Value.FloatS -> TermS.FloatS(Value.TypeS)
-    is Value.DoubleS -> TermS.DoubleS(Value.TypeS)
-    is Value.StringS -> TermS.StringS(Value.TypeS)
-    is Value.ByteArrayS -> TermS.ByteArrayS(Value.TypeS)
-    is Value.IntArrayS -> TermS.IntArrayS(Value.TypeS)
-    is Value.LongArrayS -> TermS.LongArrayS(Value.TypeS)
+    is Value.UniverseS -> TermS.UniverseS(Value.UniverseS)
+    is Value.EndS -> TermS.EndS(Value.UniverseS)
+    is Value.ByteS -> TermS.ByteS(Value.UniverseS)
+    is Value.ShortS -> TermS.ShortS(Value.UniverseS)
+    is Value.IntS -> TermS.IntS(Value.UniverseS)
+    is Value.LongS -> TermS.LongS(Value.UniverseS)
+    is Value.FloatS -> TermS.FloatS(Value.UniverseS)
+    is Value.DoubleS -> TermS.DoubleS(Value.UniverseS)
+    is Value.StringS -> TermS.StringS(Value.UniverseS)
+    is Value.ByteArrayS -> TermS.ByteArrayS(Value.UniverseS)
+    is Value.IntArrayS -> TermS.IntArrayS(Value.UniverseS)
+    is Value.LongArrayS -> TermS.LongArrayS(Value.UniverseS)
     is Value.ListS -> {
         val element = reify(env, value.element.value)
-        TermS.ListS(element, Value.TypeS)
+        TermS.ListS(element, Value.UniverseS)
     }
 
     is Value.CompoundS -> {
         val elements = value.elements.mapValues { reify(env, it.value.value) }
-        TermS.CompoundS(elements, Value.TypeS)
+        TermS.CompoundS(elements, Value.UniverseS)
     }
 
     is Value.ArrowS -> {
         val dom = reify(env, value.dom.value)
         val x = lazyOf(Value.Var(value.name, env.size, value.dom))
         val cod = reify(env + x, value.cod(x))
-        TermS.ArrowS(value.name, dom, cod, Value.TypeS)
+        TermS.ArrowS(value.name, dom, cod, Value.UniverseS)
     }
 
-    is Value.CodeS -> TermS.CodeS(value.element, Value.TypeS)
-    is Value.TypeZ -> TermS.TypeZ(Value.TypeS)
+    is Value.CodeS -> TermS.CodeS(value.element, Value.UniverseS)
+    is Value.TypeZ -> TermS.TypeZ(Value.UniverseS)
     is Value.EndTag -> TermS.EndTag(Value.EndS)
     is Value.ByteTag -> TermS.ByteTag(value.data, Value.ByteS)
     is Value.ShortTag -> TermS.ShortTag(value.data, Value.ShortS)
