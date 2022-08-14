@@ -58,7 +58,7 @@ fun arrowExpected(actual: TermS, range: Range): Diagnostic = makeDiagnostic(
 
 fun codeExpected(actual: TermS, range: Range): Diagnostic = makeDiagnostic(
     range,
-    "expected: Diagnostic = code\nactual: '${stringifyTermS(actual)}'",
+    "expected: code\nactual: '${stringifyTermS(actual)}'",
     Error,
 )
 
