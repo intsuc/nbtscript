@@ -1,70 +1,71 @@
 package nbtscript.phase
 
-import nbtscript.ast.Core.*
+import nbtscript.ast.Core as C
+import nbtscript.ast.Staged as S
 
 class Stage private constructor() {
     private fun stageRoot(
-        root: Root,
-    ): Root {
+        root: C.Root,
+    ): S.Root {
         val body = stageTermZ(root.body)
-        return Root(body)
+        return S.Root(body)
     }
 
     private fun stageTermZ(
-        term: TermZ,
-    ): TermZ = when (term) {
-        is TermZ.ByteTag -> term
-        is TermZ.ShortTag -> term
-        is TermZ.IntTag -> term
-        is TermZ.LongTag -> term
-        is TermZ.FloatTag -> term
-        is TermZ.DoubleTag -> term
-        is TermZ.StringTag -> term
-        is TermZ.ByteArrayTag -> {
+        term: C.TermZ,
+    ): S.TermZ = when (term) {
+        is C.TermZ.ByteTag -> S.TermZ.ByteTag(term.data)
+        is C.TermZ.ShortTag -> S.TermZ.ShortTag(term.data)
+        is C.TermZ.IntTag -> S.TermZ.IntTag(term.data)
+        is C.TermZ.LongTag -> S.TermZ.LongTag(term.data)
+        is C.TermZ.FloatTag -> S.TermZ.FloatTag(term.data)
+        is C.TermZ.DoubleTag -> S.TermZ.DoubleTag(term.data)
+        is C.TermZ.StringTag -> S.TermZ.StringTag(term.data)
+        is C.TermZ.ByteArrayTag -> {
             val elements = term.elements.map { stageTermZ(it) }
-            TermZ.ByteArrayTag(elements, term.type)
+            S.TermZ.ByteArrayTag(elements)
         }
 
-        is TermZ.IntArrayTag -> {
+        is C.TermZ.IntArrayTag -> {
             val elements = term.elements.map { stageTermZ(it) }
-            TermZ.IntArrayTag(elements, term.type)
+            S.TermZ.IntArrayTag(elements)
         }
 
-        is TermZ.LongArrayTag -> {
+        is C.TermZ.LongArrayTag -> {
             val elements = term.elements.map { stageTermZ(it) }
-            TermZ.LongArrayTag(elements, term.type)
+            S.TermZ.LongArrayTag(elements)
         }
 
-        is TermZ.ListTag -> {
+        is C.TermZ.ListTag -> {
             val elements = term.elements.map { stageTermZ(it) }
-            TermZ.ListTag(elements, term.type)
+            S.TermZ.ListTag(elements)
         }
 
-        is TermZ.CompoundTag -> {
+        is C.TermZ.CompoundTag -> {
             val elements = term.elements.mapValues { stageTermZ(it.value) }
-            TermZ.CompoundTag(elements, term.type)
+            S.TermZ.CompoundTag(elements)
         }
 
-        is TermZ.Function -> {
+        is C.TermZ.Function -> {
             val body = stageTermZ(term.body)
             val next = stageTermZ(term.next)
-            TermZ.Function(term.name, body, next, term.type)
+            S.TermZ.Function(term.name, body, next)
         }
 
-        is TermZ.Run -> term
-        is TermZ.Splice -> {
+        is C.TermZ.Run -> S.TermZ.Run(term.name)
+        is C.TermZ.Splice -> {
             when (val element = normalize(term.element)) {
-                is TermS.Quote -> element.element
+                is C.TermS.Quote -> stageTermZ(element.element)
                 else -> error("expected: quote")
             }
         }
 
-        is TermZ.Hole -> error("unexpected: hole")
+        is C.TermZ.Hole -> S.TermZ.Hole
     }
 
     companion object {
         operator fun invoke(
-            root: Root,
-        ): Root = Stage().stageRoot(root)
+            root: C.Root,
+        ): S.Root = Stage().stageRoot(root)
     }
 }
