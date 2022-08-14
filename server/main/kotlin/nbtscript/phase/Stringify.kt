@@ -1,8 +1,14 @@
 package nbtscript.phase
 
 import nbtscript.ast.Core.*
+import nbtscript.ast.Staged.Term
 import org.eclipse.lsp4j.MarkupContent
 import org.eclipse.lsp4j.MarkupKind
+
+fun markup(value: String): MarkupContent = MarkupContent(
+    MarkupKind.MARKDOWN,
+    "```nbtscript\n$value\n```"
+)
 
 fun stringifyTypeZ(type: TypeZ): String = when (type) {
     is TypeZ.EndZ -> "end"
@@ -79,7 +85,20 @@ fun stringifyTermS(term: TermS): String = when (term) {
     is TermS.Hole -> " "
 }
 
-fun markup(value: String): MarkupContent = MarkupContent(
-    MarkupKind.MARKDOWN,
-    "```nbtscript\n$value\n```"
-)
+fun stringifyTerm(term: Term): String = when (term) {
+    is Term.ByteTag -> "${term.data}b"
+    is Term.ShortTag -> "${term.data}s"
+    is Term.IntTag -> "${term.data}"
+    is Term.LongTag -> "${term.data}L"
+    is Term.FloatTag -> "${term.data}f"
+    is Term.DoubleTag -> "${term.data}d"
+    is Term.StringTag -> "\"${term.data}\"" // TODO: escape
+    is Term.ByteArrayTag -> term.elements.joinToString(", ", "[B;", "]") { stringifyTerm(it) }
+    is Term.IntArrayTag -> term.elements.joinToString(", ", "[I;", "]") { stringifyTerm(it) }
+    is Term.LongArrayTag -> term.elements.joinToString(", ", "[L;", "]") { stringifyTerm(it) }
+    is Term.ListTag -> term.elements.joinToString(", ", "[", "]") { stringifyTerm(it) }
+    is Term.CompoundTag -> term.elements.entries.joinToString(", ", "{", "}") { "${it.key}: ${stringifyTerm(it.value)}" }
+    is Term.Function -> "function ${term.name} = ${stringifyTerm(term.body)};\n${stringifyTerm(term.next)}"
+    is Term.Run -> term.name
+    is Term.Hole -> " "
+}

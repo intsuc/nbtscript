@@ -1,23 +1,23 @@
 package nbtscript.ast
 
 sealed interface Staged {
-    data class Root(val body: TermZ) : Staged
+    data class Root(val body: Term) : Staged
 
-    sealed interface TermZ : Staged {
-        data class ByteTag(val data: Byte) : TermZ
-        data class ShortTag(val data: Short) : TermZ
-        data class IntTag(val data: Int) : TermZ
-        data class LongTag(val data: Long) : TermZ
-        data class FloatTag(val data: Float) : TermZ
-        data class DoubleTag(val data: Double) : TermZ
-        data class StringTag(val data: String) : TermZ
-        data class ByteArrayTag(val elements: List<TermZ>) : TermZ
-        data class IntArrayTag(val elements: List<TermZ>) : TermZ
-        data class LongArrayTag(val elements: List<TermZ>) : TermZ
-        data class ListTag(val elements: List<TermZ>) : TermZ
-        data class CompoundTag(val elements: Map<String, TermZ>) : TermZ
-        data class Function(val name: String, val body: TermZ, val next: TermZ) : TermZ
-        data class Run(val name: String) : TermZ
-        object Hole : TermZ
+    sealed interface Term : Staged {
+        data class ByteTag(val data: Byte) : Term
+        data class ShortTag(val data: Short) : Term
+        data class IntTag(val data: Int) : Term
+        data class LongTag(val data: Long) : Term
+        data class FloatTag(val data: Float) : Term
+        data class DoubleTag(val data: Double) : Term
+        data class StringTag(val data: String) : Term
+        data class ByteArrayTag(val elements: List<Term>) : Term
+        data class IntArrayTag(val elements: List<Term>) : Term
+        data class LongArrayTag(val elements: List<Term>) : Term
+        data class ListTag(val elements: List<Term>) : Term
+        data class CompoundTag(val elements: Map<String, Term>) : Term
+        data class Function(val name: String, val body: Term, val next: Term) : Term
+        data class Run(val name: String) : Term
+        object Hole : Term
     }
 }

@@ -13,46 +13,46 @@ class Stage private constructor() {
 
     private fun stageTermZ(
         term: C.TermZ,
-    ): S.TermZ = when (term) {
-        is C.TermZ.ByteTag -> S.TermZ.ByteTag(term.data)
-        is C.TermZ.ShortTag -> S.TermZ.ShortTag(term.data)
-        is C.TermZ.IntTag -> S.TermZ.IntTag(term.data)
-        is C.TermZ.LongTag -> S.TermZ.LongTag(term.data)
-        is C.TermZ.FloatTag -> S.TermZ.FloatTag(term.data)
-        is C.TermZ.DoubleTag -> S.TermZ.DoubleTag(term.data)
-        is C.TermZ.StringTag -> S.TermZ.StringTag(term.data)
+    ): S.Term = when (term) {
+        is C.TermZ.ByteTag -> S.Term.ByteTag(term.data)
+        is C.TermZ.ShortTag -> S.Term.ShortTag(term.data)
+        is C.TermZ.IntTag -> S.Term.IntTag(term.data)
+        is C.TermZ.LongTag -> S.Term.LongTag(term.data)
+        is C.TermZ.FloatTag -> S.Term.FloatTag(term.data)
+        is C.TermZ.DoubleTag -> S.Term.DoubleTag(term.data)
+        is C.TermZ.StringTag -> S.Term.StringTag(term.data)
         is C.TermZ.ByteArrayTag -> {
             val elements = term.elements.map { stageTermZ(it) }
-            S.TermZ.ByteArrayTag(elements)
+            S.Term.ByteArrayTag(elements)
         }
 
         is C.TermZ.IntArrayTag -> {
             val elements = term.elements.map { stageTermZ(it) }
-            S.TermZ.IntArrayTag(elements)
+            S.Term.IntArrayTag(elements)
         }
 
         is C.TermZ.LongArrayTag -> {
             val elements = term.elements.map { stageTermZ(it) }
-            S.TermZ.LongArrayTag(elements)
+            S.Term.LongArrayTag(elements)
         }
 
         is C.TermZ.ListTag -> {
             val elements = term.elements.map { stageTermZ(it) }
-            S.TermZ.ListTag(elements)
+            S.Term.ListTag(elements)
         }
 
         is C.TermZ.CompoundTag -> {
             val elements = term.elements.mapValues { stageTermZ(it.value) }
-            S.TermZ.CompoundTag(elements)
+            S.Term.CompoundTag(elements)
         }
 
         is C.TermZ.Function -> {
             val body = stageTermZ(term.body)
             val next = stageTermZ(term.next)
-            S.TermZ.Function(term.name, body, next)
+            S.Term.Function(term.name, body, next)
         }
 
-        is C.TermZ.Run -> S.TermZ.Run(term.name)
+        is C.TermZ.Run -> S.Term.Run(term.name)
         is C.TermZ.Splice -> {
             when (val element = normalize(term.element)) {
                 is C.TermS.Quote -> stageTermZ(element.element)
@@ -60,7 +60,7 @@ class Stage private constructor() {
             }
         }
 
-        is C.TermZ.Hole -> S.TermZ.Hole
+        is C.TermZ.Hole -> S.Term.Hole
     }
 
     companion object {
