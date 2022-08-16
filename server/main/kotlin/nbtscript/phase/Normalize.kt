@@ -81,6 +81,11 @@ fun reflect(
         Value.CompoundTag(elements)
     }
 
+    is TermS.IndexedElement -> {
+        val index = lazy { reflect(env, term.index) }
+        Value.IndexedElement(term.target, index, term.type)
+    }
+
     is TermS.Abs -> {
         val anno = lazy { reflect(env, term.anno) }
         val body = Clos(env, lazyOf(term.body))
@@ -135,6 +140,11 @@ fun reify(
     is Value.CompoundS -> {
         val elements = value.elements.mapValues { reify(env, it.value.value) }
         TermS.CompoundS(elements, Value.UniverseS)
+    }
+
+    is Value.IndexedElement -> {
+        val index = reify(env, value.index.value)
+        TermS.IndexedElement(value.target, index, value.type)
     }
 
     is Value.ArrowS -> {

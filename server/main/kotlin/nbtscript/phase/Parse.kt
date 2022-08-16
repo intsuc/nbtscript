@@ -342,6 +342,12 @@ class Parse private constructor(
                             TermS.CompoundS(elements, range())
                         }
 
+                        "indexed_element" -> { // TODO: use better syntax
+                            val target = parseTermZ()
+                            val index = parseTermS()
+                            TermS.IndexedElement(target, index, range())
+                        }
+
                         "code" -> {
                             val element = parseTypeZ()
                             TermS.CodeS(element, range())

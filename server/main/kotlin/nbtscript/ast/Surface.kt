@@ -72,6 +72,7 @@ sealed interface Surface {
         data class LongArrayTag(val elements: List<TermS>, override val range: Range) : TermS
         data class ListTag(val elements: List<TermS>, override val range: Range) : TermS
         data class CompoundTag(val elements: Map<String, TermS>, override val range: Range) : TermS
+        data class IndexedElement(val target: TermZ, val index: TermS, override val range: Range) : TermS
         data class Abs(val name: String, val anno: TermS, val body: TermS, override val range: Range) : TermS
         data class Apply(val operator: TermS, val operand: TermS, override val range: Range) : TermS
         data class Quote(val element: TermZ, override val range: Range) : TermS

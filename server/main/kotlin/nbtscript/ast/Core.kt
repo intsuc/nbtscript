@@ -76,6 +76,7 @@ sealed interface Core {
         data class LongArrayTag(val elements: List<TermS>, override val type: Value) : TermS
         data class ListTag(val elements: List<TermS>, override val type: Value) : TermS
         data class CompoundTag(val elements: Map<String, TermS>, override val type: Value) : TermS
+        data class IndexedElement(val target: TermZ, val index: TermS, override val type: Value) : TermS
         data class Abs(val name: String, val anno: TermS, val body: TermS, override val type: Value) : TermS
         data class Apply(val operator: TermS, val operand: TermS, override val type: Value) : TermS
         data class Quote(val element: TermZ, override val type: Value) : TermS
@@ -115,6 +116,7 @@ sealed interface Core {
         data class LongArrayTag(val elements: List<Lazy<Value>>) : Value
         data class ListTag(val elements: List<Lazy<Value>>) : Value
         data class CompoundTag(val elements: Map<String, Lazy<Value>>) : Value
+        data class IndexedElement(val target: TermZ, val index: Lazy<Value>, val type: Value) : Value
         data class Abs(val name: String, val anno: Lazy<Value>, val body: Clos) : Value
         data class Apply(val operator: Value, val operand: Lazy<Value>) : Value
         data class Quote(val element: TermZ) : Value

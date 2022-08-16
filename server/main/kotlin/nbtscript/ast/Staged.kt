@@ -16,6 +16,7 @@ sealed interface Staged {
         data class LongArrayTag(val elements: List<Term>) : Term
         data class ListTag(val elements: List<Term>) : Term
         data class CompoundTag(val elements: Map<String, Term>) : Term
+        data class IndexedElement(val target: Term, val index: Int) : Term
         data class Function(val name: String, val body: Term, val next: Term) : Term
         data class Run(val name: String) : Term
         object Hole : Term

@@ -50,6 +50,16 @@ class Execute private constructor() {
             Term.CompoundTag(elements)
         }
 
+        is Term.IndexedElement -> {
+            when (term.target) {
+                is Term.ByteArrayTag -> term.target.elements[term.index]
+                is Term.IntArrayTag -> term.target.elements[term.index]
+                is Term.LongArrayTag -> term.target.elements[term.index]
+                is Term.ListTag -> term.target.elements[term.index]
+                else -> error("")
+            }
+        }
+
         is Term.Function -> executeTerm(ctx + (term.name to term.body), term.next)
         is Term.Run -> executeTerm(ctx, ctx[term.name]!!)
         is Term.Hole -> term

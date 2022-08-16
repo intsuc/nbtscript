@@ -221,6 +221,12 @@ class Elab private constructor(
             C.TermS.CompoundTag(elements, TypeS.CompoundS(elementTypes))
         }
 
+        term is S.TermS.IndexedElement -> {
+            val target = elabTermZ(persistentMapOf(), term.target, C.TypeZ.ByteArrayZ /* TODO */)
+            val index = elabTermS(ctx, term.index, TypeS.IntS)
+            C.TermS.IndexedElement(target, index, TypeS.CodeS(C.TypeZ.ByteZ /* TODO */))
+        }
+
         term is S.TermS.Abs && type == null -> {
             val anno = elabTermS(ctx, term.anno, TypeS.UniverseS)
             val a = reflect(ctx.values, anno)
@@ -362,6 +368,7 @@ class Elab private constructor(
             }
         }
 
+        value1 is C.Value.IndexedElement && value2 is C.Value.IndexedElement -> false // ?
         value1 is C.Value.ArrowS && value2 is C.Value.ArrowS -> {
             convS(level, value1.dom.value, value2.dom.value) && lazyOf(C.Value.Var(null, level, value1.dom)).let { operand ->
                 convS(level.inc(), value1.cod(operand), value2.cod(operand))
