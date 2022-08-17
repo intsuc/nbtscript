@@ -305,7 +305,7 @@ class Elab private constructor(
             val anno = term.anno?.let { elabTermS(ctx, it, TypeS.UniverseS) }
             val a = anno?.let { reflect(ctx.values, it) }
             val init = elabTermS(ctx, term.init, a)
-            context.setHover(term.name.range, lazy { Hover(markup(stringifyTermS(anno ?: reify(persistentListOf(), init.type)))) })
+            context.setHover(term.name.range, lazy { Hover(markup(stringifyTermS(anno ?: reify(ctx.values, init.type)))) })
             val next = elabTermS(ctx.bind(term.name.text, a ?: init.type, lazy { reflect(ctx.values, init) }), term.next, type)
             C.TermS.Let(term.name.text, init, next, type ?: next.type)
         }
