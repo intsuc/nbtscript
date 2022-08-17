@@ -109,13 +109,7 @@ class Parse private constructor(
                 term
             }
 
-            '"' -> {
-                skip()
-                val data = readString() // TODO: escape
-                expect('"')
-                Term.StringTag(data, range())
-            }
-
+            '"', '\'' -> parseStringTag()
             '[' -> {
                 skip()
                 when (text.getOrNull(cursor)) {
@@ -216,6 +210,7 @@ class Parse private constructor(
                             }.toMap()
                             Term.CompoundType(elements, range())
                         }
+
                         "code" -> {
                             val element = parseTerm()
                             Term.CodeType(element, range())
@@ -264,6 +259,35 @@ class Parse private constructor(
         }
     }
 
+    // TODO: improve error reporting and locality
+    private fun parseStringTag(): Term = ranged {
+        val builder = StringBuilder()
+        val quote = peek()
+        skip()
+        var escaped = false
+        while (canRead()) {
+            val char = peek()
+            skip()
+            if (escaped) {
+                when (char) {
+                    '\\', quote -> {
+                        builder.append(char)
+                        escaped = false
+                    }
+
+                    else -> return@ranged hole()
+                }
+            } else {
+                when (char) {
+                    '\\' -> escaped = true
+                    quote -> return@ranged Term.StringTag(builder.toString(), range())
+                    else -> builder.append(char)
+                }
+            }
+        }
+        hole()
+    }
+
     private fun RangeContext.hole(): Term {
         val range = range()
         context.addDiagnostic(termExpected(range))
@@ -305,7 +329,7 @@ class Parse private constructor(
     }
 
     private inline fun Char.isWordPart(): Boolean = when (this) {
-        '"', '(', ')', ',', '.', ':', ';', '=', '[', '\\', ']', '{', '}' -> false
+        '"', '\'', '(', ')', ',', '.', ':', ';', '=', '[', '\\', ']', '{', '}' -> false
         else -> !isWhitespace()
     }
 

@@ -38,6 +38,17 @@
       ]
     },
     {
+      "name": "string.quoted.single.nbtscript",
+      "begin": "'",
+      "end": "'",
+      "patterns": [
+        {
+          "name": "constant.character.escape.nbtscript",
+          "match": "\\\\."
+        }
+      ]
+    },
+    {
       "match": "(?<=\\[)([BIL]);",
       "captures": {
         "1": {

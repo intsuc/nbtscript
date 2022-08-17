@@ -34,7 +34,7 @@ fun stringifyTermZ(term: TermZ): String = when (term) {
     is TermZ.LongTag -> "${term.data}L"
     is TermZ.FloatTag -> "${term.data}f"
     is TermZ.DoubleTag -> "${term.data}d"
-    is TermZ.StringTag -> "\"${term.data}\"" // TODO: escape
+    is TermZ.StringTag -> term.data.quoted('"')
     is TermZ.ByteArrayTag -> term.elements.joinToString(", ", "[B;", "]") { stringifyTermZ(it) }
     is TermZ.IntArrayTag -> term.elements.joinToString(", ", "[I;", "]") { stringifyTermZ(it) }
     is TermZ.LongArrayTag -> term.elements.joinToString(", ", "[L;", "]") { stringifyTermZ(it) }
@@ -72,7 +72,7 @@ fun stringifyTermS(term: TermS): String = when (term) {
     is TermS.LongTag -> "${term.data}L"
     is TermS.FloatTag -> "${term.data}f"
     is TermS.DoubleTag -> "${term.data}d"
-    is TermS.StringTag -> "\"${term.data}\"" // TODO: escape
+    is TermS.StringTag -> term.data.quoted('"')
     is TermS.ByteArrayTag -> term.elements.joinToString(", ", "[B;", "]") { stringifyTermS(it) }
     is TermS.IntArrayTag -> term.elements.joinToString(", ", "[I;", "]") { stringifyTermS(it) }
     is TermS.LongArrayTag -> term.elements.joinToString(", ", "[L;", "]") { stringifyTermS(it) }
@@ -93,7 +93,7 @@ fun stringifyTerm(term: Term): String = when (term) {
     is Term.LongTag -> "${term.data}L"
     is Term.FloatTag -> "${term.data}f"
     is Term.DoubleTag -> "${term.data}d"
-    is Term.StringTag -> "\"${term.data}\"" // TODO: escape
+    is Term.StringTag -> term.data.quoted('"')
     is Term.ByteArrayTag -> term.elements.joinToString(", ", "[B;", "]") { stringifyTerm(it) }
     is Term.IntArrayTag -> term.elements.joinToString(", ", "[I;", "]") { stringifyTerm(it) }
     is Term.LongArrayTag -> term.elements.joinToString(", ", "[L;", "]") { stringifyTerm(it) }
@@ -104,3 +104,10 @@ fun stringifyTerm(term: Term): String = when (term) {
     is Term.Run -> term.name
     is Term.Hole -> " "
 }
+
+private fun String.quoted(quote: Char): String =
+    "$quote${
+        this
+            .replace("\\", "\\\\")
+            .replace("$quote", "\\$quote")
+    }$quote"
