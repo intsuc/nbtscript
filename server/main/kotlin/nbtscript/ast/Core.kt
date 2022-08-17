@@ -60,7 +60,7 @@ sealed interface Core {
         data class LongArrayS(override val type: Value) : TermS
         data class ListS(val element: TermS, override val type: Value) : TermS
         data class CompoundS(val elements: Map<String, TermS>, override val type: Value) : TermS
-        data class ArrowS(val name: String?, val dom: TermS, val cod: TermS, override val type: Value) : TermS
+        data class FunctionS(val name: String?, val dom: TermS, val cod: TermS, override val type: Value) : TermS
         data class CodeS(val element: Core.TypeZ, override val type: Value) : TermS
         data class TypeZ(override val type: Value) : TermS
         data class EndTag(override val type: Value) : TermS
@@ -82,6 +82,7 @@ sealed interface Core {
         data class Quote(val element: TermZ, override val type: Value) : TermS
         data class Let(val name: String, val init: TermS, val next: TermS, override val type: Value) : TermS
         data class Var(val name: String?, val level: Int, override val type: Value) : TermS
+        data class Meta(val index: Int, override val type: Value) : TermS
         data class Hole(override val type: Value) : TermS
     }
 
@@ -100,7 +101,7 @@ sealed interface Core {
         object LongArrayS : Value
         data class ListS(val element: Lazy<Value>) : Value
         data class CompoundS(val elements: Map<String, Lazy<Value>>) : Value
-        data class ArrowS(val name: String?, val dom: Lazy<Value>, val cod: Clos) : Value
+        data class FunctionS(val name: String?, val dom: Lazy<Value>, val cod: Clos) : Value
         data class CodeS(val element: Core.TypeZ) : Value
         object TypeZ : Value
         object EndTag : Value
@@ -121,6 +122,7 @@ sealed interface Core {
         data class Apply(val operator: Value, val operand: Lazy<Value>) : Value
         data class Quote(val element: TermZ) : Value
         data class Var(val name: String?, val level: Int, val type: Lazy<Value>) : Value
+        data class Meta(val index: Int, val type: Value) : Value
         object Hole : Value
     }
 

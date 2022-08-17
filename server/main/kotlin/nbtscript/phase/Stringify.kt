@@ -62,7 +62,7 @@ fun stringifyTermS(term: TermS): String = when (term) {
     is TermS.ListS -> "list ${stringifyTermS(term.element)}"
     is TermS.CompoundS -> term.elements.entries.joinToString(", ", "compound {", "}") { "${it.key}: ${stringifyTermS(it.value)}" }
     is TermS.IndexedElement -> "${stringifyTermZ(term.target)}.[${stringifyTermS(term.index)}]"
-    is TermS.ArrowS -> "${term.name?.let { "($it: ${stringifyTermS(term.dom)})" } ?: stringifyTermS(term.dom)} -> ${stringifyTermS(term.cod)}"
+    is TermS.FunctionS -> "${term.name?.let { "($it: ${stringifyTermS(term.dom)})" } ?: stringifyTermS(term.dom)} -> ${stringifyTermS(term.cod)}"
     is TermS.CodeS -> "code ${stringifyTypeZ(term.element)}"
     is TermS.TypeZ -> "type"
     is TermS.EndTag -> ""
@@ -78,11 +78,12 @@ fun stringifyTermS(term: TermS): String = when (term) {
     is TermS.LongArrayTag -> term.elements.joinToString(", ", "[L;", "]") { stringifyTermS(it) }
     is TermS.ListTag -> term.elements.joinToString(", ", "[", "]") { stringifyTermS(it) }
     is TermS.CompoundTag -> term.elements.entries.joinToString(", ", "{", "}") { "${it.key}: ${stringifyTermS(it.value)}" }
-    is TermS.Abs -> "(${term.name}: ${stringifyTermS(term.anno)}) => ${stringifyTermS(term.body)}"
+    is TermS.Abs -> "${term.name} => ${stringifyTermS(term.body)}"
     is TermS.Apply -> "${stringifyTermS(term.operator)}(${stringifyTermS(term.operand)})"
     is TermS.Quote -> "`${stringifyTermZ(term.element)}"
     is TermS.Let -> "let ${term.name} = ${stringifyTermS(term.init)};\n${stringifyTermS(term.next)}"
     is TermS.Var -> term.name ?: ""
+    is TermS.Meta -> "?${term.index.toSubscript()}"
     is TermS.Hole -> " "
 }
 
@@ -111,3 +112,5 @@ private fun String.quoted(quote: Char): String =
             .replace("\\", "\\\\")
             .replace("$quote", "\\$quote")
     }$quote"
+
+private fun Int.toSubscript(): String = toString().map { it + ('₀' - '0') }.joinToString("")

@@ -38,7 +38,7 @@ sealed interface Surface {
         data class ListTag(val elements: List<Term>, override val range: Range) : Term
         data class CompoundTag(val elements: Map<Name, Term>, override val range: Range) : Term
         data class IndexedElement(val target: Term, val index: Term, override val range: Range) : Term
-        data class Abs(val name: Name, val anno: Term, val body: Term, override val range: Range) : Term
+        data class Abs(val name: Name, val anno: Term?, val body: Term, override val range: Range) : Term
         data class Apply(val operator: Term, val operand: Term, override val range: Range) : Term
         data class Quote(val element: Term, override val range: Range) : Term
         data class Splice(val element: Term, override val range: Range) : Term

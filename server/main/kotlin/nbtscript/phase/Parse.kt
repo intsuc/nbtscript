@@ -61,7 +61,19 @@ class Parse private constructor(
 
                     ')' -> {
                         skip()
-                        left
+                        when (peek()) {
+                            '=' -> {
+                                skip()
+                                expect('>')
+                                val body = parseTerm()
+                                when (left) {
+                                    is Term.Var -> Term.Abs(Name(left.name, left.range), null, body, range())
+                                    else -> hole()
+                                }
+                            }
+
+                            else -> left
+                        }
                     }
 
                     else -> hole()

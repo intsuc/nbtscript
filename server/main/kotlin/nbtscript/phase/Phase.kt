@@ -9,6 +9,8 @@ fun interface Phase<A, B> {
     class Context(
         private var position: Position? = null,
     ) {
+        val unifier: Unifier = Unifier()
+
         private val _diagnostics: MutableList<Diagnostic> = mutableListOf()
         private val _inlayHints: MutableList<Lazy<InlayHint>> = mutableListOf()
 

@@ -40,10 +40,10 @@ fun reflect(
         Value.CompoundS(elements)
     }
 
-    is TermS.ArrowS -> {
+    is TermS.FunctionS -> {
         val dom = lazy { reflect(env, term.dom) }
         val cod = Clos(env, lazyOf(term.cod))
-        Value.ArrowS(term.name, dom, cod)
+        Value.FunctionS(term.name, dom, cod)
     }
 
     is TermS.CodeS -> Value.CodeS(term.element)
@@ -113,6 +113,7 @@ fun reflect(
     }
 
     is TermS.Var -> env[term.level].value
+    is TermS.Meta -> Value.Meta(term.index, term.type)
     is TermS.Hole -> Value.Hole
 }
 
@@ -147,11 +148,11 @@ fun reify(
         TermS.IndexedElement(value.target, index, value.type)
     }
 
-    is Value.ArrowS -> {
+    is Value.FunctionS -> {
         val dom = reify(env, value.dom.value)
         val x = lazyOf(Value.Var(value.name, env.size, value.dom))
         val cod = reify(env + x, value.cod(x))
-        TermS.ArrowS(value.name, dom, cod, Value.UniverseS)
+        TermS.FunctionS(value.name, dom, cod, Value.UniverseS)
     }
 
     is Value.CodeS -> TermS.CodeS(value.element, Value.UniverseS)
@@ -195,18 +196,19 @@ fun reify(
         val anno = reify(env, value.anno.value)
         val x = lazyOf(Value.Var(value.name, env.size, value.anno))
         val body = reify(env + x, value.body(x))
-        TermS.Abs(value.name, anno, body, Value.ArrowS(null, lazyOf(anno.type), Clos(env, lazy { reify(env, body.type) })))
+        TermS.Abs(value.name, anno, body, Value.FunctionS(null, lazyOf(anno.type), Clos(env, lazy { reify(env, body.type) })))
     }
 
     is Value.Apply -> {
         val operator = reify(env, value.operator)
         val operand = reify(env, value.operand.value)
-        val cod = (operator.type as Value.ArrowS).cod(value.operand)
+        val cod = (operator.type as Value.FunctionS).cod(value.operand)
         TermS.Apply(operator, operand, cod)
     }
 
     is Value.Quote -> TermS.Quote(value.element, Value.CodeS(value.element.type))
     is Value.Var -> TermS.Var(value.name, value.level, value.type.value)
+    is Value.Meta -> TermS.Meta(value.index, value.type)
     is Value.Hole -> TermS.Hole(Value.EndS)
 }
 
