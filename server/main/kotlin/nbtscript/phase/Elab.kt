@@ -156,8 +156,8 @@ class Elab private constructor(
         }
     }.also {
         context.setHover(term.range, lazy { Hover(markup(stringifyTypeZ(it.type))) })
-        context.setCompletionItems(term.range, ctx.entries.map { (name, type) ->
-            lazy {
+        context.setCompletionItems(term.range, lazy {
+            ctx.entries.map { (name, type) ->
                 CompletionItem(name).apply {
                     kind = CompletionItemKind.Function
                     labelDetails = CompletionItemLabelDetails().apply {
@@ -330,8 +330,8 @@ class Elab private constructor(
         }
     }.also {
         context.setHover(term.range, lazy { Hover(markup(stringifyTermS(reify(ctx.values, it.type)))) })
-        context.setCompletionItems(term.range, ctx.levels.map { (name, level) ->
-            lazy {
+        context.setCompletionItems(term.range, lazy {
+            ctx.levels.map { (name, level) ->
                 CompletionItem(name).apply {
                     kind = CompletionItemKind.Variable
                     labelDetails = CompletionItemLabelDetails().apply {

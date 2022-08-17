@@ -57,7 +57,7 @@ class NbtScriptTextDocumentService : TextDocumentService, LanguageClientAware {
     override fun completion(params: CompletionParams): CompletableFuture<Either<List<CompletionItem>, CompletionList>> = supplyAsync {
         val uri = Uri(params.textDocument.uri)
         val text = texts[uri]!!
-        forLeft(run(text, params.position).completionItems?.map { it.value } ?: emptyList())
+        forLeft(run(text, params.position).completionItems?.value ?: emptyList())
     }
 
     private fun diagnose(uri: Uri, text: String) {
