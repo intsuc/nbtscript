@@ -25,17 +25,14 @@ class Parse private constructor(
     }
 
     private fun parseTerm(): Term = ranged {
-        val left = parseTerm1()
-        when (peek()) {
-            '(' -> {
-                skip()
-                val operand = parseTerm()
-                expect(')')
-                Term.Apply(left, operand, range())
-            }
-
-            else -> left
+        var term = parseTerm1()
+        while (peek() == '(') {
+            skip()
+            val operand = parseTerm()
+            expect(')')
+            term = Term.Apply(term, operand, range())
         }
+        term
     }
 
     private fun RangeContext.parseTerm1(): Term =
