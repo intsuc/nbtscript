@@ -119,7 +119,7 @@ class Elab private constructor(
             val element = elabTermS(Context(), term.element, type?.let { TypeS.CodeS(it) })
             when (val elementType = context.unifier.forceS(element.type)) {
                 is TypeS.CodeS -> C.TermZ.Splice(element, elementType.element)
-                else -> errorZ(codeExpected(reify(persistentListOf(), elementType), term.range))
+                else -> errorZ(codeExpected(context.unifier.reify(persistentListOf(), elementType), term.range))
             }
         }
 
@@ -268,13 +268,13 @@ class Elab private constructor(
             term is S.Term.Abs && type == null -> {
                 val anno = term.anno?.let { elabTermS(ctx, it, TypeS.UniverseS) } ?: context.unifier.fresh(TypeS.UniverseS)
                 context.setHover(term.name.range, lazy { Hover(markup(stringifyTermS(anno))) })
-                val a = reflect(ctx.values, anno)
+                val a = context.unifier.reflect(ctx.values, anno)
                 val body = elabTermS(ctx.bind(term.name.text, a), term.body)
                 C.TermS.Abs(
                     term.name.text, anno, body, TypeS.FunctionS(
                         null,
                         lazyOf(a),
-                        C.Clos(ctx.values, lazy { reify(ctx.values, body.type) })
+                        C.Clos(ctx.values, lazy { context.unifier.reify(ctx.values, body.type) })
                     )
                 )
             }
@@ -284,12 +284,12 @@ class Elab private constructor(
                     val operator = elabTermS(ctx, term.operator)
                     when (val operatorType = context.unifier.forceS(operator.type)) {
                         is TypeS.FunctionS -> {
-                            val operand = elabTermS(ctx, term.operand)
-                            val cod = operatorType.cod(lazy { reflect(ctx.values, operand) })
+                            val operand = elabTermS(ctx, term.operand, operatorType.dom.value)
+                            val cod = operatorType.cod(context.unifier, lazy { context.unifier.reflect(ctx.values, operand) })
                             C.TermS.Apply(operator, operand, cod)
                         }
 
-                        else -> errorS(arrowExpected(reify(ctx.values, operatorType), term.operator.range))
+                        else -> errorS(arrowExpected(context.unifier.reify(ctx.values, operatorType), term.operator.range))
                     }
                 } else {
                     val operand = elabTermS(ctx, term.operand)
@@ -297,7 +297,7 @@ class Elab private constructor(
                         ctx, term.operator, TypeS.FunctionS(
                             null,
                             lazyOf(operand.type),
-                            C.Clos(ctx.values, lazy { reify(ctx.values, type) })
+                            C.Clos(ctx.values, lazy { context.unifier.reify(ctx.values, type) })
                         )
                     )
                     C.TermS.Apply(operator, operand, type)
@@ -311,16 +311,16 @@ class Elab private constructor(
 
             term is S.Term.Let -> {
                 val anno = term.anno?.let { elabTermS(ctx, it, TypeS.UniverseS) }
-                val a = anno?.let { reflect(ctx.values, it) }
+                val a = anno?.let { context.unifier.reflect(ctx.values, it) }
                 val init = elabTermS(ctx, term.init, a)
-                context.setHover(term.name.range, lazy { Hover(markup(stringifyTermS(anno ?: reify(ctx.values, init.type)))) })
+                context.setHover(term.name.range, lazy { Hover(markup(stringifyTermS(anno ?: context.unifier.reify(ctx.values, init.type)))) })
                 if (term.anno == null) {
                     context.addInlayHint(lazy {
-                        val part = InlayHintLabelPart(": ${stringifyTermS(reify(ctx.values, init.type))}")
+                        val part = InlayHintLabelPart(": ${stringifyTermS(context.unifier.reify(ctx.values, init.type))}")
                         InlayHint(term.name.range.end, forRight(listOf(part)))
                     })
                 }
-                val next = elabTermS(ctx.bind(term.name.text, a ?: init.type, lazy { reflect(ctx.values, init) }), term.next, type)
+                val next = elabTermS(ctx.bind(term.name.text, a ?: init.type, lazy { context.unifier.reflect(ctx.values, init) }), term.next, type)
                 C.TermS.Let(term.name.text, init, next, type ?: next.type)
             }
 
@@ -334,7 +334,7 @@ class Elab private constructor(
             term is S.Term.Hole -> {
                 context.addInlayHint(lazy {
                     val part = InlayHintLabelPart("_").apply {
-                        tooltip = forRight(markup(type?.let { stringifyTermS(reify(ctx.values, it)) } ?: "?"))
+                        tooltip = forRight(markup(type?.let { stringifyTermS(context.unifier.reify(ctx.values, it)) } ?: "?"))
                     }
                     InlayHint(term.range.end, forRight(listOf(part)))
                 })
@@ -346,19 +346,25 @@ class Elab private constructor(
                 else {
                     val inferred = elabTermS(ctx, term)
                     if (context.unifier.unifyS(ctx.size, inferred.type, type)) inferred
-                    else errorS(typeSMismatched(reify(ctx.values, type), reify(ctx.values, inferred.type), term.range))
+                    else errorS(
+                        typeSMismatched(
+                            context.unifier.reify(ctx.values, type),
+                            context.unifier.reify(ctx.values, inferred.type),
+                            term.range
+                        )
+                    )
                 }
             }
         }.also {
-            context.setHover(term.range, lazy { Hover(markup(stringifyTermS(reify(ctx.values, it.type)))) })
+            context.setHover(term.range, lazy { Hover(markup(stringifyTermS(context.unifier.reify(ctx.values, it.type)))) })
             context.setCompletionItems(term.range, lazy {
                 ctx.levels.map { (name, level) ->
                     CompletionItem(name).apply {
                         kind = CompletionItemKind.Variable
                         labelDetails = CompletionItemLabelDetails().apply {
-                            detail = " : ${stringifyTermS(reify(ctx.values, ctx.types[level]))}"
+                            detail = " : ${stringifyTermS(context.unifier.reify(ctx.values, ctx.types[level]))}"
                         }
-                        detail = stringifyTermS(reify(ctx.values, ctx.values[level].value))
+                        detail = stringifyTermS(context.unifier.reify(ctx.values, ctx.values[level].value))
                     }
                 }
             })

@@ -5,7 +5,7 @@ import nbtscript.ast.Core.*
 class Unifier {
     private val metas: MutableList<Value?> = mutableListOf()
 
-    operator fun get(index: Int): Value? = metas[index]
+    operator fun get(index: Int): Value? = metas.getOrNull(index)
 
     fun fresh(
         type: Value,
@@ -47,8 +47,10 @@ class Unifier {
         @Suppress("NAME_SHADOWING") val value1 = forceS(value1)
         @Suppress("NAME_SHADOWING") val value2 = forceS(value2)
         return when {
+            value1 is Value.Meta && value2 is Value.Meta -> value1.index == value2.index
             value1 is Value.Meta -> solveS(lvl, value1.index, value2)
             value2 is Value.Meta -> solveS(lvl, value2.index, value1)
+
             value1 is Value.UniverseS && value2 is Value.UniverseS -> true
             value1 is Value.EndS && value2 is Value.EndS -> true
             value1 is Value.ByteS && value2 is Value.ByteS -> true
@@ -71,7 +73,7 @@ class Unifier {
             value1 is Value.IndexedElement && value2 is Value.IndexedElement -> false // ?
             value1 is Value.FunctionS && value2 is Value.FunctionS -> {
                 unifyS(lvl, value1.dom.value, value2.dom.value) && lazyOf(Value.Var(null, lvl, value1.dom)).let { operand ->
-                    unifyS(lvl.inc(), value1.cod(operand), value2.cod(operand))
+                    unifyS(lvl.inc(), value1.cod(this, operand), value2.cod(this, operand))
                 }
             }
 
@@ -108,7 +110,7 @@ class Unifier {
 
             value1 is Value.Abs && value2 is Value.Abs -> {
                 val operand = lazyOf(Value.Var(null, lvl, value1.anno))
-                unifyS(lvl.inc(), value1.body(operand), value2.body(operand))
+                unifyS(lvl.inc(), value1.body(this, operand), value2.body(this, operand))
             }
 
             value1 is Value.Apply && value2 is Value.Apply -> {
@@ -126,7 +128,7 @@ class Unifier {
         value: Value,
     ): Value = when (value) {
         is Value.Meta -> {
-            when (val meta = metas[value.index]) {
+            when (val meta = metas.getOrNull(value.index)) {
                 null -> value
                 else -> forceS(meta)
             }
@@ -139,7 +141,7 @@ class Unifier {
         lvl: Int,
         index: Int,
         candidate: Value,
-    ): Boolean = when (val meta = metas[index]) {
+    ): Boolean = when (val meta = metas.getOrNull(index)) {
         null -> {
             metas[index] = candidate
             true

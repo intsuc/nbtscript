@@ -4,7 +4,9 @@ import kotlinx.collections.immutable.persistentListOf
 import nbtscript.ast.Core as C
 import nbtscript.ast.Staged as S
 
-class Stage private constructor() {
+class Stage private constructor(
+    private val context: Phase.Context,
+) {
     private fun stageRoot(
         root: C.Root,
     ): S.Root {
@@ -55,10 +57,10 @@ class Stage private constructor() {
 
         is C.TermZ.Run -> S.Term.Run(term.name)
         is C.TermZ.Splice -> {
-            when (val element = normalize(term.element)) {
+            when (val element = context.unifier.normalize(term.element)) {
                 is C.TermS.IndexedElement -> {
                     val target = stageTermZ(element.target)
-                    val index = (reflect(persistentListOf(), element.index) as C.Value.IntTag).data
+                    val index = (context.unifier.reflect(persistentListOf(), element.index) as C.Value.IntTag).data
                     S.Term.IndexedElement(target, index)
                 }
 
@@ -70,9 +72,10 @@ class Stage private constructor() {
         is C.TermZ.Hole -> S.Term.Hole
     }
 
-    companion object {
-        operator fun invoke(
-            root: C.Root,
-        ): S.Root = Stage().stageRoot(root)
+    companion object : Phase<C.Root, S.Root> {
+        override operator fun invoke(
+            context: Phase.Context,
+            input: C.Root,
+        ): S.Root = Stage(context).stageRoot(input)
     }
 }

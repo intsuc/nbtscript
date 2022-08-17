@@ -170,7 +170,7 @@ class Zonk private constructor(
         is TermS.Var -> term
         is TermS.Meta -> {
             context.unifier[term.index]
-                ?.let { reify(persistentListOf(), it) }
+                ?.let { context.unifier.reify(persistentListOf(), it) }
                 ?: run {
                     context.addDiagnostic(unsolvedMeta(term.index))
                     term

@@ -5,12 +5,16 @@ import nbtscript.ast.Staged.Term
 import org.eclipse.lsp4j.MarkupContent
 import org.eclipse.lsp4j.MarkupKind
 
-fun markup(value: String): MarkupContent = MarkupContent(
+fun markup(
+    value: String,
+): MarkupContent = MarkupContent(
     MarkupKind.MARKDOWN,
     "```nbtscript\n$value\n```"
 )
 
-fun stringifyTypeZ(type: TypeZ): String = when (type) {
+fun stringifyTypeZ(
+    type: TypeZ,
+): String = when (type) {
     is TypeZ.EndZ -> "end"
     is TypeZ.ByteZ -> "byte"
     is TypeZ.ShortZ -> "short"
@@ -27,7 +31,9 @@ fun stringifyTypeZ(type: TypeZ): String = when (type) {
     is TypeZ.Hole -> "hole"
 }
 
-fun stringifyTermZ(term: TermZ): String = when (term) {
+fun stringifyTermZ(
+    term: TermZ,
+): String = when (term) {
     is TermZ.ByteTag -> "${term.data}b"
     is TermZ.ShortTag -> "${term.data}s"
     is TermZ.IntTag -> "${term.data}"
@@ -46,7 +52,9 @@ fun stringifyTermZ(term: TermZ): String = when (term) {
     is TermZ.Hole -> " "
 }
 
-fun stringifyTermS(term: TermS): String = when (term) {
+fun stringifyTermS(
+    term: TermS,
+): String = when (term) {
     is TermS.UniverseS -> "universe"
     is TermS.EndS -> "end"
     is TermS.ByteS -> "byte"
@@ -87,7 +95,9 @@ fun stringifyTermS(term: TermS): String = when (term) {
     is TermS.Hole -> " "
 }
 
-fun stringifyTerm(term: Term): String = when (term) {
+fun stringifyTerm(
+    term: Term,
+): String = when (term) {
     is Term.ByteTag -> "${term.data}b"
     is Term.ShortTag -> "${term.data}s"
     is Term.IntTag -> "${term.data}"
@@ -106,7 +116,9 @@ fun stringifyTerm(term: Term): String = when (term) {
     is Term.Hole -> " "
 }
 
-private fun String.quoted(quote: Char): String =
+fun String.quoted(
+    quote: Char,
+): String =
     "$quote${
         this
             .replace("\\", "\\\\")

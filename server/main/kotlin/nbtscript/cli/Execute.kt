@@ -16,7 +16,7 @@ object Execute : Subcommand("execute", "Execute") {
     override fun execute() {
         try {
             val text = Files.readString(Paths.get(path))
-            val result = stringifyTerm(Execute(Stage((Parse..Elab)(Phase.Context(), text))).body)
+            val result = stringifyTerm(Execute((Parse..Elab..Zonk..Stage)(Phase.Context(), text)).body)
             println(result)
         } catch (_: IOException) {
             throw Error("not found: '$path'")

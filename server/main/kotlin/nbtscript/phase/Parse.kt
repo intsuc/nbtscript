@@ -28,7 +28,7 @@ class Parse private constructor(
         when (peek()) {
             '(' -> {
                 skip()
-                val left = parseTerm1()
+                val left = parseTerm()
                 when (peek()) {
                     ':' -> {
                         skip()

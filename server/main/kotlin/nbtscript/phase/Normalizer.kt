@@ -7,14 +7,14 @@ import nbtscript.ast.Core.*
 
 typealias Environment = PersistentList<Lazy<Value>>
 
-fun normalize(
+fun Unifier.normalize(
     term: TermS,
 ): TermS {
     val env: Environment = persistentListOf()
     return reify(env, reflect(env, term))
 }
 
-fun reflect(
+fun Unifier.reflect(
     env: Environment,
     term: TermS,
 ): Value = when (term) {
@@ -93,10 +93,10 @@ fun reflect(
     }
 
     is TermS.Apply -> {
-        when (val operator = reflect(env, term.operator)) {
+        when (val operator = forceS(reflect(env, term.operator))) {
             is Value.Abs -> {
                 val operand = lazy { reflect(env, term.operand) }
-                operator.body(operand)
+                operator.body(this, operand)
             }
 
             else -> {
@@ -117,10 +117,10 @@ fun reflect(
     is TermS.Hole -> Value.Hole
 }
 
-fun reify(
+fun Unifier.reify(
     env: Environment,
     value: Value,
-): TermS = when (value) {
+): TermS = when (@Suppress("NAME_SHADOWING") val value = forceS(value)) {
     is Value.UniverseS -> TermS.UniverseS(Value.UniverseS)
     is Value.EndS -> TermS.EndS(Value.UniverseS)
     is Value.ByteS -> TermS.ByteS(Value.UniverseS)
@@ -151,7 +151,7 @@ fun reify(
     is Value.FunctionS -> {
         val dom = reify(env, value.dom.value)
         val x = lazyOf(Value.Var(value.name, env.size, value.dom))
-        val cod = reify(env + x, value.cod(x))
+        val cod = reify(env + x, value.cod(this, x))
         TermS.FunctionS(value.name, dom, cod, Value.UniverseS)
     }
 
@@ -195,14 +195,14 @@ fun reify(
     is Value.Abs -> {
         val anno = reify(env, value.anno.value)
         val x = lazyOf(Value.Var(value.name, env.size, value.anno))
-        val body = reify(env + x, value.body(x))
+        val body = reify(env + x, value.body(this, x))
         TermS.Abs(value.name, anno, body, Value.FunctionS(null, lazyOf(anno.type), Clos(env, lazy { reify(env, body.type) })))
     }
 
     is Value.Apply -> {
         val operator = reify(env, value.operator)
         val operand = reify(env, value.operand.value)
-        val cod = (operator.type as Value.FunctionS).cod(value.operand)
+        val cod = (operator.type as Value.FunctionS).cod(this, value.operand)
         TermS.Apply(operator, operand, cod)
     }
 
@@ -213,5 +213,6 @@ fun reify(
 }
 
 operator fun Clos.invoke(
+    unifier: Unifier,
     argument: Lazy<Value>,
-): Value = reflect(env + argument, body.value)
+): Value = unifier.reflect(env + argument, body.value)
