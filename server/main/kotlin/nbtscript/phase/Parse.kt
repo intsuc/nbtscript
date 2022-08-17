@@ -25,6 +25,20 @@ class Parse private constructor(
     }
 
     private fun parseTerm(): Term = ranged {
+        val left = parseTerm1()
+        when (peek()) {
+            '(' -> {
+                skip()
+                val operand = parseTerm()
+                expect(')')
+                Term.Apply(left, operand, range())
+            }
+
+            else -> left
+        }
+    }
+
+    private fun RangeContext.parseTerm1(): Term =
         when (peek()) {
             '(' -> {
                 skip()
@@ -81,7 +95,7 @@ class Parse private constructor(
             }
 
             else -> {
-                val left = parseTerm1()
+                val left = parseTerm2()
                 when (peek()) {
                     '.' -> {
                         skip()
@@ -98,20 +112,12 @@ class Parse private constructor(
                         Term.FunctionType(null, left, cod, range())
                     }
 
-                    '(' -> {
-                        skip()
-                        val operand = parseTerm()
-                        expect(')')
-                        Term.Apply(left, operand, range())
-                    }
-
                     else -> left
                 }
             }
         }
-    }
 
-    private fun RangeContext.parseTerm1(): Term =
+    private fun RangeContext.parseTerm2(): Term =
         when (val start = peek()) {
             '(' -> {
                 skip()
