@@ -27,10 +27,6 @@
       }
     },
     {
-      "name": "constant.numeric.nbtscript",
-      "match": "\\b[0-9+-][^\\s\"(),.:;=\\[\\\\\\]{}-]*\\b"
-    },
-    {
       "name": "string.quoted.double.nbtscript",
       "begin": "\"",
       "end": "\"",
@@ -40,6 +36,25 @@
           "match": "\\\\."
         }
       ]
+    },
+    {
+      "match": "(?<=\\[)([BIL]);",
+      "captures": {
+        "1": {
+          "name": "support.type.nbtscript"
+        }
+      }
+    },
+    {
+      "match": "\\b([0-9+-][0-9.]*)([bsLfd]?)\\b",
+      "captures": {
+        "1": {
+          "name": "constant.numeric.nbtscript"
+        },
+        "2": {
+          "name": "support.type.nbtscript"
+        }
+      }
     },
     {
       "name": "variable.nbtscript",
