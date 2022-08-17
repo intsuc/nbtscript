@@ -72,6 +72,14 @@ class Parse private constructor(
             else -> {
                 val left = parseTerm1()
                 when (peek()) {
+                    '.' -> {
+                        skip()
+                        expect('[')
+                        val index = parseTerm()
+                        expect(']')
+                        Term.IndexedElement(left, index, range())
+                    }
+
                     '-' -> {
                         skip()
                         expect('>')
@@ -208,13 +216,6 @@ class Parse private constructor(
                             }.toMap()
                             Term.CompoundType(elements, range())
                         }
-
-                        "indexed_element" -> { // TODO: use better syntax
-                            val target = parseTerm()
-                            val index = parseTerm()
-                            Term.IndexedElement(target, index, range())
-                        }
-
                         "code" -> {
                             val element = parseTerm()
                             Term.CodeType(element, range())

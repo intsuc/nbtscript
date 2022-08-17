@@ -61,7 +61,7 @@ fun stringifyTermS(term: TermS): String = when (term) {
     is TermS.LongArrayS -> "long_array"
     is TermS.ListS -> "list ${stringifyTermS(term.element)}"
     is TermS.CompoundS -> term.elements.entries.joinToString(", ", "compound {", "}") { "${it.key}: ${stringifyTermS(it.value)}" }
-    is TermS.IndexedElement -> "${stringifyTermZ(term.target)}[${stringifyTermS(term.index)}]"
+    is TermS.IndexedElement -> "${stringifyTermZ(term.target)}.[${stringifyTermS(term.index)}]"
     is TermS.ArrowS -> "${term.name?.let { "($it: ${stringifyTermS(term.dom)})" } ?: stringifyTermS(term.dom)} -> ${stringifyTermS(term.cod)}"
     is TermS.CodeS -> "code ${stringifyTypeZ(term.element)}"
     is TermS.TypeZ -> "type"
