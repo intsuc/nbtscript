@@ -15,7 +15,7 @@
       "match": "\\b(universe|end|byte|short|int|long|float|double|string|byte_array|int_array|long_array|list|compound|code|type)\\b"
     },
     {
-      "match": "\\b(?<=function)\\s+([^\\s]+)",
+      "match": "\\b(?<=function)\\s+([^\"(),.:;=\\[\\\\\\]{}]+)",
       "captures": {
         "1": {
           "name": "entity.name.function.nbtscript"
@@ -23,7 +23,7 @@
       }
     },
     {
-      "match": "\\b(?<=let)\\s+([^\\s]+)",
+      "match": "\\b(?<=let)\\s+([^\"(),.:;=\\[\\\\\\]{}]+)",
       "captures": {
         "1": {
           "name": "variable.nbtscript"
