@@ -137,12 +137,12 @@ class Elab private constructor(
         }
 
         term is S.Term.Hole -> {
-            type?.let {
-                val part = InlayHintLabelPart(" ").apply {
-                    tooltip = forRight(markup(stringifyTypeZ(it)))
+            context.addInlayHint(lazy {
+                val part = InlayHintLabelPart("_").apply {
+                    tooltip = forRight(markup(type?.let { stringifyTypeZ(it) } ?: "?"))
                 }
-                context.addInlayHint(InlayHint(term.range.start, forRight(listOf(part))))
-            }
+                InlayHint(term.range.start, forRight(listOf(part)))
+            })
             C.TermZ.Hole(C.TypeZ.EndZ)
         }
 
@@ -311,12 +311,12 @@ class Elab private constructor(
         }
 
         term is S.Term.Hole -> {
-            type?.let {
-                val part = InlayHintLabelPart(" ").apply {
-                    tooltip = forRight(markup(stringifyTermS(reify(ctx.values, it))))
+            context.addInlayHint(lazy {
+                val part = InlayHintLabelPart("_").apply {
+                    tooltip = forRight(markup(type?.let { stringifyTermS(reify(ctx.values, it)) } ?: "?"))
                 }
-                context.addInlayHint(InlayHint(term.range.start, forRight(listOf(part))))
-            }
+                InlayHint(term.range.start, forRight(listOf(part)))
+            })
             C.TermS.Hole(TypeS.EndS)
         }
 

@@ -10,12 +10,12 @@ fun interface Phase<A, B> {
         private var position: Position? = null,
     ) {
         private val _diagnostics: MutableList<Diagnostic> = mutableListOf()
-        private val _inlayHints: MutableList<InlayHint> = mutableListOf()
+        private val _inlayHints: MutableList<Lazy<InlayHint>> = mutableListOf()
 
         var hover: Lazy<Hover>? = null
             private set
         val diagnostics: List<Diagnostic> = _diagnostics
-        val inlayHints: List<InlayHint> = _inlayHints
+        val inlayHints: List<Lazy<InlayHint>> = _inlayHints
         var completionItems: Lazy<List<CompletionItem>>? = null
             private set
 
@@ -29,7 +29,7 @@ fun interface Phase<A, B> {
             _diagnostics += diagnostic
         }
 
-        fun addInlayHint(hint: InlayHint) {
+        fun addInlayHint(hint: Lazy<InlayHint>) {
             _inlayHints += hint
         }
 

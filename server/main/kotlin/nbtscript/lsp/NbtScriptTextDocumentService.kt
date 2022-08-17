@@ -51,7 +51,7 @@ class NbtScriptTextDocumentService : TextDocumentService, LanguageClientAware {
     override fun inlayHint(params: InlayHintParams): CompletableFuture<List<InlayHint>> = supplyAsync {
         val uri = Uri(params.textDocument.uri)
         val text = texts[uri]!!
-        run(text).inlayHints
+        run(text).inlayHints.map { it.value }
     }
 
     override fun completion(params: CompletionParams): CompletableFuture<Either<List<CompletionItem>, CompletionList>> = supplyAsync {
