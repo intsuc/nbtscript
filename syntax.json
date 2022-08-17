@@ -3,19 +3,15 @@
   "name": "nbtscript",
   "patterns": [
     {
-      "name": "keyword.operator.nbtscript",
-      "match": "[$\\\\@`]"
-    },
-    {
-      "name": "keyword.control.nbtscript",
+      "name": "keyword.nbtscript",
       "match": "\\b(function|let)\\b"
     },
     {
-      "name": "keyword.nbtscript",
+      "name": "support.type.nbtscript",
       "match": "\\b(universe|end|byte|short|int|long|float|double|string|byte_array|int_array|long_array|list|compound|code|type)\\b"
     },
     {
-      "match": "\\b(?<=function)\\s+([^\"(),.:;=\\[\\\\\\]{}]+)",
+      "match": "\\b(?<=function)\\s+([^\\s\"(),.:;=\\[\\\\\\]{}-]+)",
       "captures": {
         "1": {
           "name": "entity.name.function.nbtscript"
@@ -23,12 +19,16 @@
       }
     },
     {
-      "match": "\\b(?<=let)\\s+([^\"(),.:;=\\[\\\\\\]{}]+)",
+      "match": "\\b(?<=let)\\s+([^\\s\"(),.:;=\\[\\\\\\]{}-]+)",
       "captures": {
         "1": {
-          "name": "variable.nbtscript"
+          "name": "variable.parameter.nbtscript"
         }
       }
+    },
+    {
+      "name": "constant.numeric.nbtscript",
+      "match": "\\b[0-9+-][^\\s\"(),.:;=\\[\\\\\\]{}-]*\\b"
     },
     {
       "name": "string.quoted.double.nbtscript",
@@ -40,6 +40,10 @@
           "match": "\\\\."
         }
       ]
+    },
+    {
+      "name": "variable.nbtscript",
+      "match": "\\b([^\\s\"(),.:;=\\[\\\\\\]{}-]+)\\b"
     }
   ],
   "scopeName": "source.nbtscript"
