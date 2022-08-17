@@ -1,6 +1,7 @@
 package nbtscript.phase
 
-import nbtscript.ast.Surface.*
+import nbtscript.ast.Surface.Root
+import nbtscript.ast.Surface.Term
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 
@@ -14,7 +15,7 @@ class Parse private constructor(
     private var character: Int = 0
 
     private fun parseRoot(): Root = ranged {
-        val body = parseTermZ()
+        val body = parseTerm()
         val root = Root(body, range())
         skipWhitespace()
         if (cursor != text.length) {
@@ -24,178 +25,38 @@ class Parse private constructor(
         root
     }
 
-    private fun parseTypeZ(): TypeZ = ranged {
-        when (readString()) {
-            "byte" -> TypeZ.ByteZ(range())
-            "short" -> TypeZ.ShortZ(range())
-            "int" -> TypeZ.IntZ(range())
-            "long" -> TypeZ.LongZ(range())
-            "float" -> TypeZ.FloatZ(range())
-            "double" -> TypeZ.DoubleZ(range())
-            "string" -> TypeZ.StringZ(range())
-            "byte_array" -> TypeZ.ByteArrayZ(range())
-            "int_array" -> TypeZ.IntArrayZ(range())
-            "long_array" -> TypeZ.LongArrayZ(range())
-            "list" -> {
-                val element = parseTypeZ()
-                TypeZ.ListZ(element, range())
-            }
-
-            "compound" -> {
-                expect('{')
-                val elements = parseList('}') {
-                    val key = parseWord()
-                    expect(':')
-                    val value = parseTypeZ()
-                    key to value
-                }.toMap()
-                TypeZ.CompoundZ(elements, range())
-            }
-
-            else -> typeZHole()
-        }
-    }
-
-    private fun parseTermZ(): TermZ = ranged {
-        when (val start = peek()) {
-            '(' -> {
-                skip()
-                val term = parseTermZ()
-                expect(')')
-                term
-            }
-
-            '"' -> {
-                skip()
-                val data = readString() // TODO: escape
-                expect('"')
-                TermZ.StringTag(data, range())
-            }
-
-            '[' -> {
-                skip()
-                when (text.getOrNull(cursor)) {
-                    'B' -> {
-                        skip()
-                        expect(';')
-                        val elements = parseList(']') { parseTermZ() }
-                        TermZ.ByteArrayTag(elements, range())
-                    }
-
-                    'I' -> {
-                        skip()
-                        expect(';')
-                        val elements = parseList(']') { parseTermZ() }
-                        TermZ.IntArrayTag(elements, range())
-                    }
-
-                    'L' -> {
-                        skip()
-                        expect(';')
-                        val elements = parseList(']') { parseTermZ() }
-                        TermZ.LongArrayTag(elements, range())
-                    }
-
-                    else -> {
-                        val elements = parseList(']') { parseTermZ() }
-                        TermZ.ListTag(elements, range())
-                    }
-                }
-            }
-
-            '{' -> {
-                skip()
-                val elements = parseList('}') {
-                    val key = parseWord()
-                    expect(':')
-                    val value = parseTermZ()
-                    key to value
-                }.toMap()
-                TermZ.CompoundTag(elements, range())
-            }
-
-            '$' -> {
-                skip()
-                val element = parseTermS()
-                TermZ.Splice(element, range())
-            }
-
-            null -> termZHole()
-            else -> {
-                val word = readString()
-                if (start.isNumericStart()) {
-                    when {
-                        word.endsWith('b') -> TermZ.ByteTag(word.dropLast(1).toByte(), range())
-                        word.endsWith('s') -> TermZ.ShortTag(word.dropLast(1).toShort(), range())
-                        word.endsWith('L') -> TermZ.LongTag(word.dropLast(1).toLong(), range())
-                        word.endsWith('f') -> TermZ.FloatTag(word.dropLast(1).toFloat(), range())
-                        word.endsWith('d') -> TermZ.DoubleTag(word.dropLast(1).toDouble(), range())
-                        else -> {
-                            when (val int = word.toIntOrNull()) {
-                                null -> termZHole()
-                                else -> TermZ.IntTag(int, range())
-                            }
-                        }
-                    }
-                } else {
-                    when (word) {
-                        "function" -> {
-                            val name = parseWord()
-                            val anno = when (peek()) {
-                                ':' -> {
-                                    skip()
-                                    parseTypeZ()
-                                }
-
-                                else -> null
-                            }
-                            expect('=')
-                            val body = parseTermZ()
-                            expect(';')
-                            val next = parseTermZ()
-                            TermZ.Function(name, anno, body, next, range())
-                        }
-
-                        "" -> termZHole()
-                        else -> TermZ.Run(word, range())
-                    }
-                }
-            }
-        }
-    }
-
-    private fun parseTermS(): TermS = ranged {
+    private fun parseTerm(): Term = ranged {
         when (peek()) {
             '(' -> {
                 skip()
-                val left = parseTermS1()
+                val left = parseTerm1()
                 when (peek()) {
                     ':' -> {
                         skip()
-                        val type = parseTermS()
+                        val type = parseTerm()
                         expect(')')
                         when (peek()) {
                             '=' -> {
                                 skip()
                                 expect('>')
-                                val body = parseTermS()
+                                val body = parseTerm()
                                 when (left) {
-                                    is TermS.Var -> TermS.Abs(left.name, type, body, range())
-                                    else -> termSHole()
+                                    is Term.Var -> Term.Abs(left.name, type, body, range())
+                                    else -> hole()
                                 }
                             }
 
                             '-' -> {
                                 skip()
                                 expect('>')
-                                val cod = parseTermS()
+                                val cod = parseTerm()
                                 when (left) {
-                                    is TermS.Var -> TermS.ArrowS(left.name, type, cod, range())
-                                    else -> termSHole()
+                                    is Term.Var -> Term.FunctionType(left.name, type, cod, range())
+                                    else -> hole()
                                 }
                             }
 
-                            else -> termSHole()
+                            else -> hole()
                         }
                     }
 
@@ -204,25 +65,25 @@ class Parse private constructor(
                         left
                     }
 
-                    else -> termSHole()
+                    else -> hole()
                 }
             }
 
             else -> {
-                val left = parseTermS1()
+                val left = parseTerm1()
                 when (peek()) {
                     '-' -> {
                         skip()
                         expect('>')
-                        val cod = parseTermS()
-                        TermS.ArrowS(null, left, cod, range())
+                        val cod = parseTerm()
+                        Term.FunctionType(null, left, cod, range())
                     }
 
                     '(' -> {
                         skip()
-                        val operand = parseTermS()
+                        val operand = parseTerm()
                         expect(')')
-                        TermS.Apply(left, operand, range())
+                        Term.Apply(left, operand, range())
                     }
 
                     else -> left
@@ -231,11 +92,11 @@ class Parse private constructor(
         }
     }
 
-    private fun parseTermS1(): TermS = ranged {
+    private fun parseTerm1(): Term = ranged {
         when (val start = peek()) {
             '(' -> {
                 skip()
-                val term = parseTermS()
+                val term = parseTerm()
                 expect(')')
                 term
             }
@@ -244,7 +105,7 @@ class Parse private constructor(
                 skip()
                 val data = readString() // TODO: escape
                 expect('"')
-                TermS.StringTag(data, range())
+                Term.StringTag(data, range())
             }
 
             '[' -> {
@@ -253,27 +114,27 @@ class Parse private constructor(
                     'B' -> {
                         skip()
                         expect(';')
-                        val elements = parseList(']') { parseTermS() }
-                        TermS.ByteArrayTag(elements, range())
+                        val elements = parseList(']') { parseTerm() }
+                        Term.ByteArrayTag(elements, range())
                     }
 
                     'I' -> {
                         skip()
                         expect(';')
-                        val elements = parseList(']') { parseTermS() }
-                        TermS.IntArrayTag(elements, range())
+                        val elements = parseList(']') { parseTerm() }
+                        Term.IntArrayTag(elements, range())
                     }
 
                     'L' -> {
                         skip()
                         expect(';')
-                        val elements = parseList(']') { parseTermS() }
-                        TermS.LongArrayTag(elements, range())
+                        val elements = parseList(']') { parseTerm() }
+                        Term.LongArrayTag(elements, range())
                     }
 
                     else -> {
-                        val elements = parseList(']') { parseTermS() }
-                        TermS.ListTag(elements, range())
+                        val elements = parseList(']') { parseTerm() }
+                        Term.ListTag(elements, range())
                     }
                 }
             }
@@ -283,52 +144,58 @@ class Parse private constructor(
                 val elements = parseList('}') {
                     val key = parseWord()
                     expect(':')
-                    val value = parseTermS()
+                    val value = parseTerm()
                     key to value
                 }.toMap()
-                TermS.CompoundTag(elements, range())
+                Term.CompoundTag(elements, range())
             }
 
             '`' -> {
                 skip()
-                val element = parseTermZ()
-                TermS.Quote(element, range())
+                val element = parseTerm()
+                Term.Quote(element, range())
             }
 
-            null -> termSHole()
+            '$' -> {
+                skip()
+                val element = parseTerm()
+                Term.Splice(element, range())
+            }
+
+            null -> hole()
             else -> {
                 val word = readString()
                 if (start.isNumericStart()) {
                     when {
-                        word.endsWith('b') -> TermS.ByteTag(word.dropLast(1).toByte(), range())
-                        word.endsWith('s') -> TermS.ShortTag(word.dropLast(1).toShort(), range())
-                        word.endsWith('L') -> TermS.LongTag(word.dropLast(1).toLong(), range())
-                        word.endsWith('f') -> TermS.FloatTag(word.dropLast(1).toFloat(), range())
-                        word.endsWith('d') -> TermS.DoubleTag(word.dropLast(1).toDouble(), range())
+                        word.endsWith('b') -> Term.ByteTag(word.dropLast(1).toByte(), range())
+                        word.endsWith('s') -> Term.ShortTag(word.dropLast(1).toShort(), range())
+                        word.endsWith('L') -> Term.LongTag(word.dropLast(1).toLong(), range())
+                        word.endsWith('f') -> Term.FloatTag(word.dropLast(1).toFloat(), range())
+                        word.endsWith('d') -> Term.DoubleTag(word.dropLast(1).toDouble(), range())
                         else -> {
                             when (val int = word.toIntOrNull()) {
-                                null -> termSHole()
-                                else -> TermS.IntTag(int, range())
+                                null -> hole()
+                                else -> Term.IntTag(int, range())
                             }
                         }
                     }
                 } else {
                     when (word) {
-                        "universe" -> TermS.UniverseS(range())
-                        "end" -> TermS.EndS(range())
-                        "byte" -> TermS.ByteS(range())
-                        "short" -> TermS.ShortS(range())
-                        "int" -> TermS.IntS(range())
-                        "long" -> TermS.LongS(range())
-                        "float" -> TermS.FloatS(range())
-                        "double" -> TermS.DoubleS(range())
-                        "string" -> TermS.StringS(range())
-                        "byte_array" -> TermS.ByteArrayS(range())
-                        "int_array" -> TermS.IntArrayS(range())
-                        "long_array" -> TermS.LongArrayS(range())
+                        "universe" -> Term.UniverseType(range())
+                        "end" -> Term.EndType(range())
+                        "byte" -> Term.ByteType(range())
+                        "short" -> Term.ShortType(range())
+                        "int" -> Term.IntType(range())
+                        "long" -> Term.LongType(range())
+                        "float" -> Term.FloatType(range())
+                        "double" -> Term.DoubleType(range())
+                        "string" -> Term.StringType(range())
+                        "byte_array" -> Term.ByteArrayType(range())
+                        "int_array" -> Term.IntArrayType(range())
+                        "long_array" -> Term.LongArrayType(range())
                         "list" -> {
-                            val element = parseTermS()
-                            TermS.ListS(element, range())
+                            val element = parseTerm()
+                            Term.ListType(element, range())
                         }
 
                         "compound" -> {
@@ -336,65 +203,70 @@ class Parse private constructor(
                             val elements = parseList('}') {
                                 val key = parseWord()
                                 expect(':')
-                                val value = parseTermS()
+                                val value = parseTerm()
                                 key to value
                             }.toMap()
-                            TermS.CompoundS(elements, range())
+                            Term.CompoundType(elements, range())
                         }
 
                         "indexed_element" -> { // TODO: use better syntax
-                            val target = parseTermZ()
-                            val index = parseTermS()
-                            TermS.IndexedElement(target, index, range())
+                            val target = parseTerm()
+                            val index = parseTerm()
+                            Term.IndexedElement(target, index, range())
                         }
 
                         "code" -> {
-                            val element = parseTypeZ()
-                            TermS.CodeS(element, range())
+                            val element = parseTerm()
+                            Term.CodeType(element, range())
                         }
 
-                        "type" -> TermS.TypeZ(range())
+                        "type" -> Term.TypeType(range())
                         "let" -> {
                             val name = parseWord()
                             val anno = when (peek()) {
                                 ':' -> {
                                     skip()
-                                    parseTermS()
+                                    parseTerm()
                                 }
 
                                 else -> null
                             }
                             expect('=')
-                            val init = parseTermS()
+                            val init = parseTerm()
                             expect(';')
-                            val next = parseTermS()
-                            TermS.Let(name, anno, init, next, range())
+                            val next = parseTerm()
+                            Term.Let(name, anno, init, next, range())
                         }
 
-                        "" -> termSHole()
-                        else -> TermS.Var(word, range())
+                        "function" -> {
+                            val name = parseWord()
+                            val anno = when (peek()) {
+                                ':' -> {
+                                    skip()
+                                    parseTerm()
+                                }
+
+                                else -> null
+                            }
+                            expect('=')
+                            val body = parseTerm()
+                            expect(';')
+                            val next = parseTerm()
+                            Term.Function(name, anno, body, next, range())
+                        }
+
+                        "" -> hole()
+                        else -> Term.Var(word, range())
                     }
                 }
             }
         }
     }
 
-    private fun RangeContext.typeZHole(): TypeZ {
+    private fun RangeContext.hole(): Term {
         val range = range()
-        context.addDiagnostic(typeZExpected(range))
-        return TypeZ.Hole(range)
-    }
-
-    private fun RangeContext.termZHole(): TermZ {
-        val range = range()
-        context.addDiagnostic(termZExpected(range))
-        return TermZ.Hole(range)
-    }
-
-    private fun RangeContext.termSHole(): TermS {
-        val range = range()
-        context.addDiagnostic(termSExpected(range))
-        return TermS.Hole(range)
+        context.addDiagnostic(termExpected(range))
+        return Term.Hole(range)
     }
 
     private inline fun <A> parseList(close: Char, element: () -> A): List<A> {

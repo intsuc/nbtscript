@@ -19,61 +19,82 @@ class Elab private constructor(
     }
 
     private fun elabTypeZ(
-        type: S.TypeZ,
+        type: S.Term,
     ): C.TypeZ = when (type) {
-        is S.TypeZ.ByteZ -> C.TypeZ.ByteZ
-        is S.TypeZ.ShortZ -> C.TypeZ.ShortZ
-        is S.TypeZ.IntZ -> C.TypeZ.IntZ
-        is S.TypeZ.LongZ -> C.TypeZ.LongZ
-        is S.TypeZ.FloatZ -> C.TypeZ.FloatZ
-        is S.TypeZ.DoubleZ -> C.TypeZ.DoubleZ
-        is S.TypeZ.StringZ -> C.TypeZ.StringZ
-        is S.TypeZ.ByteArrayZ -> C.TypeZ.ByteArrayZ
-        is S.TypeZ.IntArrayZ -> C.TypeZ.IntArrayZ
-        is S.TypeZ.LongArrayZ -> C.TypeZ.LongArrayZ
-        is S.TypeZ.ListZ -> {
+        is S.Term.ByteType -> C.TypeZ.ByteZ
+        is S.Term.ShortType -> C.TypeZ.ShortZ
+        is S.Term.IntType -> C.TypeZ.IntZ
+        is S.Term.LongType -> C.TypeZ.LongZ
+        is S.Term.FloatType -> C.TypeZ.FloatZ
+        is S.Term.DoubleType -> C.TypeZ.DoubleZ
+        is S.Term.StringType -> C.TypeZ.StringZ
+        is S.Term.ByteArrayType -> C.TypeZ.ByteArrayZ
+        is S.Term.IntArrayType -> C.TypeZ.IntArrayZ
+        is S.Term.LongArrayType -> C.TypeZ.LongArrayZ
+        is S.Term.ListType -> {
             val element = elabTypeZ(type.element)
             C.TypeZ.ListZ(element)
         }
 
-        is S.TypeZ.CompoundZ -> {
+        is S.Term.CompoundType -> {
             val elements = type.elements.map { it.key to elabTypeZ(it.value) }.toMap()
             C.TypeZ.CompoundZ(elements)
         }
 
-        is S.TypeZ.Hole -> C.TypeZ.Hole
+        is S.Term.Hole -> C.TypeZ.Hole
+        else -> {
+            context.addDiagnostic(typeZExpected(type.range))
+            C.TypeZ.Hole
+        }
     }.also {
         context.setHover(type.range, lazy { Hover(markup("universe")) })
     }
 
     private fun elabTermZ(
         ctx: PersistentMap<String, C.TypeZ>,
-        term: S.TermZ,
+        term: S.Term,
         type: C.TypeZ? = null,
     ): C.TermZ = when {
-        term is S.TermZ.ByteTag && type is C.TypeZ.ByteZ? -> C.TermZ.ByteTag(term.data, C.TypeZ.ByteZ)
-        term is S.TermZ.ShortTag && type is C.TypeZ.ShortZ? -> C.TermZ.ShortTag(term.data, C.TypeZ.ShortZ)
-        term is S.TermZ.IntTag && type is C.TypeZ.IntZ? -> C.TermZ.IntTag(term.data, C.TypeZ.IntZ)
-        term is S.TermZ.LongTag && type is C.TypeZ.LongZ? -> C.TermZ.LongTag(term.data, C.TypeZ.LongZ)
-        term is S.TermZ.FloatTag && type is C.TypeZ.FloatZ? -> C.TermZ.FloatTag(term.data, C.TypeZ.FloatZ)
-        term is S.TermZ.DoubleTag && type is C.TypeZ.DoubleZ? -> C.TermZ.DoubleTag(term.data, C.TypeZ.DoubleZ)
-        term is S.TermZ.StringTag && type is C.TypeZ.StringZ? -> C.TermZ.StringTag(term.data, C.TypeZ.StringZ)
-        term is S.TermZ.ByteArrayTag && type is C.TypeZ.ByteArrayZ? -> {
+        term is S.Term.UniverseType -> errorZ(termZExpected(term.range))
+        term is S.Term.EndType -> errorZ(termZExpected(term.range))
+        term is S.Term.ByteType -> errorZ(termZExpected(term.range))
+        term is S.Term.ShortType -> errorZ(termZExpected(term.range))
+        term is S.Term.IntType -> errorZ(termZExpected(term.range))
+        term is S.Term.LongType -> errorZ(termZExpected(term.range))
+        term is S.Term.FloatType -> errorZ(termZExpected(term.range))
+        term is S.Term.DoubleType -> errorZ(termZExpected(term.range))
+        term is S.Term.StringType -> errorZ(termZExpected(term.range))
+        term is S.Term.ByteArrayType -> errorZ(termZExpected(term.range))
+        term is S.Term.IntArrayType -> errorZ(termZExpected(term.range))
+        term is S.Term.LongArrayType -> errorZ(termZExpected(term.range))
+        term is S.Term.ListType -> errorZ(termZExpected(term.range))
+        term is S.Term.CompoundType -> errorZ(termZExpected(term.range))
+        term is S.Term.FunctionType -> errorZ(termZExpected(term.range))
+        term is S.Term.CodeType -> errorZ(termZExpected(term.range))
+        term is S.Term.TypeType -> errorZ(termZExpected(term.range))
+        term is S.Term.ByteTag && type is C.TypeZ.ByteZ? -> C.TermZ.ByteTag(term.data, C.TypeZ.ByteZ)
+        term is S.Term.ShortTag && type is C.TypeZ.ShortZ? -> C.TermZ.ShortTag(term.data, C.TypeZ.ShortZ)
+        term is S.Term.IntTag && type is C.TypeZ.IntZ? -> C.TermZ.IntTag(term.data, C.TypeZ.IntZ)
+        term is S.Term.LongTag && type is C.TypeZ.LongZ? -> C.TermZ.LongTag(term.data, C.TypeZ.LongZ)
+        term is S.Term.FloatTag && type is C.TypeZ.FloatZ? -> C.TermZ.FloatTag(term.data, C.TypeZ.FloatZ)
+        term is S.Term.DoubleTag && type is C.TypeZ.DoubleZ? -> C.TermZ.DoubleTag(term.data, C.TypeZ.DoubleZ)
+        term is S.Term.StringTag && type is C.TypeZ.StringZ? -> C.TermZ.StringTag(term.data, C.TypeZ.StringZ)
+        term is S.Term.ByteArrayTag && type is C.TypeZ.ByteArrayZ? -> {
             val elements = term.elements.map { elabTermZ(ctx, it, C.TypeZ.ByteZ) }
             C.TermZ.ByteArrayTag(elements, C.TypeZ.ByteArrayZ)
         }
 
-        term is S.TermZ.IntArrayTag && type is C.TypeZ.IntArrayZ? -> {
+        term is S.Term.IntArrayTag && type is C.TypeZ.IntArrayZ? -> {
             val elements = term.elements.map { elabTermZ(ctx, it, C.TypeZ.IntZ) }
             C.TermZ.IntArrayTag(elements, C.TypeZ.IntArrayZ)
         }
 
-        term is S.TermZ.LongArrayTag && type is C.TypeZ.LongArrayZ? -> {
+        term is S.Term.LongArrayTag && type is C.TypeZ.LongArrayZ? -> {
             val elements = term.elements.map { elabTermZ(ctx, it, C.TypeZ.LongZ) }
             C.TermZ.LongArrayTag(elements, C.TypeZ.LongArrayZ)
         }
 
-        term is S.TermZ.ListTag && type is C.TypeZ.ListZ? -> {
+        term is S.Term.ListTag && type is C.TypeZ.ListZ? -> {
             if (term.elements.isEmpty()) C.TermZ.ListTag(emptyList(), C.TypeZ.ListZ(C.TypeZ.EndZ))
             else {
                 val elements = mutableListOf<C.TermZ>()
@@ -84,25 +105,17 @@ class Elab private constructor(
             }
         }
 
-        term is S.TermZ.CompoundTag && type is C.TypeZ.CompoundZ? -> {
+        term is S.Term.CompoundTag && type is C.TypeZ.CompoundZ? -> {
             val elements = term.elements.map { it.key to elabTermZ(ctx, it.value, type?.elements?.get(it.key)) }.toMap()
             val elementTypes = elements.mapValues { it.value.type }
             C.TermZ.CompoundTag(elements, C.TypeZ.CompoundZ(elementTypes))
         }
 
-        term is S.TermZ.Function -> {
-            val anno = term.anno?.let { elabTypeZ(it) }
-            val body = elabTermZ(ctx, term.body, anno)
-            val next = elabTermZ(ctx + (term.name to (anno ?: body.type)), term.next, type)
-            C.TermZ.Function(term.name, body, next, next.type)
-        }
-
-        term is S.TermZ.Run && type == null -> {
-            if (ctx.contains(term.name)) C.TermZ.Run(term.name, ctx[term.name]!!)
-            else errorZ(notFound(term.name, term.range))
-        }
-
-        term is S.TermZ.Splice -> {
+        term is S.Term.IndexedElement -> errorZ(termZExpected(term.range))
+        term is S.Term.Abs -> errorZ(termZExpected(term.range))
+        term is S.Term.Apply -> errorZ(termZExpected(term.range))
+        term is S.Term.Quote -> errorZ(termZExpected(term.range))
+        term is S.Term.Splice -> {
             val element = elabTermS(Context(), term.element, type?.let { TypeS.CodeS(it) })
             when (val elementType = element.type) {
                 is TypeS.CodeS -> C.TermZ.Splice(element, elementType.element)
@@ -110,7 +123,20 @@ class Elab private constructor(
             }
         }
 
-        term is S.TermZ.Hole -> {
+        term is S.Term.Let -> errorZ(termZExpected(term.range))
+        term is S.Term.Function -> {
+            val anno = term.anno?.let { elabTypeZ(it) }
+            val body = elabTermZ(ctx, term.body, anno)
+            val next = elabTermZ(ctx + (term.name to (anno ?: body.type)), term.next, type)
+            C.TermZ.Function(term.name, body, next, next.type)
+        }
+
+        term is S.Term.Var && type == null -> {
+            if (ctx.contains(term.name)) C.TermZ.Run(term.name, ctx[term.name]!!)
+            else errorZ(notFound(term.name, term.range))
+        }
+
+        term is S.Term.Hole -> {
             type?.let {
                 val part = InlayHintLabelPart(" ").apply {
                     tooltip = forRight(markup(stringifyTypeZ(it)))
@@ -144,66 +170,66 @@ class Elab private constructor(
 
     private fun elabTermS(
         ctx: Context,
-        term: S.TermS,
+        term: S.Term,
         type: TypeS? = null,
     ): C.TermS = when {
-        term is S.TermS.UniverseS && type is TypeS.UniverseS? -> C.TermS.UniverseS(TypeS.UniverseS)
-        term is S.TermS.EndS && type is TypeS.UniverseS? -> C.TermS.EndS(TypeS.UniverseS)
-        term is S.TermS.ByteS && type is TypeS.UniverseS? -> C.TermS.ByteS(TypeS.UniverseS)
-        term is S.TermS.ShortS && type is TypeS.UniverseS? -> C.TermS.ShortS(TypeS.UniverseS)
-        term is S.TermS.IntS && type is TypeS.UniverseS? -> C.TermS.IntS(TypeS.UniverseS)
-        term is S.TermS.LongS && type is TypeS.UniverseS? -> C.TermS.LongS(TypeS.UniverseS)
-        term is S.TermS.FloatS && type is TypeS.UniverseS? -> C.TermS.FloatS(TypeS.UniverseS)
-        term is S.TermS.DoubleS && type is TypeS.UniverseS? -> C.TermS.DoubleS(TypeS.UniverseS)
-        term is S.TermS.StringS && type is TypeS.UniverseS? -> C.TermS.StringS(TypeS.UniverseS)
-        term is S.TermS.ByteArrayS && type is TypeS.UniverseS? -> C.TermS.ByteArrayS(TypeS.UniverseS)
-        term is S.TermS.IntArrayS && type is TypeS.UniverseS? -> C.TermS.IntArrayS(TypeS.UniverseS)
-        term is S.TermS.LongArrayS && type is TypeS.UniverseS? -> C.TermS.LongArrayS(TypeS.UniverseS)
-        term is S.TermS.ListS && type is TypeS.UniverseS? -> {
+        term is S.Term.UniverseType && type is TypeS.UniverseS? -> C.TermS.UniverseS(TypeS.UniverseS)
+        term is S.Term.EndType && type is TypeS.UniverseS? -> C.TermS.EndS(TypeS.UniverseS)
+        term is S.Term.ByteType && type is TypeS.UniverseS? -> C.TermS.ByteS(TypeS.UniverseS)
+        term is S.Term.ShortType && type is TypeS.UniverseS? -> C.TermS.ShortS(TypeS.UniverseS)
+        term is S.Term.IntType && type is TypeS.UniverseS? -> C.TermS.IntS(TypeS.UniverseS)
+        term is S.Term.LongType && type is TypeS.UniverseS? -> C.TermS.LongS(TypeS.UniverseS)
+        term is S.Term.FloatType && type is TypeS.UniverseS? -> C.TermS.FloatS(TypeS.UniverseS)
+        term is S.Term.DoubleType && type is TypeS.UniverseS? -> C.TermS.DoubleS(TypeS.UniverseS)
+        term is S.Term.StringType && type is TypeS.UniverseS? -> C.TermS.StringS(TypeS.UniverseS)
+        term is S.Term.ByteArrayType && type is TypeS.UniverseS? -> C.TermS.ByteArrayS(TypeS.UniverseS)
+        term is S.Term.IntArrayType && type is TypeS.UniverseS? -> C.TermS.IntArrayS(TypeS.UniverseS)
+        term is S.Term.LongArrayType && type is TypeS.UniverseS? -> C.TermS.LongArrayS(TypeS.UniverseS)
+        term is S.Term.ListType && type is TypeS.UniverseS? -> {
             val element = elabTermS(ctx, term.element, TypeS.UniverseS)
             C.TermS.ListS(element, TypeS.UniverseS)
         }
 
-        term is S.TermS.CompoundS && type is TypeS.UniverseS? -> {
+        term is S.Term.CompoundType && type is TypeS.UniverseS? -> {
             val elements = term.elements.map { it.key to elabTermS(ctx, it.value, TypeS.UniverseS) }.toMap()
             C.TermS.CompoundS(elements, TypeS.UniverseS)
         }
 
-        term is S.TermS.ArrowS && type is TypeS.UniverseS? -> {
+        term is S.Term.FunctionType && type is TypeS.UniverseS? -> {
             val dom = elabTermS(ctx, term.dom, TypeS.UniverseS)
             val cod = elabTermS(ctx.bind(term.name, dom.type), term.cod, TypeS.UniverseS)
             C.TermS.ArrowS(term.name, dom, cod, TypeS.UniverseS)
         }
 
-        term is S.TermS.CodeS && type is TypeS.UniverseS? -> {
+        term is S.Term.CodeType && type is TypeS.UniverseS? -> {
             val element = elabTypeZ(term.element)
             C.TermS.CodeS(element, TypeS.UniverseS)
         }
 
-        term is S.TermS.TypeZ && type is TypeS.UniverseS? -> C.TermS.TypeZ(TypeS.UniverseS)
-        term is S.TermS.ByteTag && type is TypeS.ByteS? -> C.TermS.ByteTag(term.data, TypeS.ByteS)
-        term is S.TermS.ShortTag && type is TypeS.ShortS? -> C.TermS.ShortTag(term.data, TypeS.ShortS)
-        term is S.TermS.IntTag && type is TypeS.IntS? -> C.TermS.IntTag(term.data, TypeS.IntS)
-        term is S.TermS.LongTag && type is TypeS.LongS? -> C.TermS.LongTag(term.data, TypeS.LongS)
-        term is S.TermS.FloatTag && type is TypeS.FloatS? -> C.TermS.FloatTag(term.data, TypeS.FloatS)
-        term is S.TermS.DoubleTag && type is TypeS.DoubleS? -> C.TermS.DoubleTag(term.data, TypeS.DoubleS)
-        term is S.TermS.StringTag && type is TypeS.StringS? -> C.TermS.StringTag(term.data, TypeS.StringS)
-        term is S.TermS.ByteArrayTag && type is TypeS.ByteArrayS? -> {
+        term is S.Term.TypeType && type is TypeS.UniverseS? -> C.TermS.TypeZ(TypeS.UniverseS)
+        term is S.Term.ByteTag && type is TypeS.ByteS? -> C.TermS.ByteTag(term.data, TypeS.ByteS)
+        term is S.Term.ShortTag && type is TypeS.ShortS? -> C.TermS.ShortTag(term.data, TypeS.ShortS)
+        term is S.Term.IntTag && type is TypeS.IntS? -> C.TermS.IntTag(term.data, TypeS.IntS)
+        term is S.Term.LongTag && type is TypeS.LongS? -> C.TermS.LongTag(term.data, TypeS.LongS)
+        term is S.Term.FloatTag && type is TypeS.FloatS? -> C.TermS.FloatTag(term.data, TypeS.FloatS)
+        term is S.Term.DoubleTag && type is TypeS.DoubleS? -> C.TermS.DoubleTag(term.data, TypeS.DoubleS)
+        term is S.Term.StringTag && type is TypeS.StringS? -> C.TermS.StringTag(term.data, TypeS.StringS)
+        term is S.Term.ByteArrayTag && type is TypeS.ByteArrayS? -> {
             val elements = term.elements.map { elabTermS(ctx, it, TypeS.ByteS) }
             C.TermS.ByteArrayTag(elements, TypeS.ByteArrayS)
         }
 
-        term is S.TermS.IntArrayTag && type is TypeS.IntArrayS? -> {
+        term is S.Term.IntArrayTag && type is TypeS.IntArrayS? -> {
             val elements = term.elements.map { elabTermS(ctx, it, TypeS.IntS) }
             C.TermS.IntArrayTag(elements, TypeS.IntArrayS)
         }
 
-        term is S.TermS.LongArrayTag && type is TypeS.LongArrayS? -> {
+        term is S.Term.LongArrayTag && type is TypeS.LongArrayS? -> {
             val elements = term.elements.map { elabTermS(ctx, it, TypeS.LongS) }
             C.TermS.LongArrayTag(elements, TypeS.LongArrayS)
         }
 
-        term is S.TermS.ListTag && type is TypeS.ListS? -> {
+        term is S.Term.ListTag && type is TypeS.ListS? -> {
             if (term.elements.isEmpty()) {
                 C.TermS.ListTag(emptyList(), TypeS.ListS(lazyOf(TypeS.EndS)))
             } else {
@@ -215,19 +241,19 @@ class Elab private constructor(
             }
         }
 
-        term is S.TermS.CompoundTag && type is TypeS.CompoundS? -> {
+        term is S.Term.CompoundTag && type is TypeS.CompoundS? -> {
             val elements = term.elements.map { it.key to elabTermS(ctx, it.value, type?.elements?.get(it.key)?.value) }.toMap()
             val elementTypes = elements.mapValues { lazyOf(it.value.type) }
             C.TermS.CompoundTag(elements, TypeS.CompoundS(elementTypes))
         }
 
-        term is S.TermS.IndexedElement -> {
+        term is S.Term.IndexedElement -> {
             val target = elabTermZ(persistentMapOf(), term.target, C.TypeZ.ByteArrayZ /* TODO */)
             val index = elabTermS(ctx, term.index, TypeS.IntS)
             C.TermS.IndexedElement(target, index, TypeS.CodeS(C.TypeZ.ByteZ /* TODO */))
         }
 
-        term is S.TermS.Abs && type == null -> {
+        term is S.Term.Abs && type == null -> {
             val anno = elabTermS(ctx, term.anno, TypeS.UniverseS)
             val a = reflect(ctx.values, anno)
             val body = elabTermS(ctx.bind(term.name, a), term.body)
@@ -240,7 +266,7 @@ class Elab private constructor(
             )
         }
 
-        term is S.TermS.Apply -> {
+        term is S.Term.Apply -> {
             if (type == null) {
                 val operator = elabTermS(ctx, term.operator)
                 when (val operatorType = operator.type) {
@@ -265,26 +291,26 @@ class Elab private constructor(
             }
         }
 
-        term is S.TermS.Quote && type is TypeS.CodeS? -> {
+        term is S.Term.Quote && type is TypeS.CodeS? -> {
             val element = elabTermZ(persistentMapOf(), term.element, type?.element)
             C.TermS.Quote(element, TypeS.CodeS(element.type))
         }
 
-        term is S.TermS.Let -> {
+        term is S.Term.Let -> {
             val anno = term.anno?.let { reflect(ctx.values, elabTermS(ctx, it, TypeS.UniverseS)) }
             val init = elabTermS(ctx, term.init, anno)
             val next = elabTermS(ctx.bind(term.name, anno ?: init.type, lazy { reflect(ctx.values, init) }), term.next, type)
             C.TermS.Let(term.name, init, next, type ?: next.type)
         }
 
-        term is S.TermS.Var && type == null -> {
+        term is S.Term.Var && type == null -> {
             when (val level = ctx.levels[term.name]) {
                 null -> errorS(notFound(term.name, term.range))
                 else -> C.TermS.Var(term.name, level, ctx.types[level])
             }
         }
 
-        term is S.TermS.Hole -> {
+        term is S.Term.Hole -> {
             type?.let {
                 val part = InlayHintLabelPart(" ").apply {
                     tooltip = forRight(markup(stringifyTermS(reify(ctx.values, it))))

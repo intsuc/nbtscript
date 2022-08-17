@@ -31,6 +31,12 @@ fun typeZExpected(range: Range): Diagnostic = makeDiagnostic(
     Error,
 )
 
+fun termExpected(range: Range): Diagnostic = makeDiagnostic(
+    range,
+    "expected: term",
+    Error,
+)
+
 fun termZExpected(range: Range): Diagnostic = makeDiagnostic(
     range,
     "expected: term₀",

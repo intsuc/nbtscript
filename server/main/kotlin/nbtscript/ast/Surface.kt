@@ -5,79 +5,46 @@ import org.eclipse.lsp4j.Range
 sealed interface Surface {
     val range: Range
 
-    data class Root(val body: TermZ, override val range: Range) : Surface
+    data class Root(val body: Term, override val range: Range) : Surface
 
-    sealed interface TypeZ : Surface {
-        data class ByteZ(override val range: Range) : TypeZ
-        data class ShortZ(override val range: Range) : TypeZ
-        data class IntZ(override val range: Range) : TypeZ
-        data class LongZ(override val range: Range) : TypeZ
-        data class FloatZ(override val range: Range) : TypeZ
-        data class DoubleZ(override val range: Range) : TypeZ
-        data class StringZ(override val range: Range) : TypeZ
-        data class ByteArrayZ(override val range: Range) : TypeZ
-        data class IntArrayZ(override val range: Range) : TypeZ
-        data class LongArrayZ(override val range: Range) : TypeZ
-        data class ListZ(val element: TypeZ, override val range: Range) : TypeZ
-        data class CompoundZ(val elements: Map<String, TypeZ>, override val range: Range) : TypeZ
-        data class Hole(override val range: Range) : TypeZ
-    }
-
-    sealed interface TermZ : Surface {
-        data class ByteTag(val data: Byte, override val range: Range) : TermZ
-        data class ShortTag(val data: Short, override val range: Range) : TermZ
-        data class IntTag(val data: Int, override val range: Range) : TermZ
-        data class LongTag(val data: Long, override val range: Range) : TermZ
-        data class FloatTag(val data: Float, override val range: Range) : TermZ
-        data class DoubleTag(val data: Double, override val range: Range) : TermZ
-        data class StringTag(val data: String, override val range: Range) : TermZ
-        data class ByteArrayTag(val elements: List<TermZ>, override val range: Range) : TermZ
-        data class IntArrayTag(val elements: List<TermZ>, override val range: Range) : TermZ
-        data class LongArrayTag(val elements: List<TermZ>, override val range: Range) : TermZ
-        data class ListTag(val elements: List<TermZ>, override val range: Range) : TermZ
-        data class CompoundTag(val elements: Map<String, TermZ>, override val range: Range) : TermZ
-        data class Function(val name: String, val anno: TypeZ?, val body: TermZ, val next: TermZ, override val range: Range) : TermZ
-        data class Run(val name: String, override val range: Range) : TermZ
-        data class Splice(val element: TermS, override val range: Range) : TermZ
-        data class Hole(override val range: Range) : TermZ
-    }
-
-    sealed interface TermS : Surface {
-        data class UniverseS(override val range: Range) : TermS
-        data class EndS(override val range: Range) : TermS
-        data class ByteS(override val range: Range) : TermS
-        data class ShortS(override val range: Range) : TermS
-        data class IntS(override val range: Range) : TermS
-        data class LongS(override val range: Range) : TermS
-        data class FloatS(override val range: Range) : TermS
-        data class DoubleS(override val range: Range) : TermS
-        data class StringS(override val range: Range) : TermS
-        data class ByteArrayS(override val range: Range) : TermS
-        data class IntArrayS(override val range: Range) : TermS
-        data class LongArrayS(override val range: Range) : TermS
-        data class ListS(val element: TermS, override val range: Range) : TermS
-        data class CompoundS(val elements: Map<String, TermS>, override val range: Range) : TermS
-        data class ArrowS(val name: String?, val dom: TermS, val cod: TermS, override val range: Range) : TermS
-        data class CodeS(val element: Surface.TypeZ, override val range: Range) : TermS
-        data class TypeZ(override val range: Range) : TermS
-        data class ByteTag(val data: Byte, override val range: Range) : TermS
-        data class ShortTag(val data: Short, override val range: Range) : TermS
-        data class IntTag(val data: Int, override val range: Range) : TermS
-        data class LongTag(val data: Long, override val range: Range) : TermS
-        data class FloatTag(val data: Float, override val range: Range) : TermS
-        data class DoubleTag(val data: Double, override val range: Range) : TermS
-        data class StringTag(val data: String, override val range: Range) : TermS
-        data class ByteArrayTag(val elements: List<TermS>, override val range: Range) : TermS
-        data class IntArrayTag(val elements: List<TermS>, override val range: Range) : TermS
-        data class LongArrayTag(val elements: List<TermS>, override val range: Range) : TermS
-        data class ListTag(val elements: List<TermS>, override val range: Range) : TermS
-        data class CompoundTag(val elements: Map<String, TermS>, override val range: Range) : TermS
-        data class IndexedElement(val target: TermZ, val index: TermS, override val range: Range) : TermS
-        data class Abs(val name: String, val anno: TermS, val body: TermS, override val range: Range) : TermS
-        data class Apply(val operator: TermS, val operand: TermS, override val range: Range) : TermS
-        data class Quote(val element: TermZ, override val range: Range) : TermS
-        data class Let(val name: String, val anno: TermS?, val init: TermS, val next: TermS, override val range: Range) : TermS
-        data class Var(val name: String, override val range: Range) : TermS
-        data class Hole(override val range: Range) : TermS
+    sealed interface Term : Surface {
+        data class UniverseType(override val range: Range) : Term
+        data class EndType(override val range: Range) : Term
+        data class ByteType(override val range: Range) : Term
+        data class ShortType(override val range: Range) : Term
+        data class IntType(override val range: Range) : Term
+        data class LongType(override val range: Range) : Term
+        data class FloatType(override val range: Range) : Term
+        data class DoubleType(override val range: Range) : Term
+        data class StringType(override val range: Range) : Term
+        data class ByteArrayType(override val range: Range) : Term
+        data class IntArrayType(override val range: Range) : Term
+        data class LongArrayType(override val range: Range) : Term
+        data class ListType(val element: Term, override val range: Range) : Term
+        data class CompoundType(val elements: Map<String, Term>, override val range: Range) : Term
+        data class FunctionType(val name: String?, val dom: Term, val cod: Term, override val range: Range) : Term
+        data class CodeType(val element: Term, override val range: Range) : Term
+        data class TypeType(override val range: Range) : Term
+        data class ByteTag(val data: Byte, override val range: Range) : Term
+        data class ShortTag(val data: Short, override val range: Range) : Term
+        data class IntTag(val data: Int, override val range: Range) : Term
+        data class LongTag(val data: Long, override val range: Range) : Term
+        data class FloatTag(val data: Float, override val range: Range) : Term
+        data class DoubleTag(val data: Double, override val range: Range) : Term
+        data class StringTag(val data: String, override val range: Range) : Term
+        data class ByteArrayTag(val elements: List<Term>, override val range: Range) : Term
+        data class IntArrayTag(val elements: List<Term>, override val range: Range) : Term
+        data class LongArrayTag(val elements: List<Term>, override val range: Range) : Term
+        data class ListTag(val elements: List<Term>, override val range: Range) : Term
+        data class CompoundTag(val elements: Map<String, Term>, override val range: Range) : Term
+        data class IndexedElement(val target: Term, val index: Term, override val range: Range) : Term
+        data class Abs(val name: String, val anno: Term, val body: Term, override val range: Range) : Term
+        data class Apply(val operator: Term, val operand: Term, override val range: Range) : Term
+        data class Quote(val element: Term, override val range: Range) : Term
+        data class Splice(val element: Term, override val range: Range) : Term
+        data class Let(val name: String, val anno: Term?, val init: Term, val next: Term, override val range: Range) : Term
+        data class Function(val name: String, val anno: Term?, val body: Term, val next: Term, override val range: Range) : Term
+        data class Var(val name: String, override val range: Range) : Term
+        data class Hole(override val range: Range) : Term
     }
 }
