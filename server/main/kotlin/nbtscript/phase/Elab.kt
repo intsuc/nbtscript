@@ -128,6 +128,12 @@ class Elab private constructor(
             val anno = term.anno?.let { elabTypeZ(it) }
             val body = elabTermZ(ctx, term.body, anno)
             context.setHover(term.name.range, lazy { Hover(markup(stringifyTypeZ(anno ?: body.type))) })
+            if (term.anno == null) {
+                context.addInlayHint(lazy {
+                    val part = InlayHintLabelPart(": ${stringifyTypeZ(body.type)}")
+                    InlayHint(term.name.range.end, forRight(listOf(part)))
+                })
+            }
             val next = elabTermZ(ctx + (term.name.text to (anno ?: body.type)), term.next, type)
             C.TermZ.Function(term.name.text, body, next, next.type)
         }
@@ -142,7 +148,7 @@ class Elab private constructor(
                 val part = InlayHintLabelPart("_").apply {
                     tooltip = forRight(markup(type?.let { stringifyTypeZ(it) } ?: "?"))
                 }
-                InlayHint(term.range.start, forRight(listOf(part)))
+                InlayHint(term.range.end, forRight(listOf(part)))
             })
             C.TermZ.Hole(C.TypeZ.EndZ)
         }
@@ -306,6 +312,12 @@ class Elab private constructor(
             val a = anno?.let { reflect(ctx.values, it) }
             val init = elabTermS(ctx, term.init, a)
             context.setHover(term.name.range, lazy { Hover(markup(stringifyTermS(anno ?: reify(ctx.values, init.type)))) })
+            if (term.anno == null) {
+                context.addInlayHint(lazy {
+                    val part = InlayHintLabelPart(": ${stringifyTermS(reify(ctx.values, init.type))}")
+                    InlayHint(term.name.range.end, forRight(listOf(part)))
+                })
+            }
             val next = elabTermS(ctx.bind(term.name.text, a ?: init.type, lazy { reflect(ctx.values, init) }), term.next, type)
             C.TermS.Let(term.name.text, init, next, type ?: next.type)
         }
@@ -322,7 +334,7 @@ class Elab private constructor(
                 val part = InlayHintLabelPart("_").apply {
                     tooltip = forRight(markup(type?.let { stringifyTermS(reify(ctx.values, it)) } ?: "?"))
                 }
-                InlayHint(term.range.start, forRight(listOf(part)))
+                InlayHint(term.range.end, forRight(listOf(part)))
             })
             C.TermS.Hole(TypeS.EndS)
         }
