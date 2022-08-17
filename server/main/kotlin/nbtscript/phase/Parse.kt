@@ -100,7 +100,7 @@ class Parse private constructor(
         }
     }
 
-    private fun parseTerm1(): Term = ranged {
+    private fun RangeContext.parseTerm1(): Term =
         when (val start = peek()) {
             '(' -> {
                 skip()
@@ -257,7 +257,6 @@ class Parse private constructor(
                 }
             }
         }
-    }
 
     // TODO: improve error reporting and locality
     private fun parseStringTag(): Term = ranged {
@@ -334,7 +333,7 @@ class Parse private constructor(
     }
 
     private inline fun <A> ranged(block: RangeContext.() -> A): A {
-        skipWhitespace()
+        // skipWhitespace()
         return RangeContext().block()
     }
 
