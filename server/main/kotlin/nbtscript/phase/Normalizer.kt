@@ -202,7 +202,10 @@ fun Unifier.reify(
     is Value.Apply -> {
         val operator = reify(env, value.operator)
         val operand = reify(env, value.operand.value)
-        val cod = (operator.type as Value.FunctionS).cod(this, value.operand)
+        val cod = when (val operatorType = operator.type) {
+            is Value.FunctionS -> operatorType.cod(this, value.operand)
+            else -> operatorType
+        }
         TermS.Apply(operator, operand, cod)
     }
 
