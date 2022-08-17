@@ -127,6 +127,7 @@ class Elab private constructor(
         term is S.Term.Function -> {
             val anno = term.anno?.let { elabTypeZ(it) }
             val body = elabTermZ(ctx, term.body, anno)
+            context.setHover(term.name.range, lazy { Hover(markup(stringifyTypeZ(anno ?: body.type))) })
             val next = elabTermZ(ctx + (term.name.text to (anno ?: body.type)), term.next, type)
             C.TermZ.Function(term.name.text, body, next, next.type)
         }
@@ -197,6 +198,9 @@ class Elab private constructor(
 
         term is S.Term.FunctionType && type is TypeS.UniverseS? -> {
             val dom = elabTermS(ctx, term.dom, TypeS.UniverseS)
+            if (term.name != null) {
+                context.setHover(term.name.range, lazy { Hover(markup(stringifyTermS(dom))) })
+            }
             val cod = elabTermS(ctx.bind(term.name?.text, dom.type), term.cod, TypeS.UniverseS)
             C.TermS.ArrowS(term.name?.text, dom, cod, TypeS.UniverseS)
         }
@@ -255,6 +259,7 @@ class Elab private constructor(
 
         term is S.Term.Abs && type == null -> {
             val anno = elabTermS(ctx, term.anno, TypeS.UniverseS)
+            context.setHover(term.name.range, lazy { Hover(markup(stringifyTermS(anno))) })
             val a = reflect(ctx.values, anno)
             val body = elabTermS(ctx.bind(term.name.text, a), term.body)
             C.TermS.Abs(
@@ -297,9 +302,11 @@ class Elab private constructor(
         }
 
         term is S.Term.Let -> {
-            val anno = term.anno?.let { reflect(ctx.values, elabTermS(ctx, it, TypeS.UniverseS)) }
-            val init = elabTermS(ctx, term.init, anno)
-            val next = elabTermS(ctx.bind(term.name.text, anno ?: init.type, lazy { reflect(ctx.values, init) }), term.next, type)
+            val anno = term.anno?.let { elabTermS(ctx, it, TypeS.UniverseS) }
+            val a = anno?.let { reflect(ctx.values, it) }
+            val init = elabTermS(ctx, term.init, a)
+            context.setHover(term.name.range, lazy { Hover(markup(stringifyTermS(anno ?: reify(persistentListOf(), init.type)))) })
+            val next = elabTermS(ctx.bind(term.name.text, a ?: init.type, lazy { reflect(ctx.values, init) }), term.next, type)
             C.TermS.Let(term.name.text, init, next, type ?: next.type)
         }
 
