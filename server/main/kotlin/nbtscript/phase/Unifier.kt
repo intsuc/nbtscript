@@ -5,6 +5,8 @@ import nbtscript.ast.Core.*
 class Unifier {
     private val metas: MutableList<Value?> = mutableListOf()
 
+    operator fun get(index: Int): Value? = metas[index]
+
     fun fresh(
         type: Value,
     ): TermS {
@@ -139,7 +141,7 @@ class Unifier {
         candidate: Value,
     ): Boolean = when (val meta = metas[index]) {
         null -> {
-            metas += candidate
+            metas[index] = candidate
             true
         }
 

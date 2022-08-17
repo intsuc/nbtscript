@@ -1,9 +1,6 @@
 package nbtscript.lsp
 
-import nbtscript.phase.Elab
-import nbtscript.phase.Parse
-import nbtscript.phase.Phase
-import nbtscript.phase.rangeTo
+import nbtscript.phase.*
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 import org.eclipse.lsp4j.jsonrpc.messages.Either.forLeft
@@ -69,6 +66,6 @@ class NbtScriptTextDocumentService : TextDocumentService, LanguageClientAware {
         text: String,
         position: Position? = null,
     ): Phase.Context = Phase.Context(position).apply {
-        (Parse..Elab)(this, text)
+        (Parse..Elab..Zonk)(this, text)
     }
 }

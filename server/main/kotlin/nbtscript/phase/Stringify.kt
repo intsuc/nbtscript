@@ -113,4 +113,4 @@ private fun String.quoted(quote: Char): String =
             .replace("$quote", "\\$quote")
     }$quote"
 
-private fun Int.toSubscript(): String = toString().map { it + ('₀' - '0') }.joinToString("")
+fun Int.toSubscript(): String = toString().map { it + ('₀' - '0') }.joinToString("")
