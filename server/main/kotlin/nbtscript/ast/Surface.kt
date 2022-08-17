@@ -21,8 +21,8 @@ sealed interface Surface {
         data class IntArrayType(override val range: Range) : Term
         data class LongArrayType(override val range: Range) : Term
         data class ListType(val element: Term, override val range: Range) : Term
-        data class CompoundType(val elements: Map<String, Term>, override val range: Range) : Term
-        data class FunctionType(val name: String?, val dom: Term, val cod: Term, override val range: Range) : Term
+        data class CompoundType(val elements: Map<Name, Term>, override val range: Range) : Term
+        data class FunctionType(val name: Name?, val dom: Term, val cod: Term, override val range: Range) : Term
         data class CodeType(val element: Term, override val range: Range) : Term
         data class TypeType(override val range: Range) : Term
         data class ByteTag(val data: Byte, override val range: Range) : Term
@@ -36,15 +36,17 @@ sealed interface Surface {
         data class IntArrayTag(val elements: List<Term>, override val range: Range) : Term
         data class LongArrayTag(val elements: List<Term>, override val range: Range) : Term
         data class ListTag(val elements: List<Term>, override val range: Range) : Term
-        data class CompoundTag(val elements: Map<String, Term>, override val range: Range) : Term
+        data class CompoundTag(val elements: Map<Name, Term>, override val range: Range) : Term
         data class IndexedElement(val target: Term, val index: Term, override val range: Range) : Term
-        data class Abs(val name: String, val anno: Term, val body: Term, override val range: Range) : Term
+        data class Abs(val name: Name, val anno: Term, val body: Term, override val range: Range) : Term
         data class Apply(val operator: Term, val operand: Term, override val range: Range) : Term
         data class Quote(val element: Term, override val range: Range) : Term
         data class Splice(val element: Term, override val range: Range) : Term
-        data class Let(val name: String, val anno: Term?, val init: Term, val next: Term, override val range: Range) : Term
-        data class Function(val name: String, val anno: Term?, val body: Term, val next: Term, override val range: Range) : Term
+        data class Let(val name: Name, val anno: Term?, val init: Term, val next: Term, override val range: Range) : Term
+        data class Function(val name: Name, val anno: Term?, val body: Term, val next: Term, override val range: Range) : Term
         data class Var(val name: String, override val range: Range) : Term
         data class Hole(override val range: Range) : Term
     }
+
+    data class Name(val text: String, override val range: Range) : Surface
 }

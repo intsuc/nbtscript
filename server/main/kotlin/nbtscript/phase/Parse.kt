@@ -1,7 +1,6 @@
 package nbtscript.phase
 
-import nbtscript.ast.Surface.Root
-import nbtscript.ast.Surface.Term
+import nbtscript.ast.Surface.*
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 
@@ -41,7 +40,7 @@ class Parse private constructor(
                                 expect('>')
                                 val body = parseTerm()
                                 when (left) {
-                                    is Term.Var -> Term.Abs(left.name, type, body, range())
+                                    is Term.Var -> Term.Abs(Name(left.name, left.range), type, body, range())
                                     else -> hole()
                                 }
                             }
@@ -51,7 +50,7 @@ class Parse private constructor(
                                 expect('>')
                                 val cod = parseTerm()
                                 when (left) {
-                                    is Term.Var -> Term.FunctionType(left.name, type, cod, range())
+                                    is Term.Var -> Term.FunctionType(Name(left.name, left.range), type, cod, range())
                                     else -> hole()
                                 }
                             }
@@ -144,7 +143,7 @@ class Parse private constructor(
             '{' -> {
                 skip()
                 val elements = parseList('}') {
-                    val key = parseWord()
+                    val key = parseName()
                     expect(':')
                     val value = parseTerm()
                     key to value
@@ -203,7 +202,7 @@ class Parse private constructor(
                         "compound" -> {
                             expect('{')
                             val elements = parseList('}') {
-                                val key = parseWord()
+                                val key = parseName()
                                 expect(':')
                                 val value = parseTerm()
                                 key to value
@@ -218,7 +217,7 @@ class Parse private constructor(
 
                         "type" -> Term.TypeType(range())
                         "let" -> {
-                            val name = parseWord()
+                            val name = parseName()
                             val anno = when (peek()) {
                                 ':' -> {
                                     skip()
@@ -235,7 +234,7 @@ class Parse private constructor(
                         }
 
                         "function" -> {
-                            val name = parseWord()
+                            val name = parseName()
                             val anno = when (peek()) {
                                 ':' -> {
                                     skip()
@@ -309,10 +308,11 @@ class Parse private constructor(
         return elements
     }
 
-    private fun parseWord(): String = ranged {
-        val word = readString()
-        if (word.isEmpty()) context.addDiagnostic(wordExpected(range()))
-        word
+    private fun parseName(): Name = ranged {
+        val text = readString()
+        val range = range()
+        if (text.isEmpty()) context.addDiagnostic(wordExpected(range))
+        Name(text, range)
     }
 
     private fun readString(): String {
@@ -332,10 +332,7 @@ class Parse private constructor(
         else -> !isWhitespace()
     }
 
-    private inline fun <A> ranged(block: RangeContext.() -> A): A {
-        // skipWhitespace()
-        return RangeContext().block()
-    }
+    private inline fun <A> ranged(block: RangeContext.() -> A): A = RangeContext().block()
 
     private inline fun expect(expected: Char) {
         if (peek() == expected) skip()

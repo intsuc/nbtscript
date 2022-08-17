@@ -37,7 +37,7 @@ class Elab private constructor(
         }
 
         is S.Term.CompoundType -> {
-            val elements = type.elements.map { it.key to elabTypeZ(it.value) }.toMap()
+            val elements = type.elements.map { it.key.text to elabTypeZ(it.value) }.toMap()
             C.TypeZ.CompoundZ(elements)
         }
 
@@ -106,7 +106,7 @@ class Elab private constructor(
         }
 
         term is S.Term.CompoundTag && type is C.TypeZ.CompoundZ? -> {
-            val elements = term.elements.map { it.key to elabTermZ(ctx, it.value, type?.elements?.get(it.key)) }.toMap()
+            val elements = term.elements.map { it.key.text to elabTermZ(ctx, it.value, type?.elements?.get(it.key.text)) }.toMap()
             val elementTypes = elements.mapValues { it.value.type }
             C.TermZ.CompoundTag(elements, C.TypeZ.CompoundZ(elementTypes))
         }
@@ -127,8 +127,8 @@ class Elab private constructor(
         term is S.Term.Function -> {
             val anno = term.anno?.let { elabTypeZ(it) }
             val body = elabTermZ(ctx, term.body, anno)
-            val next = elabTermZ(ctx + (term.name to (anno ?: body.type)), term.next, type)
-            C.TermZ.Function(term.name, body, next, next.type)
+            val next = elabTermZ(ctx + (term.name.text to (anno ?: body.type)), term.next, type)
+            C.TermZ.Function(term.name.text, body, next, next.type)
         }
 
         term is S.Term.Var && type == null -> {
@@ -191,14 +191,14 @@ class Elab private constructor(
         }
 
         term is S.Term.CompoundType && type is TypeS.UniverseS? -> {
-            val elements = term.elements.map { it.key to elabTermS(ctx, it.value, TypeS.UniverseS) }.toMap()
+            val elements = term.elements.map { it.key.text to elabTermS(ctx, it.value, TypeS.UniverseS) }.toMap()
             C.TermS.CompoundS(elements, TypeS.UniverseS)
         }
 
         term is S.Term.FunctionType && type is TypeS.UniverseS? -> {
             val dom = elabTermS(ctx, term.dom, TypeS.UniverseS)
-            val cod = elabTermS(ctx.bind(term.name, dom.type), term.cod, TypeS.UniverseS)
-            C.TermS.ArrowS(term.name, dom, cod, TypeS.UniverseS)
+            val cod = elabTermS(ctx.bind(term.name?.text, dom.type), term.cod, TypeS.UniverseS)
+            C.TermS.ArrowS(term.name?.text, dom, cod, TypeS.UniverseS)
         }
 
         term is S.Term.CodeType && type is TypeS.UniverseS? -> {
@@ -242,7 +242,7 @@ class Elab private constructor(
         }
 
         term is S.Term.CompoundTag && type is TypeS.CompoundS? -> {
-            val elements = term.elements.map { it.key to elabTermS(ctx, it.value, type?.elements?.get(it.key)?.value) }.toMap()
+            val elements = term.elements.map { it.key.text to elabTermS(ctx, it.value, type?.elements?.get(it.key.text)?.value) }.toMap()
             val elementTypes = elements.mapValues { lazyOf(it.value.type) }
             C.TermS.CompoundTag(elements, TypeS.CompoundS(elementTypes))
         }
@@ -256,9 +256,9 @@ class Elab private constructor(
         term is S.Term.Abs && type == null -> {
             val anno = elabTermS(ctx, term.anno, TypeS.UniverseS)
             val a = reflect(ctx.values, anno)
-            val body = elabTermS(ctx.bind(term.name, a), term.body)
+            val body = elabTermS(ctx.bind(term.name.text, a), term.body)
             C.TermS.Abs(
-                term.name, anno, body, TypeS.ArrowS(
+                term.name.text, anno, body, TypeS.ArrowS(
                     null,
                     lazyOf(a),
                     C.Clos(ctx.values, lazy { reify(ctx.values, body.type) })
@@ -299,8 +299,8 @@ class Elab private constructor(
         term is S.Term.Let -> {
             val anno = term.anno?.let { reflect(ctx.values, elabTermS(ctx, it, TypeS.UniverseS)) }
             val init = elabTermS(ctx, term.init, anno)
-            val next = elabTermS(ctx.bind(term.name, anno ?: init.type, lazy { reflect(ctx.values, init) }), term.next, type)
-            C.TermS.Let(term.name, init, next, type ?: next.type)
+            val next = elabTermS(ctx.bind(term.name.text, anno ?: init.type, lazy { reflect(ctx.values, init) }), term.next, type)
+            C.TermS.Let(term.name.text, init, next, type ?: next.type)
         }
 
         term is S.Term.Var && type == null -> {
