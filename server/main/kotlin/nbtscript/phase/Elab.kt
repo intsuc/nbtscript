@@ -37,7 +37,13 @@ class Elab private constructor(
         }
 
         is S.Term.CompoundType -> {
-            val elements = type.elements.map { it.key.text to elabTypeZ(it.value) }.toMap()
+            val elements = type.elements.map {
+                val value = elabTypeZ(it.value)
+                context.setHover(it.key.range, lazy {
+                    Hover(markup(stringifyTypeZ(value)))
+                })
+                it.key.text to value
+            }.toMap()
             C.TypeZ.CompoundZ(elements)
         }
 
@@ -47,7 +53,9 @@ class Elab private constructor(
             C.TypeZ.Hole
         }
     }.also {
-        context.setHover(type.range, lazy { Hover(markup("universe")) })
+        context.setHover(type.range, lazy {
+            Hover(markup("universe"))
+        })
     }
 
     private fun elabTermZ(
@@ -106,7 +114,13 @@ class Elab private constructor(
         }
 
         term is S.Term.CompoundTag && type is C.TypeZ.CompoundZ? -> {
-            val elements = term.elements.map { it.key.text to elabTermZ(ctx, it.value, type?.elements?.get(it.key.text)) }.toMap()
+            val elements = term.elements.map {
+                val value = elabTermZ(ctx, it.value, type?.elements?.get(it.key.text))
+                context.setHover(it.key.range, lazy {
+                    Hover(markup(stringifyTypeZ(value.type)))
+                })
+                it.key.text to value
+            }.toMap()
             val elementTypes = elements.mapValues { it.value.type }
             C.TermZ.CompoundTag(elements, C.TypeZ.CompoundZ(elementTypes))
         }
@@ -127,7 +141,9 @@ class Elab private constructor(
         term is S.Term.Function -> {
             val anno = term.anno?.let { elabTypeZ(it) }
             val body = elabTermZ(ctx, term.body, anno)
-            context.setHover(term.name.range, lazy { Hover(markup(stringifyTypeZ(anno ?: body.type))) })
+            context.setHover(term.name.range, lazy {
+                Hover(markup(stringifyTypeZ(anno ?: body.type)))
+            })
             if (term.anno == null) {
                 context.addInlayHint(lazy {
                     val part = InlayHintLabelPart(": ${stringifyTypeZ(body.type)}")
@@ -162,7 +178,9 @@ class Elab private constructor(
             }
         }
     }.also {
-        context.setHover(term.range, lazy { Hover(markup(stringifyTypeZ(it.type))) })
+        context.setHover(term.range, lazy {
+            Hover(markup(stringifyTypeZ(it.type)))
+        })
         context.setCompletionItems(term.range, lazy {
             ctx.entries.map { (name, type) ->
                 CompletionItem(name).apply {
@@ -200,14 +218,22 @@ class Elab private constructor(
             }
 
             term is S.Term.CompoundType && type is TypeS.UniverseS? -> {
-                val elements = term.elements.map { it.key.text to elabTermS(ctx, it.value, TypeS.UniverseS) }.toMap()
+                val elements = term.elements.map {
+                    val value = elabTermS(ctx, it.value, TypeS.UniverseS)
+                    context.setHover(it.key.range, lazy {
+                        Hover(markup(context.unifier.stringifyTermS(value)))
+                    })
+                    it.key.text to value
+                }.toMap()
                 C.TermS.CompoundS(elements, TypeS.UniverseS)
             }
 
             term is S.Term.FunctionType && type is TypeS.UniverseS? -> {
                 val dom = elabTermS(ctx, term.dom, TypeS.UniverseS)
                 if (term.name != null) {
-                    context.setHover(term.name.range, lazy { Hover(markup(context.unifier.stringifyTermS(dom))) })
+                    context.setHover(term.name.range, lazy {
+                        Hover(markup(context.unifier.stringifyTermS(dom)))
+                    })
                 }
                 val cod = elabTermS(ctx.bind(term.name?.text, dom.type), term.cod, TypeS.UniverseS)
                 C.TermS.FunctionS(term.name?.text, dom, cod, TypeS.UniverseS)
@@ -254,7 +280,13 @@ class Elab private constructor(
             }
 
             term is S.Term.CompoundTag && type is TypeS.CompoundS? -> {
-                val elements = term.elements.map { it.key.text to elabTermS(ctx, it.value, type?.elements?.get(it.key.text)?.value) }.toMap()
+                val elements = term.elements.map {
+                    val value = elabTermS(ctx, it.value, type?.elements?.get(it.key.text)?.value)
+                    context.setHover(it.key.range, lazy {
+                        Hover(markup(context.unifier.stringifyTermS(context.unifier.reify(ctx.values, value.type))))
+                    })
+                    it.key.text to value
+                }.toMap()
                 val elementTypes = elements.mapValues { lazyOf(it.value.type) }
                 C.TermS.CompoundTag(elements, TypeS.CompoundS(elementTypes))
             }
@@ -267,7 +299,9 @@ class Elab private constructor(
 
             term is S.Term.Abs && type == null -> {
                 val anno = term.anno?.let { elabTermS(ctx, it, TypeS.UniverseS) } ?: context.unifier.fresh(TypeS.UniverseS)
-                context.setHover(term.name.range, lazy { Hover(markup(context.unifier.stringifyTermS(anno))) })
+                context.setHover(term.name.range, lazy {
+                    Hover(markup(context.unifier.stringifyTermS(anno)))
+                })
                 val a = context.unifier.reflect(ctx.values, anno)
                 val body = elabTermS(ctx.bind(term.name.text, a), term.body)
                 C.TermS.Abs(
@@ -313,7 +347,9 @@ class Elab private constructor(
                 val anno = term.anno?.let { elabTermS(ctx, it, TypeS.UniverseS) }
                 val a = anno?.let { context.unifier.reflect(ctx.values, it) }
                 val init = elabTermS(ctx, term.init, a)
-                context.setHover(term.name.range, lazy { Hover(markup(context.unifier.stringifyTermS(anno ?: context.unifier.reify(ctx.values, init.type)))) })
+                context.setHover(term.name.range, lazy {
+                    Hover(markup(context.unifier.stringifyTermS(anno ?: context.unifier.reify(ctx.values, init.type))))
+                })
                 if (term.anno == null) {
                     context.addInlayHint(lazy {
                         val part = InlayHintLabelPart(": ${context.unifier.stringifyTermS(context.unifier.reify(ctx.values, init.type))}")
@@ -357,7 +393,9 @@ class Elab private constructor(
                 }
             }
         }.also {
-            context.setHover(term.range, lazy { Hover(markup(context.unifier.stringifyTermS(context.unifier.reify(ctx.values, it.type)))) })
+            context.setHover(term.range, lazy {
+                Hover(markup(context.unifier.stringifyTermS(context.unifier.reify(ctx.values, it.type))))
+            })
             context.setCompletionItems(term.range, lazy {
                 ctx.levels.map { (name, level) ->
                     CompletionItem(name).apply {
