@@ -75,21 +75,22 @@ fun notFound(
 )
 
 fun arrowExpected(
+    unifier: Unifier,
     actual: TermS,
     range: Range,
 ): Diagnostic = makeDiagnostic(
     range,
-    "expected: arrow\nactual: '${stringifyTermS(actual)}'",
+    "expected: arrow\nactual: '${unifier.stringifyTermS(actual)}'",
     Error,
 )
 
-
 fun codeExpected(
+    unifier: Unifier,
     actual: TermS,
     range: Range,
 ): Diagnostic = makeDiagnostic(
     range,
-    "expected: code\nactual: '${stringifyTermS(actual)}'",
+    "expected: code\nactual: '${unifier.stringifyTermS(actual)}'",
     Error,
 )
 
@@ -104,12 +105,13 @@ fun typeZMismatched(
 )
 
 fun typeSMismatched(
+    unifier: Unifier,
     expected: TermS,
     actual: TermS,
     range: Range,
 ): Diagnostic = makeDiagnostic(
     range,
-    "expected: '${stringifyTermS(expected)}'\nactual: '${stringifyTermS(actual)}'",
+    "expected: '${unifier.stringifyTermS(expected)}'\nactual: '${unifier.stringifyTermS(actual)}'",
     Error,
 )
 

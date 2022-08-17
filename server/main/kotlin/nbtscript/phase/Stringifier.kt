@@ -1,5 +1,6 @@
 package nbtscript.phase
 
+import kotlinx.collections.immutable.persistentListOf
 import nbtscript.ast.Core.*
 import nbtscript.ast.Staged.Term
 import org.eclipse.lsp4j.MarkupContent
@@ -31,7 +32,7 @@ fun stringifyTypeZ(
     is TypeZ.Hole -> "hole"
 }
 
-fun stringifyTermZ(
+fun Unifier.stringifyTermZ(
     term: TermZ,
 ): String = when (term) {
     is TermZ.ByteTag -> "${term.data}b"
@@ -52,7 +53,7 @@ fun stringifyTermZ(
     is TermZ.Hole -> " "
 }
 
-fun stringifyTermS(
+fun Unifier.stringifyTermS(
     term: TermS,
 ): String = when (term) {
     is TermS.UniverseS -> "universe"
@@ -91,7 +92,7 @@ fun stringifyTermS(
     is TermS.Quote -> "`${stringifyTermZ(term.element)}"
     is TermS.Let -> "let ${term.name} = ${stringifyTermS(term.init)};\n${stringifyTermS(term.next)}"
     is TermS.Var -> term.name ?: ""
-    is TermS.Meta -> "?${term.index.toSubscript()}"
+    is TermS.Meta -> this[term.index]?.let { stringifyTermS(reify(persistentListOf(), it)) } ?: "?${term.index.toSubscript()}"
     is TermS.Hole -> " "
 }
 
@@ -110,7 +111,7 @@ fun stringifyTerm(
     is Term.LongArrayTag -> term.elements.joinToString(", ", "[L;", "]") { stringifyTerm(it) }
     is Term.ListTag -> term.elements.joinToString(", ", "[", "]") { stringifyTerm(it) }
     is Term.CompoundTag -> term.elements.entries.joinToString(", ", "{", "}") { "${it.key}: ${stringifyTerm(it.value)}" }
-    is Term.IndexedElement -> "${stringifyTerm(term.target)}[${term.index}]"
+    is Term.IndexedElement -> "${stringifyTerm(term.target)}.[${term.index}]"
     is Term.Function -> "function ${term.name} = ${stringifyTerm(term.body)};\n${stringifyTerm(term.next)}"
     is Term.Run -> term.name
     is Term.Hole -> " "
@@ -125,4 +126,8 @@ fun String.quoted(
             .replace("$quote", "\\$quote")
     }$quote"
 
-fun Int.toSubscript(): String = toString().map { it + ('₀' - '0') }.joinToString("")
+fun Int.toSubscript(): String =
+    this
+        .toString()
+        .map { it + ('₀' - '0') }
+        .joinToString("")
