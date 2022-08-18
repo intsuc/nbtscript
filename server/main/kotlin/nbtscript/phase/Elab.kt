@@ -302,6 +302,12 @@ class Elab private constructor(
                 context.setHover(term.name.range, lazy {
                     Hover(markup(context.unifier.stringifyTermS(anno)))
                 })
+                if (term.anno == null) {
+                    context.addInlayHint(lazy {
+                        val part = InlayHintLabelPart(": ${context.unifier.stringifyTermS(anno)}")
+                        InlayHint(term.name.range.end, forRight(listOf(part)))
+                    })
+                }
                 val a = context.unifier.reflect(ctx.values, anno)
                 val body = elabTermS(ctx.bind(term.name.text, a), term.body)
                 C.TermS.Abs(
