@@ -6,19 +6,19 @@ sealed interface Core {
     data class Root(val body: TermZ) : Core
 
     sealed interface TypeZ : Core {
-        object EndZ : TypeZ
-        object ByteZ : TypeZ
-        object ShortZ : TypeZ
-        object IntZ : TypeZ
-        object LongZ : TypeZ
-        object FloatZ : TypeZ
-        object DoubleZ : TypeZ
-        object StringZ : TypeZ
-        object ByteArrayZ : TypeZ
-        object IntArrayZ : TypeZ
-        object LongArrayZ : TypeZ
-        data class ListZ(val element: TypeZ) : TypeZ
-        data class CompoundZ(val elements: Map<String, TypeZ>) : TypeZ
+        object EndType : TypeZ
+        object ByteType : TypeZ
+        object ShortType : TypeZ
+        object IntType : TypeZ
+        object LongType : TypeZ
+        object FloatType : TypeZ
+        object DoubleType : TypeZ
+        object StringType : TypeZ
+        object ByteArrayType : TypeZ
+        object IntArrayType : TypeZ
+        object LongArrayType : TypeZ
+        data class ListType(val element: TypeZ) : TypeZ
+        data class CompoundType(val elements: Map<String, TypeZ>) : TypeZ
         object Hole : TypeZ
     }
 
@@ -46,23 +46,23 @@ sealed interface Core {
     sealed interface TermS : Core {
         val type: Value
 
-        data class UniverseS(override val type: Value) : TermS
-        data class EndS(override val type: Value) : TermS
-        data class ByteS(override val type: Value) : TermS
-        data class ShortS(override val type: Value) : TermS
-        data class IntS(override val type: Value) : TermS
-        data class LongS(override val type: Value) : TermS
-        data class FloatS(override val type: Value) : TermS
-        data class DoubleS(override val type: Value) : TermS
-        data class StringS(override val type: Value) : TermS
-        data class ByteArrayS(override val type: Value) : TermS
-        data class IntArrayS(override val type: Value) : TermS
-        data class LongArrayS(override val type: Value) : TermS
-        data class ListS(val element: TermS, override val type: Value) : TermS
-        data class CompoundS(val elements: Map<String, TermS>, override val type: Value) : TermS
-        data class FunctionS(val name: String?, val dom: TermS, val cod: TermS, override val type: Value) : TermS
-        data class CodeS(val element: Core.TypeZ, override val type: Value) : TermS
-        data class TypeZ(override val type: Value) : TermS
+        data class UniverseType(override val type: Value) : TermS
+        data class EndType(override val type: Value) : TermS
+        data class ByteType(override val type: Value) : TermS
+        data class ShortType(override val type: Value) : TermS
+        data class IntType(override val type: Value) : TermS
+        data class LongType(override val type: Value) : TermS
+        data class FloatType(override val type: Value) : TermS
+        data class DoubleType(override val type: Value) : TermS
+        data class StringType(override val type: Value) : TermS
+        data class ByteArrayType(override val type: Value) : TermS
+        data class IntArrayType(override val type: Value) : TermS
+        data class LongArrayType(override val type: Value) : TermS
+        data class ListType(val element: TermS, override val type: Value) : TermS
+        data class CompoundType(val elements: Map<String, TermS>, override val type: Value) : TermS
+        data class FunctionType(val name: String?, val dom: TermS, val cod: TermS, override val type: Value) : TermS
+        data class CodeType(val element: Core.TypeZ, override val type: Value) : TermS
+        data class TypeType(override val type: Value) : TermS
         data class EndTag(override val type: Value) : TermS
         data class ByteTag(val data: Byte, override val type: Value) : TermS
         data class ShortTag(val data: Short, override val type: Value) : TermS
@@ -87,23 +87,23 @@ sealed interface Core {
     }
 
     sealed interface Value : Core {
-        object UniverseS : Value
-        object EndS : Value
-        object ByteS : Value
-        object ShortS : Value
-        object IntS : Value
-        object LongS : Value
-        object FloatS : Value
-        object DoubleS : Value
-        object StringS : Value
-        object ByteArrayS : Value
-        object IntArrayS : Value
-        object LongArrayS : Value
-        data class ListS(val element: Lazy<Value>) : Value
-        data class CompoundS(val elements: Map<String, Lazy<Value>>) : Value
-        data class FunctionS(val name: String?, val dom: Lazy<Value>, val cod: Clos) : Value
-        data class CodeS(val element: Core.TypeZ) : Value
-        object TypeZ : Value
+        object UniverseType : Value
+        object EndType : Value
+        object ByteType : Value
+        object ShortType : Value
+        object IntType : Value
+        object LongType : Value
+        object FloatType : Value
+        object DoubleType : Value
+        object StringType : Value
+        object ByteArrayType : Value
+        object IntArrayType : Value
+        object LongArrayType : Value
+        data class ListType(val element: Lazy<Value>) : Value
+        data class CompoundType(val elements: Map<String, Lazy<Value>>) : Value
+        data class FunctionType(val name: String?, val dom: Lazy<Value>, val cod: Clos) : Value
+        data class CodeType(val element: Core.TypeZ) : Value
+        object TypeType : Value
         object EndTag : Value
         data class ByteTag(val data: Byte) : Value
         data class ShortTag(val data: Short) : Value

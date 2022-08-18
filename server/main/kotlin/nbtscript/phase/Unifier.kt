@@ -14,70 +14,70 @@ class Unifier {
         return TermS.Meta(metas.lastIndex, type)
     }
 
-    fun unifyZ(
+    fun unifyTypeZ(
         type1: TypeZ,
         type2: TypeZ,
     ): Boolean = when {
-        type1 is TypeZ.EndZ && type2 is TypeZ.EndZ -> true
-        type1 is TypeZ.ByteZ && type2 is TypeZ.ByteZ -> true
-        type1 is TypeZ.ShortZ && type2 is TypeZ.ShortZ -> true
-        type1 is TypeZ.IntZ && type2 is TypeZ.IntZ -> true
-        type1 is TypeZ.LongZ && type2 is TypeZ.LongZ -> true
-        type1 is TypeZ.FloatZ && type2 is TypeZ.FloatZ -> true
-        type1 is TypeZ.DoubleZ && type2 is TypeZ.DoubleZ -> true
-        type1 is TypeZ.StringZ && type2 is TypeZ.StringZ -> true
-        type1 is TypeZ.ByteArrayZ && type2 is TypeZ.ByteArrayZ -> true
-        type1 is TypeZ.IntArrayZ && type2 is TypeZ.IntArrayZ -> true
-        type1 is TypeZ.LongArrayZ && type2 is TypeZ.LongArrayZ -> true
-        type1 is TypeZ.ListZ && type2 is TypeZ.ListZ -> unifyZ(type1.element, type2.element)
-        type1 is TypeZ.CompoundZ && type2 is TypeZ.CompoundZ -> {
+        type1 is TypeZ.EndType && type2 is TypeZ.EndType -> true
+        type1 is TypeZ.ByteType && type2 is TypeZ.ByteType -> true
+        type1 is TypeZ.ShortType && type2 is TypeZ.ShortType -> true
+        type1 is TypeZ.IntType && type2 is TypeZ.IntType -> true
+        type1 is TypeZ.LongType && type2 is TypeZ.LongType -> true
+        type1 is TypeZ.FloatType && type2 is TypeZ.FloatType -> true
+        type1 is TypeZ.DoubleType && type2 is TypeZ.DoubleType -> true
+        type1 is TypeZ.StringType && type2 is TypeZ.StringType -> true
+        type1 is TypeZ.ByteArrayType && type2 is TypeZ.ByteArrayType -> true
+        type1 is TypeZ.IntArrayType && type2 is TypeZ.IntArrayType -> true
+        type1 is TypeZ.LongArrayType && type2 is TypeZ.LongArrayType -> true
+        type1 is TypeZ.ListType && type2 is TypeZ.ListType -> unifyTypeZ(type1.element, type2.element)
+        type1 is TypeZ.CompoundType && type2 is TypeZ.CompoundType -> {
             type1.elements.keys == type2.elements.keys && type1.elements.all {
-                unifyZ(it.value, type2.elements[it.key]!!)
+                unifyTypeZ(it.value, type2.elements[it.key]!!)
             }
         }
 
         else -> false
     }
 
-    fun unifyS(
+    fun unifyValue(
         lvl: Int,
         value1: Value,
         value2: Value,
     ): Boolean {
-        @Suppress("NAME_SHADOWING") val value1 = forceS(value1)
-        @Suppress("NAME_SHADOWING") val value2 = forceS(value2)
+        @Suppress("NAME_SHADOWING") val value1 = force(value1)
+        @Suppress("NAME_SHADOWING") val value2 = force(value2)
         return when {
             value1 is Value.Meta && value2 is Value.Meta -> value1.index == value2.index
-            value1 is Value.Meta -> solveS(lvl, value1.index, value2)
-            value2 is Value.Meta -> solveS(lvl, value2.index, value1)
+            value1 is Value.Meta -> solve(lvl, value1.index, value2)
+            value2 is Value.Meta -> solve(lvl, value2.index, value1)
 
-            value1 is Value.UniverseS && value2 is Value.UniverseS -> true
-            value1 is Value.EndS && value2 is Value.EndS -> true
-            value1 is Value.ByteS && value2 is Value.ByteS -> true
-            value1 is Value.ShortS && value2 is Value.ShortS -> true
-            value1 is Value.IntS && value2 is Value.IntS -> true
-            value1 is Value.LongS && value2 is Value.LongS -> true
-            value1 is Value.FloatS && value2 is Value.FloatS -> true
-            value1 is Value.DoubleS && value2 is Value.DoubleS -> true
-            value1 is Value.StringS && value2 is Value.StringS -> true
-            value1 is Value.ByteArrayS && value2 is Value.ByteArrayS -> true
-            value1 is Value.IntArrayS && value2 is Value.IntArrayS -> true
-            value1 is Value.LongArrayS && value2 is Value.LongArrayS -> true
-            value1 is Value.ListS && value2 is Value.ListS -> unifyS(lvl, value1.element.value, value2.element.value)
-            value1 is Value.CompoundS && value2 is Value.CompoundS -> {
+            value1 is Value.UniverseType && value2 is Value.UniverseType -> true
+            value1 is Value.EndType && value2 is Value.EndType -> true
+            value1 is Value.ByteType && value2 is Value.ByteType -> true
+            value1 is Value.ShortType && value2 is Value.ShortType -> true
+            value1 is Value.IntType && value2 is Value.IntType -> true
+            value1 is Value.LongType && value2 is Value.LongType -> true
+            value1 is Value.FloatType && value2 is Value.FloatType -> true
+            value1 is Value.DoubleType && value2 is Value.DoubleType -> true
+            value1 is Value.StringType && value2 is Value.StringType -> true
+            value1 is Value.ByteArrayType && value2 is Value.ByteArrayType -> true
+            value1 is Value.IntArrayType && value2 is Value.IntArrayType -> true
+            value1 is Value.LongArrayType && value2 is Value.LongArrayType -> true
+            value1 is Value.ListType && value2 is Value.ListType -> unifyValue(lvl, value1.element.value, value2.element.value)
+            value1 is Value.CompoundType && value2 is Value.CompoundType -> {
                 value1.elements.keys == value2.elements.keys && value1.elements.all {
-                    unifyS(lvl, it.value.value, value2.elements[it.key]!!.value)
+                    unifyValue(lvl, it.value.value, value2.elements[it.key]!!.value)
                 }
             }
 
             value1 is Value.IndexedElement && value2 is Value.IndexedElement -> false // ?
-            value1 is Value.FunctionS && value2 is Value.FunctionS -> {
-                unifyS(lvl, value1.dom.value, value2.dom.value) && lazyOf(Value.Var(null, lvl, value1.dom)).let { operand ->
-                    unifyS(lvl.inc(), value1.cod(this, operand), value2.cod(this, operand))
+            value1 is Value.FunctionType && value2 is Value.FunctionType -> {
+                unifyValue(lvl, value1.dom.value, value2.dom.value) && lazyOf(Value.Var(null, lvl, value1.dom)).let { operand ->
+                    unifyValue(lvl.inc(), value1.cod(this, operand), value2.cod(this, operand))
                 }
             }
 
-            value1 is Value.TypeZ && value2 is Value.TypeZ -> true
+            value1 is Value.TypeType && value2 is Value.TypeType -> true
             value1 is Value.EndTag && value2 is Value.EndTag -> true
             value1 is Value.ByteTag && value2 is Value.ByteTag -> value1.data == value2.data
             value1 is Value.ShortTag && value2 is Value.ShortTag -> value1.data == value2.data
@@ -87,34 +87,34 @@ class Unifier {
             value1 is Value.DoubleTag && value2 is Value.DoubleTag -> value1.data == value2.data
             value1 is Value.StringTag && value2 is Value.StringTag -> value1.data == value2.data
             value1 is Value.ByteArrayTag && value2 is Value.ByteArrayTag -> {
-                (value1.elements zip value2.elements).all { (element1, element2) -> unifyS(lvl, element1.value, element2.value) }
+                (value1.elements zip value2.elements).all { (element1, element2) -> unifyValue(lvl, element1.value, element2.value) }
             }
 
             value1 is Value.IntArrayTag && value2 is Value.IntArrayTag -> {
-                (value1.elements zip value2.elements).all { (element1, element2) -> unifyS(lvl, element1.value, element2.value) }
+                (value1.elements zip value2.elements).all { (element1, element2) -> unifyValue(lvl, element1.value, element2.value) }
             }
 
             value1 is Value.LongArrayTag && value2 is Value.LongArrayTag -> {
-                (value1.elements zip value2.elements).all { (element1, element2) -> unifyS(lvl, element1.value, element2.value) }
+                (value1.elements zip value2.elements).all { (element1, element2) -> unifyValue(lvl, element1.value, element2.value) }
             }
 
             value1 is Value.ListTag && value2 is Value.ListTag -> {
-                (value1.elements zip value2.elements).all { (element1, element2) -> unifyS(lvl, element1.value, element2.value) }
+                (value1.elements zip value2.elements).all { (element1, element2) -> unifyValue(lvl, element1.value, element2.value) }
             }
 
             value1 is Value.CompoundTag && value2 is Value.CompoundTag -> {
                 value1.elements.keys == value2.elements.keys && value1.elements.all {
-                    unifyS(lvl, it.value.value, value2.elements[it.key]!!.value)
+                    unifyValue(lvl, it.value.value, value2.elements[it.key]!!.value)
                 }
             }
 
             value1 is Value.Abs && value2 is Value.Abs -> {
                 val operand = lazyOf(Value.Var(null, lvl, value1.anno))
-                unifyS(lvl.inc(), value1.body(this, operand), value2.body(this, operand))
+                unifyValue(lvl.inc(), value1.body(this, operand), value2.body(this, operand))
             }
 
             value1 is Value.Apply && value2 is Value.Apply -> {
-                unifyS(lvl, value1.operator, value2.operator) && unifyS(lvl, value1.operand.value, value2.operand.value)
+                unifyValue(lvl, value1.operator, value2.operator) && unifyValue(lvl, value1.operand.value, value2.operand.value)
             }
 
             value1 is Value.Quote && value2 is Value.Quote -> false // ?
@@ -124,20 +124,20 @@ class Unifier {
         }
     }
 
-    tailrec fun forceS(
+    tailrec fun force(
         value: Value,
     ): Value = when (value) {
         is Value.Meta -> {
             when (val meta = metas.getOrNull(value.index)) {
                 null -> value
-                else -> forceS(meta)
+                else -> force(meta)
             }
         }
 
         else -> value
     }
 
-    private fun solveS(
+    private fun solve(
         lvl: Int,
         index: Int,
         candidate: Value,
@@ -147,6 +147,6 @@ class Unifier {
             true
         }
 
-        else -> unifyS(lvl, meta, candidate)
+        else -> unifyValue(lvl, meta, candidate)
     }
 }

@@ -1,10 +1,10 @@
 package nbtscript.phase
 
 import kotlinx.collections.immutable.persistentListOf
-import nbtscript.ast.Core.*
-import nbtscript.ast.Staged.Term
 import org.eclipse.lsp4j.MarkupContent
 import org.eclipse.lsp4j.MarkupKind
+import nbtscript.ast.Core as C
+import nbtscript.ast.Staged as S
 
 fun markup(
     value: String,
@@ -14,107 +14,107 @@ fun markup(
 )
 
 fun stringifyTypeZ(
-    type: TypeZ,
+    type: C.TypeZ,
 ): String = when (type) {
-    is TypeZ.EndZ -> "end"
-    is TypeZ.ByteZ -> "byte"
-    is TypeZ.ShortZ -> "short"
-    is TypeZ.IntZ -> "int"
-    is TypeZ.LongZ -> "long"
-    is TypeZ.FloatZ -> "float"
-    is TypeZ.DoubleZ -> "double"
-    is TypeZ.StringZ -> "string"
-    is TypeZ.ByteArrayZ -> "byte_array"
-    is TypeZ.IntArrayZ -> "int_array"
-    is TypeZ.LongArrayZ -> "long_array"
-    is TypeZ.ListZ -> "list ${stringifyTypeZ(type.element)}"
-    is TypeZ.CompoundZ -> type.elements.entries.joinToString(", ", "compound {", "}") { "${it.key}: ${stringifyTypeZ(it.value)}" }
-    is TypeZ.Hole -> "hole"
+    is C.TypeZ.EndType -> "end"
+    is C.TypeZ.ByteType -> "byte"
+    is C.TypeZ.ShortType -> "short"
+    is C.TypeZ.IntType -> "int"
+    is C.TypeZ.LongType -> "long"
+    is C.TypeZ.FloatType -> "float"
+    is C.TypeZ.DoubleType -> "double"
+    is C.TypeZ.StringType -> "string"
+    is C.TypeZ.ByteArrayType -> "byte_array"
+    is C.TypeZ.IntArrayType -> "int_array"
+    is C.TypeZ.LongArrayType -> "long_array"
+    is C.TypeZ.ListType -> "list ${stringifyTypeZ(type.element)}"
+    is C.TypeZ.CompoundType -> type.elements.entries.joinToString(", ", "compound {", "}") { "${it.key}: ${stringifyTypeZ(it.value)}" }
+    is C.TypeZ.Hole -> "hole"
 }
 
 fun Unifier.stringifyTermZ(
-    term: TermZ,
+    term: C.TermZ,
 ): String = when (term) {
-    is TermZ.ByteTag -> "${term.data}b"
-    is TermZ.ShortTag -> "${term.data}s"
-    is TermZ.IntTag -> "${term.data}"
-    is TermZ.LongTag -> "${term.data}L"
-    is TermZ.FloatTag -> "${term.data}f"
-    is TermZ.DoubleTag -> "${term.data}d"
-    is TermZ.StringTag -> term.data.quoted('"')
-    is TermZ.ByteArrayTag -> term.elements.joinToString(", ", "[B;", "]") { stringifyTermZ(it) }
-    is TermZ.IntArrayTag -> term.elements.joinToString(", ", "[I;", "]") { stringifyTermZ(it) }
-    is TermZ.LongArrayTag -> term.elements.joinToString(", ", "[L;", "]") { stringifyTermZ(it) }
-    is TermZ.ListTag -> term.elements.joinToString(", ", "[", "]") { stringifyTermZ(it) }
-    is TermZ.CompoundTag -> term.elements.entries.joinToString(", ", "{", "}") { "${it.key}: ${stringifyTermZ(it.value)}" }
-    is TermZ.Splice -> "$${stringifyTermS(term.element)}"
-    is TermZ.Function -> "function ${term.name} = ${stringifyTermZ(term.body)};\n${stringifyTermZ(term.next)}"
-    is TermZ.Run -> term.name
-    is TermZ.Hole -> " "
+    is C.TermZ.ByteTag -> "${term.data}b"
+    is C.TermZ.ShortTag -> "${term.data}s"
+    is C.TermZ.IntTag -> "${term.data}"
+    is C.TermZ.LongTag -> "${term.data}L"
+    is C.TermZ.FloatTag -> "${term.data}f"
+    is C.TermZ.DoubleTag -> "${term.data}d"
+    is C.TermZ.StringTag -> term.data.quoted('"')
+    is C.TermZ.ByteArrayTag -> term.elements.joinToString(", ", "[B;", "]") { stringifyTermZ(it) }
+    is C.TermZ.IntArrayTag -> term.elements.joinToString(", ", "[I;", "]") { stringifyTermZ(it) }
+    is C.TermZ.LongArrayTag -> term.elements.joinToString(", ", "[L;", "]") { stringifyTermZ(it) }
+    is C.TermZ.ListTag -> term.elements.joinToString(", ", "[", "]") { stringifyTermZ(it) }
+    is C.TermZ.CompoundTag -> term.elements.entries.joinToString(", ", "{", "}") { "${it.key}: ${stringifyTermZ(it.value)}" }
+    is C.TermZ.Splice -> "$${stringifyTermS(term.element)}"
+    is C.TermZ.Function -> "function ${term.name} = ${stringifyTermZ(term.body)};\n${stringifyTermZ(term.next)}"
+    is C.TermZ.Run -> term.name
+    is C.TermZ.Hole -> " "
 }
 
 fun Unifier.stringifyTermS(
-    term: TermS,
+    term: C.TermS,
 ): String = when (term) {
-    is TermS.UniverseS -> "universe"
-    is TermS.EndS -> "end"
-    is TermS.ByteS -> "byte"
-    is TermS.ShortS -> "short"
-    is TermS.IntS -> "int"
-    is TermS.LongS -> "long"
-    is TermS.FloatS -> "float"
-    is TermS.DoubleS -> "double"
-    is TermS.StringS -> "string"
-    is TermS.ByteArrayS -> "byte_array"
-    is TermS.IntArrayS -> "int_array"
-    is TermS.LongArrayS -> "long_array"
-    is TermS.ListS -> "list ${stringifyTermS(term.element)}"
-    is TermS.CompoundS -> term.elements.entries.joinToString(", ", "compound {", "}") { "${it.key}: ${stringifyTermS(it.value)}" }
-    is TermS.IndexedElement -> "${stringifyTermZ(term.target)}.[${stringifyTermS(term.index)}]"
-    is TermS.FunctionS -> "${term.name?.let { "($it: ${stringifyTermS(term.dom)})" } ?: stringifyTermS(term.dom)} -> ${stringifyTermS(term.cod)}"
-    is TermS.CodeS -> "code ${stringifyTypeZ(term.element)}"
-    is TermS.TypeZ -> "type"
-    is TermS.EndTag -> ""
-    is TermS.ByteTag -> "${term.data}b"
-    is TermS.ShortTag -> "${term.data}s"
-    is TermS.IntTag -> "${term.data}"
-    is TermS.LongTag -> "${term.data}L"
-    is TermS.FloatTag -> "${term.data}f"
-    is TermS.DoubleTag -> "${term.data}d"
-    is TermS.StringTag -> term.data.quoted('"')
-    is TermS.ByteArrayTag -> term.elements.joinToString(", ", "[B;", "]") { stringifyTermS(it) }
-    is TermS.IntArrayTag -> term.elements.joinToString(", ", "[I;", "]") { stringifyTermS(it) }
-    is TermS.LongArrayTag -> term.elements.joinToString(", ", "[L;", "]") { stringifyTermS(it) }
-    is TermS.ListTag -> term.elements.joinToString(", ", "[", "]") { stringifyTermS(it) }
-    is TermS.CompoundTag -> term.elements.entries.joinToString(", ", "{", "}") { "${it.key}: ${stringifyTermS(it.value)}" }
-    is TermS.Abs -> "${term.name} => ${stringifyTermS(term.body)}"
-    is TermS.Apply -> "${stringifyTermS(term.operator)}(${stringifyTermS(term.operand)})"
-    is TermS.Quote -> "`${stringifyTermZ(term.element)}"
-    is TermS.Let -> "let ${term.name} = ${stringifyTermS(term.init)};\n${stringifyTermS(term.next)}"
-    is TermS.Var -> term.name ?: ""
-    is TermS.Meta -> this[term.index]?.let { stringifyTermS(reify(persistentListOf(), it)) } ?: "?${term.index.toSubscript()}"
-    is TermS.Hole -> " "
+    is C.TermS.UniverseType -> "universe"
+    is C.TermS.EndType -> "end"
+    is C.TermS.ByteType -> "byte"
+    is C.TermS.ShortType -> "short"
+    is C.TermS.IntType -> "int"
+    is C.TermS.LongType -> "long"
+    is C.TermS.FloatType -> "float"
+    is C.TermS.DoubleType -> "double"
+    is C.TermS.StringType -> "string"
+    is C.TermS.ByteArrayType -> "byte_array"
+    is C.TermS.IntArrayType -> "int_array"
+    is C.TermS.LongArrayType -> "long_array"
+    is C.TermS.ListType -> "list ${stringifyTermS(term.element)}"
+    is C.TermS.CompoundType -> term.elements.entries.joinToString(", ", "compound {", "}") { "${it.key}: ${stringifyTermS(it.value)}" }
+    is C.TermS.IndexedElement -> "${stringifyTermZ(term.target)}.[${stringifyTermS(term.index)}]"
+    is C.TermS.FunctionType -> "${term.name?.let { "($it: ${stringifyTermS(term.dom)})" } ?: stringifyTermS(term.dom)} -> ${stringifyTermS(term.cod)}"
+    is C.TermS.CodeType -> "code ${stringifyTypeZ(term.element)}"
+    is C.TermS.TypeType -> "type"
+    is C.TermS.EndTag -> ""
+    is C.TermS.ByteTag -> "${term.data}b"
+    is C.TermS.ShortTag -> "${term.data}s"
+    is C.TermS.IntTag -> "${term.data}"
+    is C.TermS.LongTag -> "${term.data}L"
+    is C.TermS.FloatTag -> "${term.data}f"
+    is C.TermS.DoubleTag -> "${term.data}d"
+    is C.TermS.StringTag -> term.data.quoted('"')
+    is C.TermS.ByteArrayTag -> term.elements.joinToString(", ", "[B;", "]") { stringifyTermS(it) }
+    is C.TermS.IntArrayTag -> term.elements.joinToString(", ", "[I;", "]") { stringifyTermS(it) }
+    is C.TermS.LongArrayTag -> term.elements.joinToString(", ", "[L;", "]") { stringifyTermS(it) }
+    is C.TermS.ListTag -> term.elements.joinToString(", ", "[", "]") { stringifyTermS(it) }
+    is C.TermS.CompoundTag -> term.elements.entries.joinToString(", ", "{", "}") { "${it.key}: ${stringifyTermS(it.value)}" }
+    is C.TermS.Abs -> "${term.name} => ${stringifyTermS(term.body)}"
+    is C.TermS.Apply -> "${stringifyTermS(term.operator)}(${stringifyTermS(term.operand)})"
+    is C.TermS.Quote -> "`${stringifyTermZ(term.element)}"
+    is C.TermS.Let -> "let ${term.name} = ${stringifyTermS(term.init)};\n${stringifyTermS(term.next)}"
+    is C.TermS.Var -> term.name ?: ""
+    is C.TermS.Meta -> this[term.index]?.let { stringifyTermS(reify(persistentListOf(), it)) } ?: "?${term.index.toSubscript()}"
+    is C.TermS.Hole -> " "
 }
 
 fun stringifyTerm(
-    term: Term,
+    term: S.Term,
 ): String = when (term) {
-    is Term.ByteTag -> "${term.data}b"
-    is Term.ShortTag -> "${term.data}s"
-    is Term.IntTag -> "${term.data}"
-    is Term.LongTag -> "${term.data}L"
-    is Term.FloatTag -> "${term.data}f"
-    is Term.DoubleTag -> "${term.data}d"
-    is Term.StringTag -> term.data.quoted('"')
-    is Term.ByteArrayTag -> term.elements.joinToString(", ", "[B;", "]") { stringifyTerm(it) }
-    is Term.IntArrayTag -> term.elements.joinToString(", ", "[I;", "]") { stringifyTerm(it) }
-    is Term.LongArrayTag -> term.elements.joinToString(", ", "[L;", "]") { stringifyTerm(it) }
-    is Term.ListTag -> term.elements.joinToString(", ", "[", "]") { stringifyTerm(it) }
-    is Term.CompoundTag -> term.elements.entries.joinToString(", ", "{", "}") { "${it.key}: ${stringifyTerm(it.value)}" }
-    is Term.IndexedElement -> "${stringifyTerm(term.target)}.[${term.index}]"
-    is Term.Function -> "function ${term.name} = ${stringifyTerm(term.body)};\n${stringifyTerm(term.next)}"
-    is Term.Run -> term.name
-    is Term.Hole -> " "
+    is S.Term.ByteTag -> "${term.data}b"
+    is S.Term.ShortTag -> "${term.data}s"
+    is S.Term.IntTag -> "${term.data}"
+    is S.Term.LongTag -> "${term.data}L"
+    is S.Term.FloatTag -> "${term.data}f"
+    is S.Term.DoubleTag -> "${term.data}d"
+    is S.Term.StringTag -> term.data.quoted('"')
+    is S.Term.ByteArrayTag -> term.elements.joinToString(", ", "[B;", "]") { stringifyTerm(it) }
+    is S.Term.IntArrayTag -> term.elements.joinToString(", ", "[I;", "]") { stringifyTerm(it) }
+    is S.Term.LongArrayTag -> term.elements.joinToString(", ", "[L;", "]") { stringifyTerm(it) }
+    is S.Term.ListTag -> term.elements.joinToString(", ", "[", "]") { stringifyTerm(it) }
+    is S.Term.CompoundTag -> term.elements.entries.joinToString(", ", "{", "}") { "${it.key}: ${stringifyTerm(it.value)}" }
+    is S.Term.IndexedElement -> "${stringifyTerm(term.target)}.[${term.index}]"
+    is S.Term.Function -> "function ${term.name} = ${stringifyTerm(term.body)};\n${stringifyTerm(term.next)}"
+    is S.Term.Run -> term.name
+    is S.Term.Hole -> " "
 }
 
 fun String.quoted(

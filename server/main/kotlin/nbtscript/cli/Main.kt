@@ -7,7 +7,7 @@ import kotlin.system.exitProcess
 @ExperimentalCli
 fun main(args: Array<String>): Unit = ArgParser("nbts").run {
     subcommands(
-        Execute,
+        Exec,
         Launch,
     )
     try {

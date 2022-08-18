@@ -71,40 +71,40 @@ class Zonk private constructor(
     private fun zonkTermS(
         term: TermS,
     ): TermS = when (term) {
-        is TermS.UniverseS -> term
-        is TermS.EndS -> term
-        is TermS.ByteS -> term
-        is TermS.ShortS -> term
-        is TermS.IntS -> term
-        is TermS.LongS -> term
-        is TermS.FloatS -> term
-        is TermS.DoubleS -> term
-        is TermS.StringS -> term
-        is TermS.ByteArrayS -> term
-        is TermS.IntArrayS -> term
-        is TermS.LongArrayS -> term
-        is TermS.ListS -> {
+        is TermS.UniverseType -> term
+        is TermS.EndType -> term
+        is TermS.ByteType -> term
+        is TermS.ShortType -> term
+        is TermS.IntType -> term
+        is TermS.LongType -> term
+        is TermS.FloatType -> term
+        is TermS.DoubleType -> term
+        is TermS.StringType -> term
+        is TermS.ByteArrayType -> term
+        is TermS.IntArrayType -> term
+        is TermS.LongArrayType -> term
+        is TermS.ListType -> {
             val element = zonkTermS(term.element)
-            TermS.ListS(element, term.type)
+            TermS.ListType(element, term.type)
         }
 
-        is TermS.CompoundS -> {
+        is TermS.CompoundType -> {
             val elements = term.elements.mapValues { zonkTermS(it.value) }
-            TermS.CompoundS(elements, term.type)
+            TermS.CompoundType(elements, term.type)
         }
 
-        is TermS.FunctionS -> {
+        is TermS.FunctionType -> {
             val dom = zonkTermS(term.dom)
             val cod = zonkTermS(term.cod)
-            TermS.FunctionS(term.name, dom, cod, term.type)
+            TermS.FunctionType(term.name, dom, cod, term.type)
         }
 
-        is TermS.CodeS -> {
+        is TermS.CodeType -> {
             val element = zonkTypeZ(term.element)
-            TermS.CodeS(element, term.type)
+            TermS.CodeType(element, term.type)
         }
 
-        is TermS.TypeZ -> term
+        is TermS.TypeType -> term
         is TermS.EndTag -> term
         is TermS.ByteTag -> term
         is TermS.ShortTag -> term
