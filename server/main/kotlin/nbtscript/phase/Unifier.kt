@@ -47,7 +47,6 @@ class Unifier {
         @Suppress("NAME_SHADOWING") val value1 = force(value1)
         @Suppress("NAME_SHADOWING") val value2 = force(value2)
         return when {
-            value1 is Value.Meta && value2 is Value.Meta -> value1.index == value2.index
             value1 is Value.Meta -> solve(lvl, value1.index, value2)
             value2 is Value.Meta -> solve(lvl, value2.index, value1)
 
