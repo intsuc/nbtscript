@@ -14,6 +14,7 @@ sealed interface Core {
         object FloatType : TypeZ
         object DoubleType : TypeZ
         object StringType : TypeZ
+        data class CollectionType(val element: TypeZ) : TypeZ
         object ByteArrayType : TypeZ
         object IntArrayType : TypeZ
         object LongArrayType : TypeZ

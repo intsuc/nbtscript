@@ -206,6 +206,11 @@ class Parse private constructor(
                         "float" -> Term.FloatType(range())
                         "double" -> Term.DoubleType(range())
                         "string" -> Term.StringType(range())
+                        "collection" -> {
+                            val element = parseTerm()
+                            Term.CollectionType(element, range())
+                        }
+
                         "byte_array" -> Term.ByteArrayType(range())
                         "int_array" -> Term.IntArrayType(range())
                         "long_array" -> Term.LongArrayType(range())

@@ -28,6 +28,11 @@ class Elab private constructor(
         is S.Term.FloatType -> C.TypeZ.FloatType
         is S.Term.DoubleType -> C.TypeZ.DoubleType
         is S.Term.StringType -> C.TypeZ.StringType
+        is S.Term.CollectionType -> {
+            val element = elabTypeZ(type.element)
+            C.TypeZ.CollectionType(element)
+        }
+
         is S.Term.ByteArrayType -> C.TypeZ.ByteArrayType
         is S.Term.IntArrayType -> C.TypeZ.IntArrayType
         is S.Term.LongArrayType -> C.TypeZ.LongArrayType
@@ -72,6 +77,7 @@ class Elab private constructor(
         term is S.Term.FloatType -> errorZ(termZExpected(term.range))
         term is S.Term.DoubleType -> errorZ(termZExpected(term.range))
         term is S.Term.StringType -> errorZ(termZExpected(term.range))
+        term is S.Term.CollectionType -> errorZ(termZExpected(term.range))
         term is S.Term.ByteArrayType -> errorZ(termZExpected(term.range))
         term is S.Term.IntArrayType -> errorZ(termZExpected(term.range))
         term is S.Term.LongArrayType -> errorZ(termZExpected(term.range))
@@ -173,7 +179,7 @@ class Elab private constructor(
             if (type == null) error("failed: inference")
             else {
                 val inferred = elabTermZ(ctx, term)
-                if (context.unifier.unifyTypeZ(inferred.type, type)) inferred
+                if (context.unifier.subTypeZ(inferred.type, type)) inferred
                 else errorZ(typeZMismatched(type, inferred.type, term.range))
             }
         }
@@ -209,6 +215,7 @@ class Elab private constructor(
             term is S.Term.FloatType && type is TypeS.UniverseType? -> C.TermS.FloatType(TypeS.UniverseType)
             term is S.Term.DoubleType && type is TypeS.UniverseType? -> C.TermS.DoubleType(TypeS.UniverseType)
             term is S.Term.StringType && type is TypeS.UniverseType? -> C.TermS.StringType(TypeS.UniverseType)
+            term is S.Term.CollectionType -> errorS(termSExpected(term.range))
             term is S.Term.ByteArrayType && type is TypeS.UniverseType? -> C.TermS.ByteArrayType(TypeS.UniverseType)
             term is S.Term.IntArrayType && type is TypeS.UniverseType? -> C.TermS.IntArrayType(TypeS.UniverseType)
             term is S.Term.LongArrayType && type is TypeS.UniverseType? -> C.TermS.LongArrayType(TypeS.UniverseType)

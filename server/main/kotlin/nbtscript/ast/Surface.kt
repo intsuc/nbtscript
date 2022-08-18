@@ -17,6 +17,7 @@ sealed interface Surface {
         data class FloatType(override val range: Range) : Term
         data class DoubleType(override val range: Range) : Term
         data class StringType(override val range: Range) : Term
+        data class CollectionType(val element: Term, override val range: Range) : Term
         data class ByteArrayType(override val range: Range) : Term
         data class IntArrayType(override val range: Range) : Term
         data class LongArrayType(override val range: Range) : Term

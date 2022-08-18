@@ -24,6 +24,7 @@ fun stringifyTypeZ(
     is C.TypeZ.FloatType -> "float"
     is C.TypeZ.DoubleType -> "double"
     is C.TypeZ.StringType -> "string"
+    is C.TypeZ.CollectionType -> "collection ${stringifyTypeZ(type.element)}"
     is C.TypeZ.ByteArrayType -> "byte_array"
     is C.TypeZ.IntArrayType -> "int_array"
     is C.TypeZ.LongArrayType -> "long_array"

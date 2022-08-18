@@ -14,11 +14,12 @@ class Unifier {
         return TermS.Meta(metas.lastIndex, type)
     }
 
-    fun unifyTypeZ(
+    fun subTypeZ(
         type1: TypeZ,
         type2: TypeZ,
     ): Boolean = when {
-        type1 is TypeZ.EndType && type2 is TypeZ.EndType -> true
+        type1 is TypeZ.EndType -> true
+        type2 is TypeZ.EndType -> false
         type1 is TypeZ.ByteType && type2 is TypeZ.ByteType -> true
         type1 is TypeZ.ShortType && type2 is TypeZ.ShortType -> true
         type1 is TypeZ.IntType && type2 is TypeZ.IntType -> true
@@ -26,13 +27,21 @@ class Unifier {
         type1 is TypeZ.FloatType && type2 is TypeZ.FloatType -> true
         type1 is TypeZ.DoubleType && type2 is TypeZ.DoubleType -> true
         type1 is TypeZ.StringType && type2 is TypeZ.StringType -> true
+        type2 is TypeZ.CollectionType -> when {
+            type1 is TypeZ.ByteArrayType && type2.element is TypeZ.ByteType -> true
+            type1 is TypeZ.IntArrayType && type2.element is TypeZ.IntType -> true
+            type1 is TypeZ.LongArrayType && type2.element is TypeZ.LongType -> true
+            type1 is TypeZ.ListType -> subTypeZ(type1.element, type2.element) // sound?
+            else -> false
+        }
+
         type1 is TypeZ.ByteArrayType && type2 is TypeZ.ByteArrayType -> true
         type1 is TypeZ.IntArrayType && type2 is TypeZ.IntArrayType -> true
         type1 is TypeZ.LongArrayType && type2 is TypeZ.LongArrayType -> true
-        type1 is TypeZ.ListType && type2 is TypeZ.ListType -> unifyTypeZ(type1.element, type2.element)
+        type1 is TypeZ.ListType && type2 is TypeZ.ListType -> subTypeZ(type1.element, type2.element)
         type1 is TypeZ.CompoundType && type2 is TypeZ.CompoundType -> {
             type1.elements.keys == type2.elements.keys && type1.elements.all {
-                unifyTypeZ(it.value, type2.elements[it.key]!!)
+                subTypeZ(it.value, type2.elements[it.key]!!)
             }
         }
 
