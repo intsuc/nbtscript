@@ -51,8 +51,6 @@ class Elab private constructor(
             }.toMap()
             C.TypeZ.CompoundType(elements)
         }
-
-        is S.Term.Hole -> C.TypeZ.Hole
         else -> {
             context.addDiagnostic(typeZExpected(type.range))
             C.TypeZ.Hole
@@ -165,16 +163,7 @@ class Elab private constructor(
             else errorZ(notFound(term.name, term.range))
         }
 
-        term is S.Term.Hole -> {
-            context.addInlayHint(lazy {
-                val part = InlayHintLabelPart("_").apply {
-                    tooltip = forRight(markup(type?.let { stringifyTypeZ(it) } ?: "?"))
-                }
-                InlayHint(term.range.end, forRight(listOf(part)))
-            })
-            C.TermZ.Hole(C.TypeZ.EndType)
-        }
-
+        term is S.Term.Hole -> errorZ(termZExpected(term.range), type)
         else -> {
             if (type == null) error("failed: inference")
             else {
@@ -380,16 +369,7 @@ class Elab private constructor(
                 }
             }
 
-            term is S.Term.Hole -> {
-                context.addInlayHint(lazy {
-                    val part = InlayHintLabelPart("_").apply {
-                        tooltip = forRight(markup(type?.let { context.unifier.stringifyTermS(context.unifier.reify(ctx.values, it)) } ?: "?"))
-                    }
-                    InlayHint(term.range.end, forRight(listOf(part)))
-                })
-                C.TermS.Hole(TypeS.EndType)
-            }
-
+            term is S.Term.Hole -> errorS(termSExpected(term.range), type)
             else -> {
                 if (type == null) error("failed: inference")
                 else {
@@ -451,16 +431,18 @@ class Elab private constructor(
 
     private fun errorZ(
         diagnostic: Diagnostic,
+        type: C.TypeZ? = null,
     ): C.TermZ {
         context.addDiagnostic(diagnostic)
-        return C.TermZ.Hole(C.TypeZ.EndType)
+        return C.TermZ.Hole(type ?: C.TypeZ.EndType)
     }
 
     private fun errorS(
         diagnostic: Diagnostic,
+        type: TypeS? = null,
     ): C.TermS {
         context.addDiagnostic(diagnostic)
-        return C.TermS.Hole(TypeS.EndType)
+        return C.TermS.Hole(type ?: TypeS.EndType)
     }
 
     companion object : Phase<S.Root, C.Root> {

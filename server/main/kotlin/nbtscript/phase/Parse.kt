@@ -306,11 +306,7 @@ class Parse private constructor(
         hole()
     }
 
-    private fun RangeContext.hole(): Term {
-        val range = range()
-        context.addDiagnostic(termExpected(range))
-        return Term.Hole(range)
-    }
+    private fun RangeContext.hole(): Term = Term.Hole(range())
 
     private inline fun <A> parseList(close: Char, element: () -> A): List<A> {
         val elements = mutableListOf<A>()
