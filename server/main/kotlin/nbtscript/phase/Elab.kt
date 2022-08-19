@@ -138,6 +138,23 @@ class Elab private constructor(
         }
 
         is S.Term.Hole -> errorZ(objZExpected(term.range))
+    }.also {
+        context.setHover(term.range, lazy {
+            when (it) {
+                is C.TypeZ -> Hover(markup("universe"))
+                is C.TermZ -> Hover(markup(stringifyTypeZ(it.type)))
+            }
+        })
+        context.setCompletionItems(term.range, lazy {
+            ctx.entries.map { (name, type) ->
+                CompletionItem(name).apply {
+                    kind = CompletionItemKind.Function
+                    labelDetails = CompletionItemLabelDetails().apply {
+                        detail = " : ${stringifyTypeZ(type)}"
+                    }
+                }
+            }
+        })
     }
 
     private fun elabTypeZ(
