@@ -37,8 +37,8 @@ fun Unifier.reflectTypeZ(
     }
 
     is TypeZ.Splice -> {
-        when (val element = reflectTermS(persistentListOf(), type.element)) {
-            is VTermS.CodeType -> element.element.value
+        when (val element = force(reflectTermS(persistentListOf(), type.element))) {
+            is VTermS.QuoteType -> element.element.value
             else -> TypeZ.VSplice(element)
         }
     }
