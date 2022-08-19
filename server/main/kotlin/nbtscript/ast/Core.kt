@@ -128,7 +128,7 @@ sealed interface Core {
         class LongArrayTag(val elements: List<TermZ>, override val type: TypeZ<Sem>) : TermZ
         class ListTag(val elements: List<TermZ>, override val type: TypeZ<Sem>) : TermZ
         class CompoundTag(val elements: Map<String, TermZ>, override val type: TypeZ<Sem>) : TermZ
-        class Function(val name: String, val body: TermZ, val next: TermZ, override val type: TypeZ<Sem>) : TermZ
+        class Fun(val name: String, val body: TermZ, val next: TermZ, override val type: TypeZ<Sem>) : TermZ
         class Run(val name: String, override val type: TypeZ<Sem>) : TermZ
         class Splice(val element: TermS<Syn>, override val type: TypeZ<Sem>) : TermZ
         class Hole(override val type: TypeZ<Sem>) : TermZ
@@ -261,11 +261,11 @@ sealed interface Core {
             override val type: TermS<Sem> get() = UniverseType.Sem
         }
 
-        class FunctionType(val name: String?, val dom: TermS<Syn>, val cod: TermS<Syn>) : TermS<Syn> {
+        class FunType(val name: String?, val dom: TermS<Syn>, val cod: TermS<Syn>) : TermS<Syn> {
             override val type: TermS<Sem> get() = UniverseType.Sem
         }
 
-        class VFunctionType(val name: String?, val dom: Lazy<TermS<Sem>>, val cod: Clos) : TermS<Sem> {
+        class VFunType(val name: String?, val dom: Lazy<TermS<Sem>>, val cod: Clos) : TermS<Sem> {
             override val type: TermS<Sem> get() = UniverseType.Sem
         }
 

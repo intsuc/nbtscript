@@ -54,10 +54,10 @@ class Zonk private constructor(
             TermZ.CompoundTag(elements, term.type)
         }
 
-        is TermZ.Function -> {
+        is TermZ.Fun -> {
             val body = zonkTermZ(term.body)
             val next = zonkTermZ(term.next)
-            TermZ.Function(term.name, body, next, term.type)
+            TermZ.Fun(term.name, body, next, term.type)
         }
 
         is TermZ.Run -> term
@@ -95,10 +95,10 @@ class Zonk private constructor(
             TermS.CompoundType(elements)
         }
 
-        is TermS.FunctionType -> {
+        is TermS.FunType -> {
             val dom = zonkTermS(term.dom)
             val cod = zonkTermS(term.cod)
-            TermS.FunctionType(term.name, dom, cod)
+            TermS.FunType(term.name, dom, cod)
         }
 
         is TermS.CodeType -> {

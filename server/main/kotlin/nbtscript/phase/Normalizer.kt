@@ -119,10 +119,10 @@ fun Unifier.reflectTermS(
         TermS.VCompoundType(elements)
     }
 
-    is TermS.FunctionType -> {
+    is TermS.FunType -> {
         val dom = lazy { reflectTermS(env, term.dom) }
         val cod = Clos(env, lazyOf(term.cod))
-        TermS.VFunctionType(term.name, dom, cod)
+        TermS.VFunType(term.name, dom, cod)
     }
 
     is TermS.CodeType -> {
@@ -237,11 +237,11 @@ fun Unifier.reifyTermS(
         TermS.IndexedElement(term.target, index, term.type)
     }
 
-    is TermS.VFunctionType -> {
+    is TermS.VFunType -> {
         val dom = reifyTermS(env, term.dom.value)
         val x = lazyOf(TermS.Var<Sem>(term.name, env.size, term.dom.value))
         val cod = reifyTermS(env + x, term.cod(this, x))
-        TermS.FunctionType(term.name, dom, cod)
+        TermS.FunType(term.name, dom, cod)
     }
 
     is TermS.VCodeType -> {
@@ -294,7 +294,7 @@ fun Unifier.reifyTermS(
         val operator = reifyTermS(env, term.operator)
         val operand = reifyTermS(env, term.operand.value)
         val cod = when (val operatorType = operator.type) {
-            is TermS.VFunctionType -> operatorType.cod(this, term.operand)
+            is TermS.VFunType -> operatorType.cod(this, term.operand)
             else -> operatorType
         }
         TermS.Apply(operator, operand, cod)

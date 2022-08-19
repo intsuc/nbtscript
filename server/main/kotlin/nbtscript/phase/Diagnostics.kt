@@ -92,7 +92,7 @@ fun functionTypeExpected(
     range: Range,
 ): Diagnostic = makeDiagnostic(
     range,
-    "expected: function type\nactual: '${unifier.stringifyTermS(actual)}'",
+    "expected: fun type\nactual: '${unifier.stringifyTermS(actual)}'",
     Error,
 )
 

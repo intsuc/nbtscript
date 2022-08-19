@@ -49,10 +49,10 @@ class Stage private constructor(
             S.Term.CompoundTag(elements)
         }
 
-        is C.TermZ.Function -> {
+        is C.TermZ.Fun -> {
             val body = stageTermZ(term.body)
             val next = stageTermZ(term.next)
-            S.Term.Function(term.name, body, next)
+            S.Term.Fun(term.name, body, next)
         }
 
         is C.TermZ.Run -> S.Term.Run(term.name)

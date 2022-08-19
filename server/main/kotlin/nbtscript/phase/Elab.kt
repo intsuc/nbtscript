@@ -109,7 +109,7 @@ class Elab private constructor(
             }
         }
 
-        term is S.Term.Function -> {
+        term is S.Term.Fun -> {
             val anno = term.anno?.let { context.unifier.reflectTypeZ(elabTypeZ(it)) }
             val body = elabTermZ(ctx, term.body, anno)
             context.setHover(term.name.range, lazy {
@@ -122,7 +122,7 @@ class Elab private constructor(
                 })
             }
             val next = elabTermZ(ctx + (term.name.text to (anno ?: body.type)), term.next)
-            C.TermZ.Function(term.name.text, body, next, next.type)
+            C.TermZ.Fun(term.name.text, body, next, next.type)
         }
 
         term is S.Term.Var -> {
@@ -264,7 +264,7 @@ class Elab private constructor(
             }
         }
 
-        term is S.Term.Function -> {
+        term is S.Term.Fun -> {
             val anno = term.anno?.let { context.unifier.reflectTypeZ(elabTypeZ(it)) }
             val body = elabTermZ(ctx, term.body, anno)
             context.setHover(term.name.range, lazy {
@@ -277,7 +277,7 @@ class Elab private constructor(
                 })
             }
             val next = elabTermZ(ctx + (term.name.text to (anno ?: body.type)), term.next, type)
-            C.TermZ.Function(term.name.text, body, next, next.type)
+            C.TermZ.Fun(term.name.text, body, next, next.type)
         }
 
         term is S.Term.Var && type == null -> {
@@ -346,7 +346,7 @@ class Elab private constructor(
                 C.TermS.CompoundType(elements)
             }
 
-            term is S.Term.FunctionType && type is C.TermS.UniverseType? -> {
+            term is S.Term.FunType && type is C.TermS.UniverseType? -> {
                 val dom = elabTermS(ctx, term.dom, C.TermS.UniverseType.Sem)
                 if (term.name != null) {
                     context.setHover(term.name.range, lazy {
@@ -354,7 +354,7 @@ class Elab private constructor(
                     })
                 }
                 val cod = elabTermS(ctx.bind(term.name?.text, dom.type), term.cod, C.TermS.UniverseType.Sem)
-                C.TermS.FunctionType(term.name?.text, dom, cod)
+                C.TermS.FunType(term.name?.text, dom, cod)
             }
 
             term is S.Term.CodeType && type is C.TermS.UniverseType? /* ? */ -> {
@@ -435,7 +435,7 @@ class Elab private constructor(
                 val a = context.unifier.reflectTermS(ctx.values, anno)
                 val body = elabTermS(ctx.bind(term.name.text, a), term.body)
                 C.TermS.Abs(
-                    term.name.text, anno, body, C.TermS.VFunctionType(
+                    term.name.text, anno, body, C.TermS.VFunType(
                         term.name.text,
                         lazyOf(a),
                         C.Clos(ctx.values, lazy { context.unifier.reifyTermS(ctx.values, body.type) }),
@@ -443,7 +443,7 @@ class Elab private constructor(
                 )
             }
 
-            term is S.Term.Abs && term.anno == null && type is C.TermS.VFunctionType -> {
+            term is S.Term.Abs && term.anno == null && type is C.TermS.VFunType -> {
                 val dom = context.unifier.reifyTermS(ctx.values, type.dom.value)
                 context.setHover(term.name.range, lazy {
                     Hover(markup(context.unifier.stringifyTermS(dom)))
@@ -461,7 +461,7 @@ class Elab private constructor(
                 if (type == null) {
                     val operator = elabTermS(ctx, term.operator)
                     when (val operatorType = context.unifier.force(operator.type)) {
-                        is C.TermS.VFunctionType -> {
+                        is C.TermS.VFunType -> {
                             val operand = elabTermS(ctx, term.operand, operatorType.dom.value)
                             val cod = operatorType.cod(context.unifier, lazy { context.unifier.reflectTermS(ctx.values, operand) })
                             C.TermS.Apply(operator, operand, cod)
@@ -472,7 +472,7 @@ class Elab private constructor(
                 } else {
                     val operand = elabTermS(ctx, term.operand)
                     val operator = elabTermS(
-                        ctx, term.operator, C.TermS.VFunctionType(
+                        ctx, term.operator, C.TermS.VFunType(
                             null,
                             lazyOf(operand.type),
                             C.Clos(ctx.values, lazy { context.unifier.reifyTermS(ctx.values, type) }),

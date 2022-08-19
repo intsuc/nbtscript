@@ -61,7 +61,7 @@ class Parse private constructor(
                                 expect('>')
                                 val cod = parseTerm()
                                 when (left) {
-                                    is Term.Var -> Term.FunctionType(Name(left.name, left.range), type, cod, range())
+                                    is Term.Var -> Term.FunType(Name(left.name, left.range), type, cod, range())
                                     else -> hole()
                                 }
                             }
@@ -106,7 +106,7 @@ class Parse private constructor(
                         skip()
                         expect('>')
                         val cod = parseTerm()
-                        Term.FunctionType(null, left, cod, range())
+                        Term.FunType(null, left, cod, range())
                     }
 
                     else -> left
@@ -253,7 +253,7 @@ class Parse private constructor(
                             Term.Let(name, anno, init, next, range())
                         }
 
-                        "function" -> {
+                        "fun" -> {
                             val name = parseName()
                             val anno = when (peek()) {
                                 ':' -> {
@@ -267,7 +267,7 @@ class Parse private constructor(
                             val body = parseTerm()
                             expect(';')
                             val next = parseTerm()
-                            Term.Function(name, anno, body, next, range())
+                            Term.Fun(name, anno, body, next, range())
                         }
 
                         "" -> hole()

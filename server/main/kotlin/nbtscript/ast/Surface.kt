@@ -27,7 +27,7 @@ sealed interface Surface {
         class LongArrayType(override val range: Range) : TypeZ, TermS
         class ListType(val element: Term, override val range: Range) : TypeZ, TermS
         class CompoundType(val elements: Map<Name, Term>, override val range: Range) : TypeZ, TermS
-        class FunctionType(val name: Name?, val dom: Term, val cod: Term, override val range: Range) : TermS
+        class FunType(val name: Name?, val dom: Term, val cod: Term, override val range: Range) : TermS
         class CodeType(val element: Term, override val range: Range) : TermS
         class TypeType(override val range: Range) : TermS
         class ByteTag(val data: Byte, override val range: Range) : TermZ, TermS
@@ -48,7 +48,7 @@ sealed interface Surface {
         class Quote(val element: Term, override val range: Range) : TermS
         class Splice(val element: Term, override val range: Range) : TypeZ, TermZ
         class Let(val name: Name, val anno: Term?, val init: Term, val next: Term, override val range: Range) : TermS
-        class Function(val name: Name, val anno: Term?, val body: Term, val next: Term, override val range: Range) : TermZ
+        class Fun(val name: Name, val anno: Term?, val body: Term, val next: Term, override val range: Range) : TermZ
         class Var(val name: String, override val range: Range) : TermZ, TermS
         class Hole(override val range: Range) : TypeZ, TermZ, TermS
     }

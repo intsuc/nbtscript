@@ -17,7 +17,7 @@ sealed interface Staged {
         class ListTag(val elements: List<Term>) : Term
         class CompoundTag(val elements: Map<String, Term>) : Term
         class IndexedElement(val target: Term, val index: Int) : Term
-        class Function(val name: String, val body: Term, val next: Term) : Term
+        class Fun(val name: String, val body: Term, val next: Term) : Term
         class Run(val name: String) : Term
         object Hole : Term
     }

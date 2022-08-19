@@ -76,7 +76,7 @@ class Unifier {
             }
 
             term1 is TermS.VIndexedElement && term2 is TermS.VIndexedElement -> false // ?
-            term1 is TermS.VFunctionType && term2 is TermS.VFunctionType -> {
+            term1 is TermS.VFunType && term2 is TermS.VFunType -> {
                 unifyValue(lvl, term1.dom.value, term2.dom.value) && lazyOf(TermS.Var<Sem>(null, lvl, term1.dom.value)).let { operand ->
                     unifyValue(lvl.inc(), term1.cod(this, operand), term2.cod(this, operand))
                 }

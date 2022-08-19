@@ -4,14 +4,14 @@
   "patterns": [
     {
       "name": "keyword.nbtscript",
-      "match": "\\b(function|let)\\b"
+      "match": "\\b(fun|let)\\b"
     },
     {
       "name": "support.type.nbtscript",
       "match": "\\b(universe|end|byte|short|int|long|float|double|string|collection|byte_array|int_array|long_array|list|compound|code|type)\\b"
     },
     {
-      "match": "\\b(?<=function)\\s+([^\\s\"(),.:;=\\[\\\\\\]{}-]+)",
+      "match": "\\b(?<=fun)\\s+([^\\s\"(),.:;=\\[\\\\\\]{}-]+)",
       "captures": {
         "1": {
           "name": "entity.name.function.nbtscript"

@@ -52,7 +52,7 @@ fun Unifier.stringifyTermZ(
     is C.TermZ.ListTag -> term.elements.joinToString(", ", "[", "]") { stringifyTermZ(it) }
     is C.TermZ.CompoundTag -> term.elements.entries.joinToString(", ", "{", "}") { "${it.key}: ${stringifyTermZ(it.value)}" }
     is C.TermZ.Splice -> "$${stringifyTermS(term.element)}"
-    is C.TermZ.Function -> "function ${term.name} = ${stringifyTermZ(term.body)};\n${stringifyTermZ(term.next)}"
+    is C.TermZ.Fun -> "function ${term.name} = ${stringifyTermZ(term.body)};\n${stringifyTermZ(term.next)}"
     is C.TermZ.Run -> term.name
     is C.TermZ.Hole -> " "
 }
@@ -75,7 +75,7 @@ fun Unifier.stringifyTermS(
     is C.TermS.ListType -> "list ${stringifyTermS(term.element)}"
     is C.TermS.CompoundType -> term.elements.entries.joinToString(", ", "compound {", "}") { "${it.key}: ${stringifyTermS(it.value)}" }
     is C.TermS.IndexedElement -> "${stringifyTermZ(term.target)}.[${stringifyTermS(term.index)}]"
-    is C.TermS.FunctionType -> "${term.name?.let { "($it: ${stringifyTermS(term.dom)})" } ?: stringifyTermS(term.dom)} -> ${stringifyTermS(term.cod)}"
+    is C.TermS.FunType -> "${term.name?.let { "($it: ${stringifyTermS(term.dom)})" } ?: stringifyTermS(term.dom)} -> ${stringifyTermS(term.cod)}"
     is C.TermS.CodeType -> "code ${stringifyTypeZ(term.element)}"
     is C.TermS.TypeType -> "type"
     is C.TermS.EndTag -> ""
@@ -118,7 +118,7 @@ fun stringifyTerm(
     is S.Term.ListTag -> term.elements.joinToString(", ", "[", "]") { stringifyTerm(it) }
     is S.Term.CompoundTag -> term.elements.entries.joinToString(", ", "{", "}") { "${it.key}: ${stringifyTerm(it.value)}" }
     is S.Term.IndexedElement -> "${stringifyTerm(term.target)}.[${term.index}]"
-    is S.Term.Function -> "function ${term.name} = ${stringifyTerm(term.body)};\n${stringifyTerm(term.next)}"
+    is S.Term.Fun -> "function ${term.name} = ${stringifyTerm(term.body)};\n${stringifyTerm(term.next)}"
     is S.Term.Run -> term.name
     is S.Term.Hole -> " "
 }

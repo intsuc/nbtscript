@@ -60,7 +60,7 @@ class Exec private constructor() {
             }
         }
 
-        is Term.Function -> execTerm(ctx + (term.name to term.body), term.next)
+        is Term.Fun -> execTerm(ctx + (term.name to term.body), term.next)
         is Term.Run -> execTerm(ctx, ctx[term.name]!!)
         is Term.Hole -> term
     }
