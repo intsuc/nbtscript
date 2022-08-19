@@ -91,22 +91,22 @@ class Elab private constructor(
         term is S.Term.FloatTag && type is C.TypeZ.FloatType? -> C.TermZ.FloatTag(term.data, C.TypeZ.FloatType)
         term is S.Term.DoubleTag && type is C.TypeZ.DoubleType? -> C.TermZ.DoubleTag(term.data, C.TypeZ.DoubleType)
         term is S.Term.StringTag && type is C.TypeZ.StringType? -> C.TermZ.StringTag(term.data, C.TypeZ.StringType)
-        term is S.Term.ByteArrayTag && type is C.TypeZ.ByteArrayType? -> {
+        term is S.Term.ByteArrayTag && type is C.TypeZ.CollectionType? -> {
             val elements = term.elements.map { elabTermZ(ctx, it, C.TypeZ.ByteType) }
             C.TermZ.ByteArrayTag(elements, C.TypeZ.ByteArrayType)
         }
 
-        term is S.Term.IntArrayTag && type is C.TypeZ.IntArrayType? -> {
+        term is S.Term.IntArrayTag && type is C.TypeZ.CollectionType? -> {
             val elements = term.elements.map { elabTermZ(ctx, it, C.TypeZ.IntType) }
             C.TermZ.IntArrayTag(elements, C.TypeZ.IntArrayType)
         }
 
-        term is S.Term.LongArrayTag && type is C.TypeZ.LongArrayType? -> {
+        term is S.Term.LongArrayTag && type is C.TypeZ.CollectionType? -> {
             val elements = term.elements.map { elabTermZ(ctx, it, C.TypeZ.LongType) }
             C.TermZ.LongArrayTag(elements, C.TypeZ.LongArrayType)
         }
 
-        term is S.Term.ListTag && type is C.TypeZ.ListType? -> {
+        term is S.Term.ListTag && type is C.TypeZ.CollectionType? -> {
             if (term.elements.isEmpty()) C.TermZ.ListTag(emptyList(), C.TypeZ.ListType(C.TypeZ.EndType))
             else {
                 val elements = mutableListOf<C.TermZ>()
