@@ -1,9 +1,11 @@
 package nbtscript.ast
 
 import kotlinx.collections.immutable.PersistentList
+import nbtscript.ast.Core.Kind.Sem
+import nbtscript.ast.Core.Kind.Syn
 
 sealed interface Core {
-    data class Root(val body: TermZ) : Core
+    class Root(val body: TermZ) : Core
 
     sealed interface Kind {
         object Syn : Kind
@@ -25,118 +27,92 @@ sealed interface Core {
         class ByteArrayType<K : Kind> : CollectionType<K>(ByteType())
         class IntArrayType<K : Kind> : CollectionType<K>(IntType())
         class LongArrayType<K : Kind> : CollectionType<K>(LongType())
-        data class ListType<K : Kind>(override val element: TypeZ<K>) : CollectionType<K>(element)
-        data class CompoundType<K : Kind>(val elements: Map<String, TypeZ<K>>) : TypeZ<K>
-        data class Splice(val element: TermS) : TypeZ<Kind.Syn>
-        data class VSplice(val element: VTermS) : TypeZ<Kind.Sem>
+        class ListType<K : Kind>(override val element: TypeZ<K>) : CollectionType<K>(element)
+        class CompoundType<K : Kind>(val elements: Map<String, TypeZ<K>>) : TypeZ<K>
+        class Splice<K : Kind>(val element: TermS<K>) : TypeZ<K>
         class Hole<K : Kind> : TypeZ<K>
     }
 
-    sealed interface TermZ : ObjZ<Kind.Syn> {
-        val type: TypeZ<Kind.Sem>
+    sealed interface TermZ : ObjZ<Syn> {
+        val type: TypeZ<Sem>
 
-        data class ByteTag(val data: Byte, override val type: TypeZ<Kind.Sem>) : TermZ
-        data class ShortTag(val data: Short, override val type: TypeZ<Kind.Sem>) : TermZ
-        data class IntTag(val data: Int, override val type: TypeZ<Kind.Sem>) : TermZ
-        data class LongTag(val data: Long, override val type: TypeZ<Kind.Sem>) : TermZ
-        data class FloatTag(val data: Float, override val type: TypeZ<Kind.Sem>) : TermZ
-        data class DoubleTag(val data: Double, override val type: TypeZ<Kind.Sem>) : TermZ
-        data class StringTag(val data: String, override val type: TypeZ<Kind.Sem>) : TermZ
-        data class ByteArrayTag(val elements: List<TermZ>, override val type: TypeZ<Kind.Sem>) : TermZ
-        data class IntArrayTag(val elements: List<TermZ>, override val type: TypeZ<Kind.Sem>) : TermZ
-        data class LongArrayTag(val elements: List<TermZ>, override val type: TypeZ<Kind.Sem>) : TermZ
-        data class ListTag(val elements: List<TermZ>, override val type: TypeZ<Kind.Sem>) : TermZ
-        data class CompoundTag(val elements: Map<String, TermZ>, override val type: TypeZ<Kind.Sem>) : TermZ
-        data class Function(val name: String, val body: TermZ, val next: TermZ, override val type: TypeZ<Kind.Sem>) : TermZ
-        data class Run(val name: String, override val type: TypeZ<Kind.Sem>) : TermZ
-        data class Splice(val element: TermS, override val type: TypeZ<Kind.Sem>) : TermZ
-        data class Hole(override val type: TypeZ<Kind.Sem>) : TermZ
+        class ByteTag(val data: Byte, override val type: TypeZ<Sem>) : TermZ
+        class ShortTag(val data: Short, override val type: TypeZ<Sem>) : TermZ
+        class IntTag(val data: Int, override val type: TypeZ<Sem>) : TermZ
+        class LongTag(val data: Long, override val type: TypeZ<Sem>) : TermZ
+        class FloatTag(val data: Float, override val type: TypeZ<Sem>) : TermZ
+        class DoubleTag(val data: Double, override val type: TypeZ<Sem>) : TermZ
+        class StringTag(val data: String, override val type: TypeZ<Sem>) : TermZ
+        class ByteArrayTag(val elements: List<TermZ>, override val type: TypeZ<Sem>) : TermZ
+        class IntArrayTag(val elements: List<TermZ>, override val type: TypeZ<Sem>) : TermZ
+        class LongArrayTag(val elements: List<TermZ>, override val type: TypeZ<Sem>) : TermZ
+        class ListTag(val elements: List<TermZ>, override val type: TypeZ<Sem>) : TermZ
+        class CompoundTag(val elements: Map<String, TermZ>, override val type: TypeZ<Sem>) : TermZ
+        class Function(val name: String, val body: TermZ, val next: TermZ, override val type: TypeZ<Sem>) : TermZ
+        class Run(val name: String, override val type: TypeZ<Sem>) : TermZ
+        class Splice(val element: TermS<Syn>, override val type: TypeZ<Sem>) : TermZ
+        class Hole(override val type: TypeZ<Sem>) : TermZ
     }
 
-    sealed interface TermS : Core {
-        val type: VTermS
+    sealed interface TermS<out K : Kind> : Core {
+        val type: TermS<Sem>
 
-        data class UniverseType(override val type: VTermS) : TermS
-        data class EndType(override val type: VTermS) : TermS
-        data class ByteType(override val type: VTermS) : TermS
-        data class ShortType(override val type: VTermS) : TermS
-        data class IntType(override val type: VTermS) : TermS
-        data class LongType(override val type: VTermS) : TermS
-        data class FloatType(override val type: VTermS) : TermS
-        data class DoubleType(override val type: VTermS) : TermS
-        data class StringType(override val type: VTermS) : TermS
-        data class ByteArrayType(override val type: VTermS) : TermS
-        data class IntArrayType(override val type: VTermS) : TermS
-        data class LongArrayType(override val type: VTermS) : TermS
-        data class ListType(val element: TermS, override val type: VTermS) : TermS
-        data class CompoundType(val elements: Map<String, TermS>, override val type: VTermS) : TermS
-        data class FunctionType(val name: String?, val dom: TermS, val cod: TermS, override val type: VTermS) : TermS
-        data class CodeType(val element: TypeZ<Kind.Syn>, override val type: VTermS) : TermS
-        data class TypeType(override val type: VTermS) : TermS
-        data class EndTag(override val type: VTermS) : TermS
-        data class ByteTag(val data: Byte, override val type: VTermS) : TermS
-        data class ShortTag(val data: Short, override val type: VTermS) : TermS
-        data class IntTag(val data: Int, override val type: VTermS) : TermS
-        data class LongTag(val data: Long, override val type: VTermS) : TermS
-        data class FloatTag(val data: Float, override val type: VTermS) : TermS
-        data class DoubleTag(val data: Double, override val type: VTermS) : TermS
-        data class StringTag(val data: String, override val type: VTermS) : TermS
-        data class ByteArrayTag(val elements: List<TermS>, override val type: VTermS) : TermS
-        data class IntArrayTag(val elements: List<TermS>, override val type: VTermS) : TermS
-        data class LongArrayTag(val elements: List<TermS>, override val type: VTermS) : TermS
-        data class ListTag(val elements: List<TermS>, override val type: VTermS) : TermS
-        data class CompoundTag(val elements: Map<String, TermS>, override val type: VTermS) : TermS
-        data class IndexedElement(val target: TermZ, val index: TermS, override val type: VTermS) : TermS
-        data class Abs(val name: String, val anno: TermS, val body: TermS, override val type: VTermS) : TermS
-        data class Apply(val operator: TermS, val operand: TermS, override val type: VTermS) : TermS
-        data class QuoteType(val element: TypeZ<Kind.Syn>, override val type: VTermS) : TermS
-        data class QuoteTerm(val element: TermZ, override val type: VTermS) : TermS
-        data class Let(val name: String, val init: TermS, val next: TermS, override val type: VTermS) : TermS
-        data class Var(val name: String?, val level: Int, override val type: VTermS) : TermS
-        data class Meta(val index: Int, override val type: VTermS) : TermS
-        data class Hole(override val type: VTermS) : TermS
+        class UniverseType<K : Kind> : TermS<K> {
+            override val type: TermS<Sem> get() = UniverseType()
+        }
+
+        class EndType<K : Kind>(override val type: TermS<Sem>) : TermS<K>
+        class ByteType<K : Kind>(override val type: TermS<Sem>) : TermS<K>
+        class ShortType<K : Kind>(override val type: TermS<Sem>) : TermS<K>
+        class IntType<K : Kind>(override val type: TermS<Sem>) : TermS<K>
+        class LongType<K : Kind>(override val type: TermS<Sem>) : TermS<K>
+        class FloatType<K : Kind>(override val type: TermS<Sem>) : TermS<K>
+        class DoubleType<K : Kind>(override val type: TermS<Sem>) : TermS<K>
+        class StringType<K : Kind>(override val type: TermS<Sem>) : TermS<K>
+        class ByteArrayType<K : Kind>(override val type: TermS<Sem>) : TermS<K>
+        class IntArrayType<K : Kind>(override val type: TermS<Sem>) : TermS<K>
+        class LongArrayType<K : Kind>(override val type: TermS<Sem>) : TermS<K>
+        class ListType(val element: TermS<Syn>, override val type: TermS<Sem>) : TermS<Syn>
+        class VListType(val element: Lazy<TermS<Sem>>, override val type: TermS<Sem>) : TermS<Sem>
+        class CompoundType(val elements: Map<String, TermS<Syn>>, override val type: TermS<Sem>) : TermS<Syn>
+        class VCompoundType(val elements: Map<String, Lazy<TermS<Sem>>>, override val type: TermS<Sem>) : TermS<Sem>
+        class FunctionType(val name: String?, val dom: TermS<Syn>, val cod: TermS<Syn>, override val type: TermS<Sem>) : TermS<Syn>
+        class VFunctionType(val name: String?, val dom: Lazy<TermS<Sem>>, val cod: Clos, override val type: TermS<Sem>) : TermS<Sem>
+        class CodeType(val element: TypeZ<Syn>, override val type: TermS<Sem>) : TermS<Syn>
+        class VCodeType(val element: Lazy<TypeZ<Sem>>, override val type: TermS<Sem>) : TermS<Sem>
+        class TypeType<K : Kind>(override val type: TermS<Sem>) : TermS<K>
+        class EndTag<K : Kind>(override val type: TermS<Sem>) : TermS<K>
+        class ByteTag<K : Kind>(val data: Byte, override val type: TermS<Sem>) : TermS<K>
+        class ShortTag<K : Kind>(val data: Short, override val type: TermS<Sem>) : TermS<K>
+        class IntTag<K : Kind>(val data: Int, override val type: TermS<Sem>) : TermS<K>
+        class LongTag<K : Kind>(val data: Long, override val type: TermS<Sem>) : TermS<K>
+        class FloatTag<K : Kind>(val data: Float, override val type: TermS<Sem>) : TermS<K>
+        class DoubleTag<K : Kind>(val data: Double, override val type: TermS<Sem>) : TermS<K>
+        class StringTag<K : Kind>(val data: String, override val type: TermS<Sem>) : TermS<K>
+        class ByteArrayTag(val elements: List<TermS<Syn>>, override val type: TermS<Sem>) : TermS<Syn>
+        class VByteArrayTag(val elements: List<Lazy<TermS<Sem>>>, override val type: TermS<Sem>) : TermS<Sem>
+        class IntArrayTag(val elements: List<TermS<Syn>>, override val type: TermS<Sem>) : TermS<Syn>
+        class VIntArrayTag(val elements: List<Lazy<TermS<Sem>>>, override val type: TermS<Sem>) : TermS<Sem>
+        class LongArrayTag(val elements: List<TermS<Syn>>, override val type: TermS<Sem>) : TermS<Syn>
+        class VLongArrayTag(val elements: List<Lazy<TermS<Sem>>>, override val type: TermS<Sem>) : TermS<Sem>
+        class ListTag(val elements: List<TermS<Syn>>, override val type: TermS<Sem>) : TermS<Syn>
+        class VListTag(val elements: List<Lazy<TermS<Sem>>>, override val type: TermS<Sem>) : TermS<Sem>
+        class CompoundTag(val elements: Map<String, TermS<Syn>>, override val type: TermS<Sem>) : TermS<Syn>
+        class VCompoundTag(val elements: Map<String, Lazy<TermS<Sem>>>, override val type: TermS<Sem>) : TermS<Sem>
+        class IndexedElement(val target: TermZ, val index: TermS<Syn>, override val type: TermS<Sem>) : TermS<Syn>
+        class VIndexedElement(val target: TermZ, val index: Lazy<TermS<Sem>>, override val type: TermS<Sem>) : TermS<Sem>
+        class Abs(val name: String, val anno: TermS<Syn>, val body: TermS<Syn>, override val type: TermS<Sem>) : TermS<Syn>
+        class VAbs(val name: String, val anno: Lazy<TermS<Sem>>, val body: Clos, override val type: TermS<Sem>) : TermS<Sem>
+        class Apply(val operator: TermS<Syn>, val operand: TermS<Syn>, override val type: TermS<Sem>) : TermS<Syn>
+        class VApply(val operator: TermS<Sem>, val operand: Lazy<TermS<Sem>>, override val type: TermS<Sem>) : TermS<Sem>
+        class QuoteType(val element: TypeZ<Syn>, override val type: TermS<Sem>) : TermS<Syn>
+        class VQuoteType(val element: Lazy<TypeZ<Sem>>, override val type: TermS<Sem>) : TermS<Sem>
+        class QuoteTerm<K : Kind>(val element: TermZ, override val type: TermS<Sem>) : TermS<K>
+        class Let(val name: String, val init: TermS<Syn>, val next: TermS<Syn>, override val type: TermS<Sem>) : TermS<Syn>
+        class Var<K : Kind>(val name: String?, val level: Int, override val type: TermS<Sem>) : TermS<K>
+        class Meta<K : Kind>(val index: Int, override val type: TermS<Sem>) : TermS<K>
+        class Hole<K : Kind>(override val type: TermS<Sem>) : TermS<K>
     }
 
-    sealed interface VTermS : Core {
-        object UniverseType : VTermS
-        object EndType : VTermS
-        object ByteType : VTermS
-        object ShortType : VTermS
-        object IntType : VTermS
-        object LongType : VTermS
-        object FloatType : VTermS
-        object DoubleType : VTermS
-        object StringType : VTermS
-        object ByteArrayType : VTermS
-        object IntArrayType : VTermS
-        object LongArrayType : VTermS
-        data class ListType(val element: Lazy<VTermS>) : VTermS
-        data class CompoundType(val elements: Map<String, Lazy<VTermS>>) : VTermS
-        data class FunctionType(val name: String?, val dom: Lazy<VTermS>, val cod: Clos) : VTermS
-        data class CodeType(val element: Lazy<TypeZ<Kind.Sem>>) : VTermS
-        object TypeType : VTermS
-        object EndTag : VTermS
-        data class ByteTag(val data: Byte) : VTermS
-        data class ShortTag(val data: Short) : VTermS
-        data class IntTag(val data: Int) : VTermS
-        data class LongTag(val data: Long) : VTermS
-        data class FloatTag(val data: Float) : VTermS
-        data class DoubleTag(val data: Double) : VTermS
-        data class StringTag(val data: String) : VTermS
-        data class ByteArrayTag(val elements: List<Lazy<VTermS>>) : VTermS
-        data class IntArrayTag(val elements: List<Lazy<VTermS>>) : VTermS
-        data class LongArrayTag(val elements: List<Lazy<VTermS>>) : VTermS
-        data class ListTag(val elements: List<Lazy<VTermS>>) : VTermS
-        data class CompoundTag(val elements: Map<String, Lazy<VTermS>>) : VTermS
-        data class IndexedElement(val target: TermZ, val index: Lazy<VTermS>, val type: VTermS) : VTermS
-        data class Abs(val name: String, val anno: Lazy<VTermS>, val body: Clos) : VTermS
-        data class Apply(val operator: VTermS, val operand: Lazy<VTermS>) : VTermS
-        data class QuoteType(val element: Lazy<TypeZ<Kind.Sem>>) : VTermS
-        data class QuoteTerm(val element: TermZ) : VTermS
-        data class Var(val name: String?, val level: Int, val type: Lazy<VTermS>) : VTermS
-        data class Meta(val index: Int, val type: VTermS) : VTermS
-        object Hole : VTermS
-    }
-
-    data class Clos(val env: PersistentList<Lazy<VTermS>>, val body: Lazy<TermS>) : Core
+    class Clos(val env: PersistentList<Lazy<TermS<Sem>>>, val body: Lazy<TermS<Syn>>) : Core
 }

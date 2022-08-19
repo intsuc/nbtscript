@@ -33,7 +33,6 @@ fun Unifier.stringifyTypeZ(
     is C.TypeZ.CompoundType -> type.elements.entries.joinToString(", ", "compound {", "}") { "${it.key}: ${stringifyTypeZ(it.value)}" }
     is C.TypeZ.Splice -> "$${stringifyTermS(type.element)}"
     is C.TypeZ.Hole -> " "
-    else -> error("unreachable")
 }
 
 fun Unifier.stringifyTermZ(
@@ -58,7 +57,7 @@ fun Unifier.stringifyTermZ(
 }
 
 fun Unifier.stringifyTermS(
-    term: C.TermS,
+    term: C.TermS<Syn>,
 ): String = when (term) {
     is C.TermS.UniverseType -> "universe"
     is C.TermS.EndType -> "end"
@@ -99,6 +98,7 @@ fun Unifier.stringifyTermS(
     is C.TermS.Var -> term.name ?: ""
     is C.TermS.Meta -> this[term.index]?.let { stringifyTermS(reifyTermS(persistentListOf(), it)) } ?: "?${term.index.toSubscript()}"
     is C.TermS.Hole -> " "
+    else -> unreachable()
 }
 
 fun stringifyTerm(

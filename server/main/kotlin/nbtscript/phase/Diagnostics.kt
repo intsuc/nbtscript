@@ -1,6 +1,7 @@
 package nbtscript.phase
 
 import nbtscript.ast.Core.Kind.Sem
+import nbtscript.ast.Core.Kind.Syn
 import nbtscript.ast.Core.TermS
 import nbtscript.ast.Core.TypeZ
 import org.eclipse.lsp4j.Diagnostic
@@ -50,14 +51,6 @@ fun typeZExpected(
     Error,
 )
 
-fun termExpected(
-    range: Range,
-): Diagnostic = makeDiagnostic(
-    range,
-    "expected: term",
-    Error,
-)
-
 fun termZExpected(
     range: Range,
 ): Diagnostic = makeDiagnostic(
@@ -95,7 +88,7 @@ fun collectionTypeExpected(
 
 fun functionTypeExpected(
     unifier: Unifier,
-    actual: TermS,
+    actual: TermS<Syn>,
     range: Range,
 ): Diagnostic = makeDiagnostic(
     range,
@@ -105,7 +98,7 @@ fun functionTypeExpected(
 
 fun codeTypeExpected(
     unifier: Unifier,
-    actual: TermS,
+    actual: TermS<Syn>,
     range: Range,
 ): Diagnostic = makeDiagnostic(
     range,
@@ -126,8 +119,8 @@ fun typeZMismatched(
 
 fun typeSMismatched(
     unifier: Unifier,
-    expected: TermS,
-    actual: TermS,
+    expected: TermS<Syn>,
+    actual: TermS<Syn>,
     range: Range,
 ): Diagnostic = makeDiagnostic(
     range,

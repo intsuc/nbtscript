@@ -70,8 +70,8 @@ class Zonk private constructor(
 
     // TODO: force types?
     private fun zonkTermS(
-        term: TermS,
-    ): TermS = when (term) {
+        term: TermS<Syn>,
+    ): TermS<Syn> = when (term) {
         is TermS.UniverseType -> term
         is TermS.EndType -> term
         is TermS.ByteType -> term
@@ -184,6 +184,7 @@ class Zonk private constructor(
         }
 
         is TermS.Hole -> term
+        else -> unreachable()
     }
 
     companion object : Phase<Root, Root> {

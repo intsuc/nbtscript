@@ -1,22 +1,25 @@
 package nbtscript.phase
 
-import nbtscript.ast.Core.*
+import nbtscript.ast.Core.Kind.Sem
+import nbtscript.ast.Core.Kind.Syn
+import nbtscript.ast.Core.TermS
+import nbtscript.ast.Core.TypeZ
 
 class Unifier {
-    private val metas: MutableList<VTermS?> = mutableListOf()
+    private val metas: MutableList<TermS<Sem>?> = mutableListOf()
 
-    operator fun get(index: Int): VTermS? = metas.getOrNull(index)
+    operator fun get(index: Int): TermS<Sem>? = metas.getOrNull(index)
 
     fun fresh(
-        type: VTermS,
-    ): TermS {
+        type: TermS<Sem>,
+    ): TermS<Syn> {
         metas += null
         return TermS.Meta(metas.lastIndex, type)
     }
 
     fun subTypeZ(
-        type1: TypeZ<Kind.Sem>,
-        type2: TypeZ<Kind.Sem>,
+        type1: TypeZ<Sem>,
+        type2: TypeZ<Sem>,
     ): Boolean = when {
         type1 is TypeZ.EndType -> true
         type2 is TypeZ.EndType -> false
@@ -38,99 +41,99 @@ class Unifier {
             }
         }
 
-        type1 is TypeZ.VSplice && type2 is TypeZ.VSplice -> unifyValue(0, type1.element, type2.element)
+        type1 is TypeZ.Splice && type2 is TypeZ.Splice -> unifyValue(0, type1.element, type2.element)
         else -> false
     }
 
     fun unifyValue(
         lvl: Int,
-        term1: VTermS,
-        term2: VTermS,
+        term1: TermS<Sem>,
+        term2: TermS<Sem>,
     ): Boolean {
         @Suppress("NAME_SHADOWING") val term1 = force(term1)
         @Suppress("NAME_SHADOWING") val term2 = force(term2)
         return when {
-            term1 is VTermS.Meta -> solve(lvl, term1.index, term2)
-            term2 is VTermS.Meta -> solve(lvl, term2.index, term1)
+            term1 is TermS.Meta -> solve(lvl, term1.index, term2)
+            term2 is TermS.Meta -> solve(lvl, term2.index, term1)
 
-            term1 is VTermS.UniverseType && term2 is VTermS.UniverseType -> true
-            term1 is VTermS.EndType && term2 is VTermS.EndType -> true
-            term1 is VTermS.ByteType && term2 is VTermS.ByteType -> true
-            term1 is VTermS.ShortType && term2 is VTermS.ShortType -> true
-            term1 is VTermS.IntType && term2 is VTermS.IntType -> true
-            term1 is VTermS.LongType && term2 is VTermS.LongType -> true
-            term1 is VTermS.FloatType && term2 is VTermS.FloatType -> true
-            term1 is VTermS.DoubleType && term2 is VTermS.DoubleType -> true
-            term1 is VTermS.StringType && term2 is VTermS.StringType -> true
-            term1 is VTermS.ByteArrayType && term2 is VTermS.ByteArrayType -> true
-            term1 is VTermS.IntArrayType && term2 is VTermS.IntArrayType -> true
-            term1 is VTermS.LongArrayType && term2 is VTermS.LongArrayType -> true
-            term1 is VTermS.ListType && term2 is VTermS.ListType -> unifyValue(lvl, term1.element.value, term2.element.value)
-            term1 is VTermS.CompoundType && term2 is VTermS.CompoundType -> {
+            term1 is TermS.UniverseType && term2 is TermS.UniverseType -> true
+            term1 is TermS.EndType && term2 is TermS.EndType -> true
+            term1 is TermS.ByteType && term2 is TermS.ByteType -> true
+            term1 is TermS.ShortType && term2 is TermS.ShortType -> true
+            term1 is TermS.IntType && term2 is TermS.IntType -> true
+            term1 is TermS.LongType && term2 is TermS.LongType -> true
+            term1 is TermS.FloatType && term2 is TermS.FloatType -> true
+            term1 is TermS.DoubleType && term2 is TermS.DoubleType -> true
+            term1 is TermS.StringType && term2 is TermS.StringType -> true
+            term1 is TermS.ByteArrayType && term2 is TermS.ByteArrayType -> true
+            term1 is TermS.IntArrayType && term2 is TermS.IntArrayType -> true
+            term1 is TermS.LongArrayType && term2 is TermS.LongArrayType -> true
+            term1 is TermS.VListType && term2 is TermS.VListType -> unifyValue(lvl, term1.element.value, term2.element.value)
+            term1 is TermS.VCompoundType && term2 is TermS.VCompoundType -> {
                 term1.elements.keys == term2.elements.keys && term1.elements.all {
                     unifyValue(lvl, it.value.value, term2.elements[it.key]!!.value)
                 }
             }
 
-            term1 is VTermS.IndexedElement && term2 is VTermS.IndexedElement -> false // ?
-            term1 is VTermS.FunctionType && term2 is VTermS.FunctionType -> {
-                unifyValue(lvl, term1.dom.value, term2.dom.value) && lazyOf(VTermS.Var(null, lvl, term1.dom)).let { operand ->
+            term1 is TermS.VIndexedElement && term2 is TermS.VIndexedElement -> false // ?
+            term1 is TermS.VFunctionType && term2 is TermS.VFunctionType -> {
+                unifyValue(lvl, term1.dom.value, term2.dom.value) && lazyOf(TermS.Var<Sem>(null, lvl, term1.dom.value)).let { operand ->
                     unifyValue(lvl.inc(), term1.cod(this, operand), term2.cod(this, operand))
                 }
             }
 
-            term1 is VTermS.TypeType && term2 is VTermS.TypeType -> true
-            term1 is VTermS.EndTag && term2 is VTermS.EndTag -> true
-            term1 is VTermS.ByteTag && term2 is VTermS.ByteTag -> term1.data == term2.data
-            term1 is VTermS.ShortTag && term2 is VTermS.ShortTag -> term1.data == term2.data
-            term1 is VTermS.IntTag && term2 is VTermS.IntTag -> term1.data == term2.data
-            term1 is VTermS.LongTag && term2 is VTermS.LongTag -> term1.data == term2.data
-            term1 is VTermS.FloatTag && term2 is VTermS.FloatTag -> term1.data == term2.data
-            term1 is VTermS.DoubleTag && term2 is VTermS.DoubleTag -> term1.data == term2.data
-            term1 is VTermS.StringTag && term2 is VTermS.StringTag -> term1.data == term2.data
-            term1 is VTermS.ByteArrayTag && term2 is VTermS.ByteArrayTag -> {
+            term1 is TermS.TypeType && term2 is TermS.TypeType -> true
+            term1 is TermS.EndTag && term2 is TermS.EndTag -> true
+            term1 is TermS.ByteTag && term2 is TermS.ByteTag -> term1.data == term2.data
+            term1 is TermS.ShortTag && term2 is TermS.ShortTag -> term1.data == term2.data
+            term1 is TermS.IntTag && term2 is TermS.IntTag -> term1.data == term2.data
+            term1 is TermS.LongTag && term2 is TermS.LongTag -> term1.data == term2.data
+            term1 is TermS.FloatTag && term2 is TermS.FloatTag -> term1.data == term2.data
+            term1 is TermS.DoubleTag && term2 is TermS.DoubleTag -> term1.data == term2.data
+            term1 is TermS.StringTag && term2 is TermS.StringTag -> term1.data == term2.data
+            term1 is TermS.VByteArrayTag && term2 is TermS.VByteArrayTag -> {
                 (term1.elements zip term2.elements).all { (element1, element2) -> unifyValue(lvl, element1.value, element2.value) }
             }
 
-            term1 is VTermS.IntArrayTag && term2 is VTermS.IntArrayTag -> {
+            term1 is TermS.VIntArrayTag && term2 is TermS.VIntArrayTag -> {
                 (term1.elements zip term2.elements).all { (element1, element2) -> unifyValue(lvl, element1.value, element2.value) }
             }
 
-            term1 is VTermS.LongArrayTag && term2 is VTermS.LongArrayTag -> {
+            term1 is TermS.VLongArrayTag && term2 is TermS.VLongArrayTag -> {
                 (term1.elements zip term2.elements).all { (element1, element2) -> unifyValue(lvl, element1.value, element2.value) }
             }
 
-            term1 is VTermS.ListTag && term2 is VTermS.ListTag -> {
+            term1 is TermS.VListTag && term2 is TermS.VListTag -> {
                 (term1.elements zip term2.elements).all { (element1, element2) -> unifyValue(lvl, element1.value, element2.value) }
             }
 
-            term1 is VTermS.CompoundTag && term2 is VTermS.CompoundTag -> {
+            term1 is TermS.VCompoundTag && term2 is TermS.VCompoundTag -> {
                 term1.elements.keys == term2.elements.keys && term1.elements.all {
                     unifyValue(lvl, it.value.value, term2.elements[it.key]!!.value)
                 }
             }
 
-            term1 is VTermS.Abs && term2 is VTermS.Abs -> {
-                val operand = lazyOf(VTermS.Var(null, lvl, term1.anno))
+            term1 is TermS.VAbs && term2 is TermS.VAbs -> {
+                val operand = lazyOf(TermS.Var<Sem>(null, lvl, term1.anno.value))
                 unifyValue(lvl.inc(), term1.body(this, operand), term2.body(this, operand))
             }
 
-            term1 is VTermS.Apply && term2 is VTermS.Apply -> {
+            term1 is TermS.VApply && term2 is TermS.VApply -> {
                 unifyValue(lvl, term1.operator, term2.operator) && unifyValue(lvl, term1.operand.value, term2.operand.value)
             }
 
-            term1 is VTermS.QuoteType && term2 is VTermS.QuoteType -> false // ?
-            term1 is VTermS.QuoteTerm && term2 is VTermS.QuoteTerm -> false // ?
-            term1 is VTermS.Var && term2 is VTermS.Var -> term1.level == term2.level
-            term1 is VTermS.Hole && term2 is VTermS.Hole -> false // ?
+            term1 is TermS.VQuoteType && term2 is TermS.VQuoteType -> false // ?
+            term1 is TermS.QuoteTerm && term2 is TermS.QuoteTerm -> false // ?
+            term1 is TermS.Var && term2 is TermS.Var -> term1.level == term2.level
+            term1 is TermS.Hole && term2 is TermS.Hole -> false // ?
             else -> false
         }
     }
 
     tailrec fun force(
-        term: VTermS,
-    ): VTermS = when (term) {
-        is VTermS.Meta -> {
+        term: TermS<Sem>,
+    ): TermS<Sem> = when (term) {
+        is TermS.Meta -> {
             when (val meta = metas.getOrNull(term.index)) {
                 null -> term
                 else -> force(meta)
@@ -143,7 +146,7 @@ class Unifier {
     private fun solve(
         lvl: Int,
         index: Int,
-        candidate: VTermS,
+        candidate: TermS<Sem>,
     ): Boolean = when (val meta = metas.getOrNull(index)) {
         null -> {
             metas[index] = candidate
