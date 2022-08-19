@@ -2,6 +2,7 @@ package nbtscript.phase
 
 import kotlinx.collections.immutable.persistentListOf
 import nbtscript.ast.Core.*
+import nbtscript.ast.Core.Kind.Syn
 
 class Zonk private constructor(
     private val context: Phase.Context = Phase.Context(),
@@ -14,8 +15,8 @@ class Zonk private constructor(
     }
 
     private fun zonkTypeZ(
-        type: TypeZ,
-    ): TypeZ = type
+        type: TypeZ<Syn>,
+    ): TypeZ<Syn> = type
 
     private fun zonkTermZ(
         term: TermZ,
@@ -175,7 +176,7 @@ class Zonk private constructor(
         is TermS.Var -> term
         is TermS.Meta -> {
             context.unifier[term.index]
-                ?.let { context.unifier.reify(persistentListOf(), it) }
+                ?.let { context.unifier.reifyTermS(persistentListOf(), it) }
                 ?: run {
                     context.addDiagnostic(unsolvedMeta(term.index))
                     term

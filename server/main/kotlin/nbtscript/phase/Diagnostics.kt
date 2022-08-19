@@ -1,5 +1,6 @@
 package nbtscript.phase
 
+import nbtscript.ast.Core.Kind.Sem
 import nbtscript.ast.Core.TermS
 import nbtscript.ast.Core.TypeZ
 import org.eclipse.lsp4j.Diagnostic
@@ -84,11 +85,11 @@ fun notFound(
 
 fun collectionTypeExpected(
     unifier: Unifier,
-    actual: TypeZ,
+    actual: TypeZ<Sem>,
     range: Range,
 ): Diagnostic = makeDiagnostic(
     range,
-    "expected: collection type\nactual: '${unifier.stringifyTypeZ(actual)}'",
+    "expected: collection type\nactual: '${unifier.stringifyTypeZ(unifier.reifyTypeZ(actual))}'",
     Error,
 )
 
@@ -114,12 +115,12 @@ fun codeTypeExpected(
 
 fun typeZMismatched(
     unifier: Unifier,
-    expected: TypeZ,
-    actual: TypeZ,
+    expected: TypeZ<Sem>,
+    actual: TypeZ<Sem>,
     range: Range,
 ): Diagnostic = makeDiagnostic(
     range,
-    "expected: '${unifier.stringifyTypeZ(expected)}'\nactual: '${unifier.stringifyTypeZ(actual)}'",
+    "expected: '${unifier.stringifyTypeZ(unifier.reifyTypeZ(expected))}'\nactual: '${unifier.stringifyTypeZ(unifier.reifyTypeZ(actual))}'",
     Error,
 )
 

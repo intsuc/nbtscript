@@ -1,6 +1,7 @@
 package nbtscript.phase
 
 import kotlinx.collections.immutable.persistentListOf
+import nbtscript.ast.Core.Kind.Syn
 import org.eclipse.lsp4j.MarkupContent
 import org.eclipse.lsp4j.MarkupKind
 import nbtscript.ast.Core as C
@@ -14,7 +15,7 @@ fun markup(
 )
 
 fun Unifier.stringifyTypeZ(
-    type: C.TypeZ,
+    type: C.TypeZ<Syn>,
 ): String = when (type) {
     is C.TypeZ.EndType -> "end"
     is C.TypeZ.ByteType -> "byte"
@@ -32,6 +33,7 @@ fun Unifier.stringifyTypeZ(
     is C.TypeZ.CompoundType -> type.elements.entries.joinToString(", ", "compound {", "}") { "${it.key}: ${stringifyTypeZ(it.value)}" }
     is C.TypeZ.Splice -> "$${stringifyTermS(type.element)}"
     is C.TypeZ.Hole -> " "
+    else -> error("unreachable")
 }
 
 fun Unifier.stringifyTermZ(
@@ -95,7 +97,7 @@ fun Unifier.stringifyTermS(
     is C.TermS.QuoteTerm -> "`${stringifyTermZ(term.element)}"
     is C.TermS.Let -> "let ${term.name} = ${stringifyTermS(term.init)};\n${stringifyTermS(term.next)}"
     is C.TermS.Var -> term.name ?: ""
-    is C.TermS.Meta -> this[term.index]?.let { stringifyTermS(reify(persistentListOf(), it)) } ?: "?${term.index.toSubscript()}"
+    is C.TermS.Meta -> this[term.index]?.let { stringifyTermS(reifyTermS(persistentListOf(), it)) } ?: "?${term.index.toSubscript()}"
     is C.TermS.Hole -> " "
 }
 

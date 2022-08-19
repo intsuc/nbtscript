@@ -1,6 +1,5 @@
 package nbtscript.phase
 
-import kotlinx.collections.immutable.persistentListOf
 import nbtscript.ast.Core.*
 
 class Unifier {
@@ -16,8 +15,8 @@ class Unifier {
     }
 
     fun subTypeZ(
-        type1: TypeZ,
-        type2: TypeZ,
+        type1: TypeZ<Kind.Sem>,
+        type2: TypeZ<Kind.Sem>,
     ): Boolean = when {
         type1 is TypeZ.EndType -> true
         type2 is TypeZ.EndType -> false
@@ -39,11 +38,7 @@ class Unifier {
             }
         }
 
-        type1 is TypeZ.Splice && type2 is TypeZ.Splice -> {
-            val env: Environment = persistentListOf()
-            unifyValue(env.size, reflect(env, type1.element), reflect(env, type2.element))
-        }
-
+        type1 is TypeZ.VSplice && type2 is TypeZ.VSplice -> unifyValue(0, type1.element, type2.element)
         else -> false
     }
 
@@ -52,82 +47,82 @@ class Unifier {
         term1: VTermS,
         term2: VTermS,
     ): Boolean {
-        @Suppress("NAME_SHADOWING") val value1 = force(term1)
-        @Suppress("NAME_SHADOWING") val value2 = force(term2)
+        @Suppress("NAME_SHADOWING") val term1 = force(term1)
+        @Suppress("NAME_SHADOWING") val term2 = force(term2)
         return when {
-            value1 is VTermS.Meta -> solve(lvl, value1.index, value2)
-            value2 is VTermS.Meta -> solve(lvl, value2.index, value1)
+            term1 is VTermS.Meta -> solve(lvl, term1.index, term2)
+            term2 is VTermS.Meta -> solve(lvl, term2.index, term1)
 
-            value1 is VTermS.UniverseType && value2 is VTermS.UniverseType -> true
-            value1 is VTermS.EndType && value2 is VTermS.EndType -> true
-            value1 is VTermS.ByteType && value2 is VTermS.ByteType -> true
-            value1 is VTermS.ShortType && value2 is VTermS.ShortType -> true
-            value1 is VTermS.IntType && value2 is VTermS.IntType -> true
-            value1 is VTermS.LongType && value2 is VTermS.LongType -> true
-            value1 is VTermS.FloatType && value2 is VTermS.FloatType -> true
-            value1 is VTermS.DoubleType && value2 is VTermS.DoubleType -> true
-            value1 is VTermS.StringType && value2 is VTermS.StringType -> true
-            value1 is VTermS.ByteArrayType && value2 is VTermS.ByteArrayType -> true
-            value1 is VTermS.IntArrayType && value2 is VTermS.IntArrayType -> true
-            value1 is VTermS.LongArrayType && value2 is VTermS.LongArrayType -> true
-            value1 is VTermS.ListType && value2 is VTermS.ListType -> unifyValue(lvl, value1.element.value, value2.element.value)
-            value1 is VTermS.CompoundType && value2 is VTermS.CompoundType -> {
-                value1.elements.keys == value2.elements.keys && value1.elements.all {
-                    unifyValue(lvl, it.value.value, value2.elements[it.key]!!.value)
+            term1 is VTermS.UniverseType && term2 is VTermS.UniverseType -> true
+            term1 is VTermS.EndType && term2 is VTermS.EndType -> true
+            term1 is VTermS.ByteType && term2 is VTermS.ByteType -> true
+            term1 is VTermS.ShortType && term2 is VTermS.ShortType -> true
+            term1 is VTermS.IntType && term2 is VTermS.IntType -> true
+            term1 is VTermS.LongType && term2 is VTermS.LongType -> true
+            term1 is VTermS.FloatType && term2 is VTermS.FloatType -> true
+            term1 is VTermS.DoubleType && term2 is VTermS.DoubleType -> true
+            term1 is VTermS.StringType && term2 is VTermS.StringType -> true
+            term1 is VTermS.ByteArrayType && term2 is VTermS.ByteArrayType -> true
+            term1 is VTermS.IntArrayType && term2 is VTermS.IntArrayType -> true
+            term1 is VTermS.LongArrayType && term2 is VTermS.LongArrayType -> true
+            term1 is VTermS.ListType && term2 is VTermS.ListType -> unifyValue(lvl, term1.element.value, term2.element.value)
+            term1 is VTermS.CompoundType && term2 is VTermS.CompoundType -> {
+                term1.elements.keys == term2.elements.keys && term1.elements.all {
+                    unifyValue(lvl, it.value.value, term2.elements[it.key]!!.value)
                 }
             }
 
-            value1 is VTermS.IndexedElement && value2 is VTermS.IndexedElement -> false // ?
-            value1 is VTermS.FunctionType && value2 is VTermS.FunctionType -> {
-                unifyValue(lvl, value1.dom.value, value2.dom.value) && lazyOf(VTermS.Var(null, lvl, value1.dom)).let { operand ->
-                    unifyValue(lvl.inc(), value1.cod(this, operand), value2.cod(this, operand))
+            term1 is VTermS.IndexedElement && term2 is VTermS.IndexedElement -> false // ?
+            term1 is VTermS.FunctionType && term2 is VTermS.FunctionType -> {
+                unifyValue(lvl, term1.dom.value, term2.dom.value) && lazyOf(VTermS.Var(null, lvl, term1.dom)).let { operand ->
+                    unifyValue(lvl.inc(), term1.cod(this, operand), term2.cod(this, operand))
                 }
             }
 
-            value1 is VTermS.TypeType && value2 is VTermS.TypeType -> true
-            value1 is VTermS.EndTag && value2 is VTermS.EndTag -> true
-            value1 is VTermS.ByteTag && value2 is VTermS.ByteTag -> value1.data == value2.data
-            value1 is VTermS.ShortTag && value2 is VTermS.ShortTag -> value1.data == value2.data
-            value1 is VTermS.IntTag && value2 is VTermS.IntTag -> value1.data == value2.data
-            value1 is VTermS.LongTag && value2 is VTermS.LongTag -> value1.data == value2.data
-            value1 is VTermS.FloatTag && value2 is VTermS.FloatTag -> value1.data == value2.data
-            value1 is VTermS.DoubleTag && value2 is VTermS.DoubleTag -> value1.data == value2.data
-            value1 is VTermS.StringTag && value2 is VTermS.StringTag -> value1.data == value2.data
-            value1 is VTermS.ByteArrayTag && value2 is VTermS.ByteArrayTag -> {
-                (value1.elements zip value2.elements).all { (element1, element2) -> unifyValue(lvl, element1.value, element2.value) }
+            term1 is VTermS.TypeType && term2 is VTermS.TypeType -> true
+            term1 is VTermS.EndTag && term2 is VTermS.EndTag -> true
+            term1 is VTermS.ByteTag && term2 is VTermS.ByteTag -> term1.data == term2.data
+            term1 is VTermS.ShortTag && term2 is VTermS.ShortTag -> term1.data == term2.data
+            term1 is VTermS.IntTag && term2 is VTermS.IntTag -> term1.data == term2.data
+            term1 is VTermS.LongTag && term2 is VTermS.LongTag -> term1.data == term2.data
+            term1 is VTermS.FloatTag && term2 is VTermS.FloatTag -> term1.data == term2.data
+            term1 is VTermS.DoubleTag && term2 is VTermS.DoubleTag -> term1.data == term2.data
+            term1 is VTermS.StringTag && term2 is VTermS.StringTag -> term1.data == term2.data
+            term1 is VTermS.ByteArrayTag && term2 is VTermS.ByteArrayTag -> {
+                (term1.elements zip term2.elements).all { (element1, element2) -> unifyValue(lvl, element1.value, element2.value) }
             }
 
-            value1 is VTermS.IntArrayTag && value2 is VTermS.IntArrayTag -> {
-                (value1.elements zip value2.elements).all { (element1, element2) -> unifyValue(lvl, element1.value, element2.value) }
+            term1 is VTermS.IntArrayTag && term2 is VTermS.IntArrayTag -> {
+                (term1.elements zip term2.elements).all { (element1, element2) -> unifyValue(lvl, element1.value, element2.value) }
             }
 
-            value1 is VTermS.LongArrayTag && value2 is VTermS.LongArrayTag -> {
-                (value1.elements zip value2.elements).all { (element1, element2) -> unifyValue(lvl, element1.value, element2.value) }
+            term1 is VTermS.LongArrayTag && term2 is VTermS.LongArrayTag -> {
+                (term1.elements zip term2.elements).all { (element1, element2) -> unifyValue(lvl, element1.value, element2.value) }
             }
 
-            value1 is VTermS.ListTag && value2 is VTermS.ListTag -> {
-                (value1.elements zip value2.elements).all { (element1, element2) -> unifyValue(lvl, element1.value, element2.value) }
+            term1 is VTermS.ListTag && term2 is VTermS.ListTag -> {
+                (term1.elements zip term2.elements).all { (element1, element2) -> unifyValue(lvl, element1.value, element2.value) }
             }
 
-            value1 is VTermS.CompoundTag && value2 is VTermS.CompoundTag -> {
-                value1.elements.keys == value2.elements.keys && value1.elements.all {
-                    unifyValue(lvl, it.value.value, value2.elements[it.key]!!.value)
+            term1 is VTermS.CompoundTag && term2 is VTermS.CompoundTag -> {
+                term1.elements.keys == term2.elements.keys && term1.elements.all {
+                    unifyValue(lvl, it.value.value, term2.elements[it.key]!!.value)
                 }
             }
 
-            value1 is VTermS.Abs && value2 is VTermS.Abs -> {
-                val operand = lazyOf(VTermS.Var(null, lvl, value1.anno))
-                unifyValue(lvl.inc(), value1.body(this, operand), value2.body(this, operand))
+            term1 is VTermS.Abs && term2 is VTermS.Abs -> {
+                val operand = lazyOf(VTermS.Var(null, lvl, term1.anno))
+                unifyValue(lvl.inc(), term1.body(this, operand), term2.body(this, operand))
             }
 
-            value1 is VTermS.Apply && value2 is VTermS.Apply -> {
-                unifyValue(lvl, value1.operator, value2.operator) && unifyValue(lvl, value1.operand.value, value2.operand.value)
+            term1 is VTermS.Apply && term2 is VTermS.Apply -> {
+                unifyValue(lvl, term1.operator, term2.operator) && unifyValue(lvl, term1.operand.value, term2.operand.value)
             }
 
-            value1 is VTermS.QuoteType && value2 is VTermS.QuoteType -> false // ?
-            value1 is VTermS.QuoteTerm && value2 is VTermS.QuoteTerm -> false // ?
-            value1 is VTermS.Var && value2 is VTermS.Var -> value1.level == value2.level
-            value1 is VTermS.Hole && value2 is VTermS.Hole -> false // ?
+            term1 is VTermS.QuoteType && term2 is VTermS.QuoteType -> false // ?
+            term1 is VTermS.QuoteTerm && term2 is VTermS.QuoteTerm -> false // ?
+            term1 is VTermS.Var && term2 is VTermS.Var -> term1.level == term2.level
+            term1 is VTermS.Hole && term2 is VTermS.Hole -> false // ?
             else -> false
         }
     }
