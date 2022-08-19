@@ -4,7 +4,7 @@ import kotlinx.collections.immutable.*
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either.forRight
 import nbtscript.ast.Core as C
-import nbtscript.ast.Core.Value as TypeS
+import nbtscript.ast.Core.VTermS as TypeS
 import nbtscript.ast.Surface as S
 
 // TODO: create report messages lazily
@@ -475,7 +475,7 @@ class Elab private constructor(
                     val part = InlayHintLabelPart(": ${context.unifier.stringifyTermS(dom)}")
                     InlayHint(term.name.range.end, forRight(listOf(part)))
                 })
-                val cod = type.cod(context.unifier, lazyOf(C.Value.Var(term.name.text, ctx.size, type.dom)))
+                val cod = type.cod(context.unifier, lazyOf(C.VTermS.Var(term.name.text, ctx.size, type.dom)))
                 val body = elabTermS(ctx.bind(term.name.text, type.dom.value), term.body, cod)
                 C.TermS.Abs(term.name.text, dom, body, type)
             }
@@ -585,18 +585,18 @@ class Elab private constructor(
     private class Context private constructor(
         val levels: PersistentMap<String, Int>,
         val types: PersistentList<TypeS>,
-        val values: PersistentList<Lazy<C.Value>>,
+        val values: PersistentList<Lazy<C.VTermS>>,
     ) {
         val size: Int get() = types.size
 
         fun bind(
             name: String?,
             type: TypeS,
-            value: Lazy<C.Value>? = null,
+            term: Lazy<C.VTermS>? = null,
         ): Context = Context(
             levels = name?.let { levels + (name to size) } ?: levels,
             types = types + type,
-            values = values + (value ?: lazyOf(C.Value.Var(name, size, lazyOf(type)))),
+            values = values + (term ?: lazyOf(C.VTermS.Var(name, size, lazyOf(type)))),
         )
 
         companion object {

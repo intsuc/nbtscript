@@ -60,7 +60,7 @@ class Stage private constructor(
             when (val element = context.unifier.normalize(term.element)) {
                 is C.TermS.IndexedElement -> {
                     val target = stageTermZ(element.target)
-                    val index = (context.unifier.reflect(persistentListOf(), element.index) as C.Value.IntTag).data
+                    val index = (context.unifier.reflect(persistentListOf(), element.index) as C.VTermS.IntTag).data
                     S.Term.IndexedElement(target, index)
                 }
 

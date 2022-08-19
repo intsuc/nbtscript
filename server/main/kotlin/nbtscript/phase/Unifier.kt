@@ -4,12 +4,12 @@ import kotlinx.collections.immutable.persistentListOf
 import nbtscript.ast.Core.*
 
 class Unifier {
-    private val metas: MutableList<Value?> = mutableListOf()
+    private val metas: MutableList<VTermS?> = mutableListOf()
 
-    operator fun get(index: Int): Value? = metas.getOrNull(index)
+    operator fun get(index: Int): VTermS? = metas.getOrNull(index)
 
     fun fresh(
-        type: Value,
+        type: VTermS,
     ): TermS {
         metas += null
         return TermS.Meta(metas.lastIndex, type)
@@ -49,106 +49,106 @@ class Unifier {
 
     fun unifyValue(
         lvl: Int,
-        value1: Value,
-        value2: Value,
+        term1: VTermS,
+        term2: VTermS,
     ): Boolean {
-        @Suppress("NAME_SHADOWING") val value1 = force(value1)
-        @Suppress("NAME_SHADOWING") val value2 = force(value2)
+        @Suppress("NAME_SHADOWING") val value1 = force(term1)
+        @Suppress("NAME_SHADOWING") val value2 = force(term2)
         return when {
-            value1 is Value.Meta -> solve(lvl, value1.index, value2)
-            value2 is Value.Meta -> solve(lvl, value2.index, value1)
+            value1 is VTermS.Meta -> solve(lvl, value1.index, value2)
+            value2 is VTermS.Meta -> solve(lvl, value2.index, value1)
 
-            value1 is Value.UniverseType && value2 is Value.UniverseType -> true
-            value1 is Value.EndType && value2 is Value.EndType -> true
-            value1 is Value.ByteType && value2 is Value.ByteType -> true
-            value1 is Value.ShortType && value2 is Value.ShortType -> true
-            value1 is Value.IntType && value2 is Value.IntType -> true
-            value1 is Value.LongType && value2 is Value.LongType -> true
-            value1 is Value.FloatType && value2 is Value.FloatType -> true
-            value1 is Value.DoubleType && value2 is Value.DoubleType -> true
-            value1 is Value.StringType && value2 is Value.StringType -> true
-            value1 is Value.ByteArrayType && value2 is Value.ByteArrayType -> true
-            value1 is Value.IntArrayType && value2 is Value.IntArrayType -> true
-            value1 is Value.LongArrayType && value2 is Value.LongArrayType -> true
-            value1 is Value.ListType && value2 is Value.ListType -> unifyValue(lvl, value1.element.value, value2.element.value)
-            value1 is Value.CompoundType && value2 is Value.CompoundType -> {
+            value1 is VTermS.UniverseType && value2 is VTermS.UniverseType -> true
+            value1 is VTermS.EndType && value2 is VTermS.EndType -> true
+            value1 is VTermS.ByteType && value2 is VTermS.ByteType -> true
+            value1 is VTermS.ShortType && value2 is VTermS.ShortType -> true
+            value1 is VTermS.IntType && value2 is VTermS.IntType -> true
+            value1 is VTermS.LongType && value2 is VTermS.LongType -> true
+            value1 is VTermS.FloatType && value2 is VTermS.FloatType -> true
+            value1 is VTermS.DoubleType && value2 is VTermS.DoubleType -> true
+            value1 is VTermS.StringType && value2 is VTermS.StringType -> true
+            value1 is VTermS.ByteArrayType && value2 is VTermS.ByteArrayType -> true
+            value1 is VTermS.IntArrayType && value2 is VTermS.IntArrayType -> true
+            value1 is VTermS.LongArrayType && value2 is VTermS.LongArrayType -> true
+            value1 is VTermS.ListType && value2 is VTermS.ListType -> unifyValue(lvl, value1.element.value, value2.element.value)
+            value1 is VTermS.CompoundType && value2 is VTermS.CompoundType -> {
                 value1.elements.keys == value2.elements.keys && value1.elements.all {
                     unifyValue(lvl, it.value.value, value2.elements[it.key]!!.value)
                 }
             }
 
-            value1 is Value.IndexedElement && value2 is Value.IndexedElement -> false // ?
-            value1 is Value.FunctionType && value2 is Value.FunctionType -> {
-                unifyValue(lvl, value1.dom.value, value2.dom.value) && lazyOf(Value.Var(null, lvl, value1.dom)).let { operand ->
+            value1 is VTermS.IndexedElement && value2 is VTermS.IndexedElement -> false // ?
+            value1 is VTermS.FunctionType && value2 is VTermS.FunctionType -> {
+                unifyValue(lvl, value1.dom.value, value2.dom.value) && lazyOf(VTermS.Var(null, lvl, value1.dom)).let { operand ->
                     unifyValue(lvl.inc(), value1.cod(this, operand), value2.cod(this, operand))
                 }
             }
 
-            value1 is Value.TypeType && value2 is Value.TypeType -> true
-            value1 is Value.EndTag && value2 is Value.EndTag -> true
-            value1 is Value.ByteTag && value2 is Value.ByteTag -> value1.data == value2.data
-            value1 is Value.ShortTag && value2 is Value.ShortTag -> value1.data == value2.data
-            value1 is Value.IntTag && value2 is Value.IntTag -> value1.data == value2.data
-            value1 is Value.LongTag && value2 is Value.LongTag -> value1.data == value2.data
-            value1 is Value.FloatTag && value2 is Value.FloatTag -> value1.data == value2.data
-            value1 is Value.DoubleTag && value2 is Value.DoubleTag -> value1.data == value2.data
-            value1 is Value.StringTag && value2 is Value.StringTag -> value1.data == value2.data
-            value1 is Value.ByteArrayTag && value2 is Value.ByteArrayTag -> {
+            value1 is VTermS.TypeType && value2 is VTermS.TypeType -> true
+            value1 is VTermS.EndTag && value2 is VTermS.EndTag -> true
+            value1 is VTermS.ByteTag && value2 is VTermS.ByteTag -> value1.data == value2.data
+            value1 is VTermS.ShortTag && value2 is VTermS.ShortTag -> value1.data == value2.data
+            value1 is VTermS.IntTag && value2 is VTermS.IntTag -> value1.data == value2.data
+            value1 is VTermS.LongTag && value2 is VTermS.LongTag -> value1.data == value2.data
+            value1 is VTermS.FloatTag && value2 is VTermS.FloatTag -> value1.data == value2.data
+            value1 is VTermS.DoubleTag && value2 is VTermS.DoubleTag -> value1.data == value2.data
+            value1 is VTermS.StringTag && value2 is VTermS.StringTag -> value1.data == value2.data
+            value1 is VTermS.ByteArrayTag && value2 is VTermS.ByteArrayTag -> {
                 (value1.elements zip value2.elements).all { (element1, element2) -> unifyValue(lvl, element1.value, element2.value) }
             }
 
-            value1 is Value.IntArrayTag && value2 is Value.IntArrayTag -> {
+            value1 is VTermS.IntArrayTag && value2 is VTermS.IntArrayTag -> {
                 (value1.elements zip value2.elements).all { (element1, element2) -> unifyValue(lvl, element1.value, element2.value) }
             }
 
-            value1 is Value.LongArrayTag && value2 is Value.LongArrayTag -> {
+            value1 is VTermS.LongArrayTag && value2 is VTermS.LongArrayTag -> {
                 (value1.elements zip value2.elements).all { (element1, element2) -> unifyValue(lvl, element1.value, element2.value) }
             }
 
-            value1 is Value.ListTag && value2 is Value.ListTag -> {
+            value1 is VTermS.ListTag && value2 is VTermS.ListTag -> {
                 (value1.elements zip value2.elements).all { (element1, element2) -> unifyValue(lvl, element1.value, element2.value) }
             }
 
-            value1 is Value.CompoundTag && value2 is Value.CompoundTag -> {
+            value1 is VTermS.CompoundTag && value2 is VTermS.CompoundTag -> {
                 value1.elements.keys == value2.elements.keys && value1.elements.all {
                     unifyValue(lvl, it.value.value, value2.elements[it.key]!!.value)
                 }
             }
 
-            value1 is Value.Abs && value2 is Value.Abs -> {
-                val operand = lazyOf(Value.Var(null, lvl, value1.anno))
+            value1 is VTermS.Abs && value2 is VTermS.Abs -> {
+                val operand = lazyOf(VTermS.Var(null, lvl, value1.anno))
                 unifyValue(lvl.inc(), value1.body(this, operand), value2.body(this, operand))
             }
 
-            value1 is Value.Apply && value2 is Value.Apply -> {
+            value1 is VTermS.Apply && value2 is VTermS.Apply -> {
                 unifyValue(lvl, value1.operator, value2.operator) && unifyValue(lvl, value1.operand.value, value2.operand.value)
             }
 
-            value1 is Value.QuoteType && value2 is Value.QuoteType -> false // ?
-            value1 is Value.QuoteTerm && value2 is Value.QuoteTerm -> false // ?
-            value1 is Value.Var && value2 is Value.Var -> value1.level == value2.level
-            value1 is Value.Hole && value2 is Value.Hole -> false // ?
+            value1 is VTermS.QuoteType && value2 is VTermS.QuoteType -> false // ?
+            value1 is VTermS.QuoteTerm && value2 is VTermS.QuoteTerm -> false // ?
+            value1 is VTermS.Var && value2 is VTermS.Var -> value1.level == value2.level
+            value1 is VTermS.Hole && value2 is VTermS.Hole -> false // ?
             else -> false
         }
     }
 
     tailrec fun force(
-        value: Value,
-    ): Value = when (value) {
-        is Value.Meta -> {
-            when (val meta = metas.getOrNull(value.index)) {
-                null -> value
+        term: VTermS,
+    ): VTermS = when (term) {
+        is VTermS.Meta -> {
+            when (val meta = metas.getOrNull(term.index)) {
+                null -> term
                 else -> force(meta)
             }
         }
 
-        else -> value
+        else -> term
     }
 
     private fun solve(
         lvl: Int,
         index: Int,
-        candidate: Value,
+        candidate: VTermS,
     ): Boolean = when (val meta = metas.getOrNull(index)) {
         null -> {
             metas[index] = candidate
