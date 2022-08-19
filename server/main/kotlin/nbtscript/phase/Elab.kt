@@ -314,9 +314,9 @@ class Elab private constructor(
                 val body = elabTermS(ctx.bind(term.name.text, a), term.body)
                 C.TermS.Abs(
                     term.name.text, anno, body, TypeS.FunctionType(
-                        null,
+                        term.name.text,
                         lazyOf(a),
-                        C.Clos(ctx.values, lazy { context.unifier.reify(ctx.values, body.type) })
+                        C.Clos(ctx.values, lazy { context.unifier.reify(ctx.values, body.type) }),
                     )
                 )
             }
