@@ -1,9 +1,9 @@
 package nbtscript.ast
 
 sealed interface Staged {
-    class Root(val body: Term) : Staged
+    class Root(val body: Term)
 
-    sealed interface Term : Staged {
+    sealed interface Term {
         class ByteTag(val data: Byte) : Term
         class ShortTag(val data: Short) : Term
         class IntTag(val data: Int) : Term

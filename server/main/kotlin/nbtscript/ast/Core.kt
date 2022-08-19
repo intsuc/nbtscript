@@ -6,14 +6,14 @@ import nbtscript.ast.Core.Kind.Syn
 import nbtscript.cast
 
 sealed interface Core {
-    class Root(val body: TermZ) : Core
+    class Root(val body: TermZ)
 
     sealed interface Kind {
         object Syn : Kind
         object Sem : Kind
     }
 
-    sealed interface ObjZ<out K : Kind> : Core
+    sealed interface ObjZ<out K : Kind>
 
     sealed interface TypeZ<out K : Kind> : ObjZ<K> {
         class EndType<K : Kind> private constructor() : TypeZ<K> {
@@ -134,7 +134,7 @@ sealed interface Core {
         class Hole(override val type: TypeZ<Sem>) : TermZ
     }
 
-    sealed interface TermS<out K : Kind> : Core {
+    sealed interface TermS<out K : Kind> {
         val type: TermS<Sem>
 
         class UniverseType<K : Kind> private constructor() : TermS<K> {
@@ -385,5 +385,5 @@ sealed interface Core {
         }
     }
 
-    class Clos(val env: PersistentList<Lazy<TermS<Sem>>>, val body: Lazy<TermS<Syn>>) : Core
+    class Clos(val env: PersistentList<Lazy<TermS<Sem>>>, val body: Lazy<TermS<Syn>>)
 }
