@@ -64,7 +64,7 @@ class Stage private constructor(
                     S.Term.IndexedElement(target, index)
                 }
 
-                is C.TermS.Quote -> stageTermZ(element.element)
+                is C.TermS.QuoteTerm -> stageTermZ(element.element)
                 else -> error("expected: quote")
             }
         }

@@ -156,9 +156,14 @@ class Zonk private constructor(
             TermS.Apply(operator, operand, term.type)
         }
 
-        is TermS.Quote -> {
+        is TermS.QuoteType -> {
+            val element = zonkTypeZ(term.element)
+            TermS.QuoteType(element, term.type)
+        }
+
+        is TermS.QuoteTerm -> {
             val element = zonkTermZ(term.element)
-            TermS.Quote(element, term.type)
+            TermS.QuoteTerm(element, term.type)
         }
 
         is TermS.Let -> {

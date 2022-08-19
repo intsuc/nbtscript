@@ -80,7 +80,8 @@ sealed interface Core {
         data class IndexedElement(val target: TermZ, val index: TermS, override val type: Value) : TermS
         data class Abs(val name: String, val anno: TermS, val body: TermS, override val type: Value) : TermS
         data class Apply(val operator: TermS, val operand: TermS, override val type: Value) : TermS
-        data class Quote(val element: TermZ, override val type: Value) : TermS
+        data class QuoteType(val element: TypeZ, override val type: Value) : TermS
+        data class QuoteTerm(val element: TermZ, override val type: Value) : TermS
         data class Let(val name: String, val init: TermS, val next: TermS, override val type: Value) : TermS
         data class Var(val name: String?, val level: Int, override val type: Value) : TermS
         data class Meta(val index: Int, override val type: Value) : TermS
@@ -121,7 +122,8 @@ sealed interface Core {
         data class IndexedElement(val target: TermZ, val index: Lazy<Value>, val type: Value) : Value
         data class Abs(val name: String, val anno: Lazy<Value>, val body: Clos) : Value
         data class Apply(val operator: Value, val operand: Lazy<Value>) : Value
-        data class Quote(val element: TermZ) : Value
+        data class QuoteType(val element: TypeZ) : Value
+        data class QuoteTerm(val element: TermZ) : Value
         data class Var(val name: String?, val level: Int, val type: Lazy<Value>) : Value
         data class Meta(val index: Int, val type: Value) : Value
         object Hole : Value

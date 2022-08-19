@@ -118,7 +118,8 @@ class Unifier {
                 unifyValue(lvl, value1.operator, value2.operator) && unifyValue(lvl, value1.operand.value, value2.operand.value)
             }
 
-            value1 is Value.Quote && value2 is Value.Quote -> false // ?
+            value1 is Value.QuoteType && value2 is Value.QuoteType -> false // ?
+            value1 is Value.QuoteTerm && value2 is Value.QuoteTerm -> false // ?
             value1 is Value.Var && value2 is Value.Var -> value1.level == value2.level
             value1 is Value.Hole && value2 is Value.Hole -> false // ?
             else -> false

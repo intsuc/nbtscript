@@ -106,7 +106,8 @@ fun Unifier.reflect(
         }
     }
 
-    is TermS.Quote -> Value.Quote(term.element)
+    is TermS.QuoteType -> Value.QuoteType(term.element)
+    is TermS.QuoteTerm -> Value.QuoteTerm(term.element)
     is TermS.Let -> {
         val init = lazy { reflect(env, term.init) }
         reflect(env + init, term.next)
@@ -209,7 +210,8 @@ fun Unifier.reify(
         TermS.Apply(operator, operand, cod)
     }
 
-    is Value.Quote -> TermS.Quote(value.element, Value.CodeType(value.element.type))
+    is Value.QuoteType -> TermS.QuoteType(value.element, Value.TypeType)
+    is Value.QuoteTerm -> TermS.QuoteTerm(value.element, Value.CodeType(value.element.type))
     is Value.Var -> TermS.Var(value.name, value.level, value.type.value)
     is Value.Meta -> TermS.Meta(value.index, value.type)
     is Value.Hole -> TermS.Hole(Value.EndType)

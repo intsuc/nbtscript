@@ -90,7 +90,8 @@ fun Unifier.stringifyTermS(
     is C.TermS.CompoundTag -> term.elements.entries.joinToString(", ", "{", "}") { "${it.key}: ${stringifyTermS(it.value)}" }
     is C.TermS.Abs -> "${term.name} => ${stringifyTermS(term.body)}"
     is C.TermS.Apply -> "${stringifyTermS(term.operator)}(${stringifyTermS(term.operand)})"
-    is C.TermS.Quote -> "`${stringifyTermZ(term.element)}"
+    is C.TermS.QuoteType -> "`${stringifyTypeZ(term.element)}"
+    is C.TermS.QuoteTerm -> "`${stringifyTermZ(term.element)}"
     is C.TermS.Let -> "let ${term.name} = ${stringifyTermS(term.init)};\n${stringifyTermS(term.next)}"
     is C.TermS.Var -> term.name ?: ""
     is C.TermS.Meta -> this[term.index]?.let { stringifyTermS(reify(persistentListOf(), it)) } ?: "?${term.index.toSubscript()}"

@@ -51,6 +51,7 @@ class Elab private constructor(
             }.toMap()
             C.TypeZ.CompoundType(elements)
         }
+
         else -> {
             context.addDiagnostic(typeZExpected(type.range))
             C.TypeZ.Hole
@@ -237,7 +238,7 @@ class Elab private constructor(
 
             term is S.Term.CodeType && type is TypeS.UniverseType? -> {
                 val element = elabTypeZ(term.element)
-                C.TermS.CodeType(element, TypeS.UniverseType)
+                C.TermS.CodeType(element, TypeS.TypeType)
             }
 
             term is S.Term.TypeType && type is TypeS.UniverseType? -> C.TermS.TypeType(TypeS.UniverseType)
@@ -346,9 +347,18 @@ class Elab private constructor(
                 }
             }
 
-            term is S.Term.Quote && type is TypeS.CodeType? -> {
-                val element = elabTermZ(persistentMapOf(), term.element, type?.element)
-                C.TermS.Quote(element, TypeS.CodeType(element.type))
+            term is S.Term.Quote && type is TypeS.TypeType -> {
+                val element = elabTypeZ(term.element)
+                C.TermS.QuoteType(element, TypeS.TypeType)
+            }
+
+            term is S.Term.Quote && type is TypeS.CodeType -> {
+                val element = elabTermZ(persistentMapOf(), term.element, type.element)
+                C.TermS.QuoteTerm(element, TypeS.CodeType(element.type))
+            }
+
+            term is S.Term.Quote && type == null -> {
+                TODO()
             }
 
             term is S.Term.Splice -> errorS(termZExpected(term.range))
