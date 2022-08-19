@@ -351,6 +351,7 @@ class Elab private constructor(
                 C.TermS.Quote(element, TypeS.CodeType(element.type))
             }
 
+            term is S.Term.Splice -> errorS(termZExpected(term.range))
             term is S.Term.Let -> {
                 val anno = term.anno?.let { elabTermS(ctx, it, TypeS.UniverseType) }
                 val a = anno?.let { context.unifier.reflect(ctx.values, it) }
@@ -368,6 +369,7 @@ class Elab private constructor(
                 C.TermS.Let(term.name.text, init, next, type ?: next.type)
             }
 
+            term is S.Term.Function -> errorS(termZExpected(term.range))
             term is S.Term.Var && type == null -> {
                 when (val level = ctx.levels[term.name]) {
                     null -> errorS(notFound(term.name, term.range))
