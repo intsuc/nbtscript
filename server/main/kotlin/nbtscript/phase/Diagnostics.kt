@@ -33,6 +33,14 @@ fun endOfFileExpected(
     Error,
 )
 
+fun objZExpected(
+    range: Range,
+): Diagnostic = makeDiagnostic(
+    range,
+    "expected: obj₀",
+    Error,
+)
+
 fun typeZExpected(
     range: Range,
 ): Diagnostic = makeDiagnostic(

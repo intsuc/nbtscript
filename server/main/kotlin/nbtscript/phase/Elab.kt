@@ -18,6 +18,128 @@ class Elab private constructor(
         return C.Root(body)
     }
 
+    private fun elabObjZ(
+        ctx: PersistentMap<String, C.TypeZ>,
+        term: S.Term,
+    ): C.ObjZ = when (term) {
+        is S.Term.UniverseType -> errorZ(objZExpected(term.range))
+        is S.Term.EndType -> errorZ(objZExpected(term.range))
+        is S.Term.ByteType -> C.TypeZ.ByteType
+        is S.Term.ShortType -> C.TypeZ.ShortType
+        is S.Term.IntType -> C.TypeZ.IntType
+        is S.Term.LongType -> C.TypeZ.LongType
+        is S.Term.FloatType -> C.TypeZ.FloatType
+        is S.Term.DoubleType -> C.TypeZ.DoubleType
+        is S.Term.StringType -> C.TypeZ.StringType
+        is S.Term.CollectionType -> {
+            val element = elabTypeZ(term.element)
+            C.TypeZ.CollectionType(element)
+        }
+
+        is S.Term.ByteArrayType -> C.TypeZ.ByteArrayType
+        is S.Term.IntArrayType -> C.TypeZ.IntArrayType
+        is S.Term.LongArrayType -> C.TypeZ.LongArrayType
+        is S.Term.ListType -> {
+            val element = elabTypeZ(term.element)
+            C.TypeZ.ListType(element)
+        }
+
+        is S.Term.CompoundType -> {
+            val elements = term.elements.map {
+                val value = elabTypeZ(it.value)
+                context.setHover(it.key.range, lazy {
+                    Hover(markup(stringifyTypeZ(value)))
+                })
+                it.key.text to value
+            }.toMap()
+            C.TypeZ.CompoundType(elements)
+        }
+
+        is S.Term.FunctionType -> errorZ(objZExpected(term.range))
+        is S.Term.CodeType -> errorZ(objZExpected(term.range))
+        is S.Term.TypeType -> errorZ(objZExpected(term.range))
+        is S.Term.ByteTag -> C.TermZ.ByteTag(term.data, C.TypeZ.ByteType)
+        is S.Term.ShortTag -> C.TermZ.ShortTag(term.data, C.TypeZ.ShortType)
+        is S.Term.IntTag -> C.TermZ.IntTag(term.data, C.TypeZ.IntType)
+        is S.Term.LongTag -> C.TermZ.LongTag(term.data, C.TypeZ.LongType)
+        is S.Term.FloatTag -> C.TermZ.FloatTag(term.data, C.TypeZ.FloatType)
+        is S.Term.DoubleTag -> C.TermZ.DoubleTag(term.data, C.TypeZ.DoubleType)
+        is S.Term.StringTag -> C.TermZ.StringTag(term.data, C.TypeZ.StringType)
+        is S.Term.ByteArrayTag -> {
+            val elements = term.elements.map { elabTermZ(ctx, it, C.TypeZ.ByteType) }
+            C.TermZ.ByteArrayTag(elements, C.TypeZ.ByteArrayType)
+        }
+
+        is S.Term.IntArrayTag -> {
+            val elements = term.elements.map { elabTermZ(ctx, it, C.TypeZ.IntType) }
+            C.TermZ.IntArrayTag(elements, C.TypeZ.IntArrayType)
+        }
+
+        is S.Term.LongArrayTag -> {
+            val elements = term.elements.map { elabTermZ(ctx, it, C.TypeZ.LongType) }
+            C.TermZ.LongArrayTag(elements, C.TypeZ.LongArrayType)
+        }
+
+        is S.Term.ListTag -> {
+            if (term.elements.isEmpty()) C.TermZ.ListTag(emptyList(), C.TypeZ.ListType(C.TypeZ.EndType))
+            else {
+                val elements = mutableListOf<C.TermZ>()
+                val head = elabTermZ(ctx, term.elements.first())
+                elements += head
+                term.elements.subList(1, term.elements.size).mapTo(elements) { elabTermZ(ctx, it, head.type) }
+                C.TermZ.ListTag(elements, C.TypeZ.ListType(head.type))
+            }
+        }
+
+        is S.Term.CompoundTag -> {
+            val elements = term.elements.map {
+                val value = elabTermZ(ctx, it.value)
+                context.setHover(it.key.range, lazy {
+                    Hover(markup(stringifyTypeZ(value.type)))
+                })
+                it.key.text to value
+            }.toMap()
+            val elementTypes = elements.mapValues { it.value.type }
+            C.TermZ.CompoundTag(elements, C.TypeZ.CompoundType(elementTypes))
+        }
+
+        is S.Term.IndexedElement -> errorZ(objZExpected(term.range))
+        is S.Term.Abs -> errorZ(objZExpected(term.range))
+        is S.Term.Apply -> errorZ(objZExpected(term.range))
+        is S.Term.Quote -> errorZ(objZExpected(term.range))
+        is S.Term.Splice -> {
+            val element = elabTermS(Context(), term.element)
+            when (val elementType = context.unifier.force(element.type)) {
+                is TypeS.CodeType -> C.TermZ.Splice(element, elementType.element)
+                else -> errorZ(codeTypeExpected(context.unifier, context.unifier.reify(persistentListOf(), elementType), term.range))
+            }
+        }
+
+        is S.Term.Let -> errorZ(objZExpected(term.range))
+        is S.Term.Function -> {
+            val anno = term.anno?.let { elabTypeZ(it) }
+            val body = elabTermZ(ctx, term.body, anno)
+            context.setHover(term.name.range, lazy {
+                Hover(markup(stringifyTypeZ(anno ?: body.type)))
+            })
+            if (term.anno == null) {
+                context.addInlayHint(lazy {
+                    val part = InlayHintLabelPart(": ${stringifyTypeZ(body.type)}")
+                    InlayHint(term.name.range.end, forRight(listOf(part)))
+                })
+            }
+            val next = elabTermZ(ctx + (term.name.text to (anno ?: body.type)), term.next)
+            C.TermZ.Function(term.name.text, body, next, next.type)
+        }
+
+        is S.Term.Var -> {
+            if (ctx.contains(term.name)) C.TermZ.Run(term.name, ctx[term.name]!!)
+            else errorZ(notFound(term.name, term.range))
+        }
+
+        is S.Term.Hole -> errorZ(objZExpected(term.range))
+    }
+
     private fun elabTypeZ(
         type: S.Term,
     ): C.TypeZ = when (type) {
@@ -358,7 +480,10 @@ class Elab private constructor(
             }
 
             term is S.Term.Quote && type == null -> {
-                TODO()
+                when (val element = elabObjZ(persistentMapOf(), term.element)) {
+                    is C.TypeZ -> C.TermS.QuoteType(element, TypeS.TypeType)
+                    is C.TermZ -> C.TermS.QuoteTerm(element, TypeS.CodeType(element.type))
+                }
             }
 
             term is S.Term.Splice -> errorS(termZExpected(term.range))

@@ -5,7 +5,9 @@ import kotlinx.collections.immutable.PersistentList
 sealed interface Core {
     data class Root(val body: TermZ) : Core
 
-    sealed interface TypeZ : Core {
+    sealed interface ObjZ : Core
+
+    sealed interface TypeZ : ObjZ {
         object EndType : TypeZ
         object ByteType : TypeZ
         object ShortType : TypeZ
@@ -23,7 +25,7 @@ sealed interface Core {
         object Hole : TypeZ
     }
 
-    sealed interface TermZ : Core {
+    sealed interface TermZ : ObjZ {
         val type: TypeZ
 
         data class ByteTag(val data: Byte, override val type: TypeZ) : TermZ
