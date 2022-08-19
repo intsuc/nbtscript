@@ -461,6 +461,20 @@ class Elab private constructor(
                 )
             }
 
+            term is S.Term.Abs && term.anno == null && type is TypeS.FunctionType -> {
+                val dom = context.unifier.reify(ctx.values, type.dom.value)
+                context.setHover(term.name.range, lazy {
+                    Hover(markup(context.unifier.stringifyTermS(dom)))
+                })
+                context.addInlayHint(lazy {
+                    val part = InlayHintLabelPart(": ${context.unifier.stringifyTermS(dom)}")
+                    InlayHint(term.name.range.end, forRight(listOf(part)))
+                })
+                val cod = type.cod(context.unifier, lazyOf(C.Value.Var(term.name.text, ctx.size, type.dom)))
+                val body = elabTermS(ctx.bind(term.name.text, type.dom.value), term.body, cod)
+                C.TermS.Abs(term.name.text, dom, body, type)
+            }
+
             term is S.Term.Apply -> {
                 if (type == null) {
                     val operator = elabTermS(ctx, term.operator)
