@@ -74,23 +74,32 @@ fun notFound(
     Error,
 )
 
-fun arrowExpected(
-    unifier: Unifier,
-    actual: TermS,
+fun collectionTypeExpected(
+    actual: TypeZ,
     range: Range,
 ): Diagnostic = makeDiagnostic(
     range,
-    "expected: arrow\nactual: '${unifier.stringifyTermS(actual)}'",
+    "expected: collection type\nactual: '${stringifyTypeZ(actual)}'",
     Error,
 )
 
-fun codeExpected(
+fun functionTypeExpected(
     unifier: Unifier,
     actual: TermS,
     range: Range,
 ): Diagnostic = makeDiagnostic(
     range,
-    "expected: code\nactual: '${unifier.stringifyTermS(actual)}'",
+    "expected: function type\nactual: '${unifier.stringifyTermS(actual)}'",
+    Error,
+)
+
+fun codeTypeExpected(
+    unifier: Unifier,
+    actual: TermS,
+    range: Range,
+): Diagnostic = makeDiagnostic(
+    range,
+    "expected: code type\nactual: '${unifier.stringifyTermS(actual)}'",
     Error,
 )
 

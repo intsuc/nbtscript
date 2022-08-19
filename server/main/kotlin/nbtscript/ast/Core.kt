@@ -14,11 +14,11 @@ sealed interface Core {
         object FloatType : TypeZ
         object DoubleType : TypeZ
         object StringType : TypeZ
-        data class CollectionType(val element: TypeZ) : TypeZ
-        object ByteArrayType : TypeZ
-        object IntArrayType : TypeZ
-        object LongArrayType : TypeZ
-        data class ListType(val element: TypeZ) : TypeZ
+        open class CollectionType(open val element: TypeZ) : TypeZ
+        object ByteArrayType : CollectionType(ByteType)
+        object IntArrayType : CollectionType(IntType)
+        object LongArrayType : CollectionType(LongType)
+        data class ListType(override val element: TypeZ) : CollectionType(element)
         data class CompoundType(val elements: Map<String, TypeZ>) : TypeZ
         object Hole : TypeZ
     }
@@ -62,7 +62,7 @@ sealed interface Core {
         data class ListType(val element: TermS, override val type: Value) : TermS
         data class CompoundType(val elements: Map<String, TermS>, override val type: Value) : TermS
         data class FunctionType(val name: String?, val dom: TermS, val cod: TermS, override val type: Value) : TermS
-        data class CodeType(val element: Core.TypeZ, override val type: Value) : TermS
+        data class CodeType(val element: TypeZ, override val type: Value) : TermS
         data class TypeType(override val type: Value) : TermS
         data class EndTag(override val type: Value) : TermS
         data class ByteTag(val data: Byte, override val type: Value) : TermS
@@ -103,7 +103,7 @@ sealed interface Core {
         data class ListType(val element: Lazy<Value>) : Value
         data class CompoundType(val elements: Map<String, Lazy<Value>>) : Value
         data class FunctionType(val name: String?, val dom: Lazy<Value>, val cod: Clos) : Value
-        data class CodeType(val element: Core.TypeZ) : Value
+        data class CodeType(val element: TypeZ) : Value
         object TypeType : Value
         object EndTag : Value
         data class ByteTag(val data: Byte) : Value

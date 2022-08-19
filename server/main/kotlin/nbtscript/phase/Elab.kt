@@ -137,7 +137,7 @@ class Elab private constructor(
             val element = elabTermS(Context(), term.element, type?.let { TypeS.CodeType(it) })
             when (val elementType = context.unifier.force(element.type)) {
                 is TypeS.CodeType -> C.TermZ.Splice(element, elementType.element)
-                else -> errorZ(codeExpected(context.unifier, context.unifier.reify(persistentListOf(), elementType), term.range))
+                else -> errorZ(codeTypeExpected(context.unifier, context.unifier.reify(persistentListOf(), elementType), term.range))
             }
         }
 
@@ -288,9 +288,15 @@ class Elab private constructor(
             }
 
             term is S.Term.IndexedElement -> {
-                val target = elabTermZ(persistentMapOf(), term.target, C.TypeZ.ByteArrayType /* TODO */)
-                val index = elabTermS(ctx, term.index, TypeS.IntType)
-                C.TermS.IndexedElement(target, index, TypeS.CodeType(C.TypeZ.ByteType /* TODO */))
+                val target = elabTermZ(persistentMapOf(), term.target)
+                when (val targetType = target.type) {
+                    is C.TypeZ.CollectionType -> {
+                        val index = elabTermS(ctx, term.index, TypeS.IntType)
+                        C.TermS.IndexedElement(target, index, TypeS.CodeType(targetType.element))
+                    }
+
+                    else -> errorS(collectionTypeExpected(targetType, term.target.range))
+                }
             }
 
             term is S.Term.Abs && type == null -> {
@@ -325,7 +331,7 @@ class Elab private constructor(
                             C.TermS.Apply(operator, operand, cod)
                         }
 
-                        else -> errorS(arrowExpected(context.unifier, context.unifier.reify(ctx.values, operatorType), term.operator.range))
+                        else -> errorS(functionTypeExpected(context.unifier, context.unifier.reify(ctx.values, operatorType), term.operator.range))
                     }
                 } else {
                     val operand = elabTermS(ctx, term.operand)

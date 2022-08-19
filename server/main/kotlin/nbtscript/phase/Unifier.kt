@@ -27,18 +27,11 @@ class Unifier {
         type1 is TypeZ.FloatType && type2 is TypeZ.FloatType -> true
         type1 is TypeZ.DoubleType && type2 is TypeZ.DoubleType -> true
         type1 is TypeZ.StringType && type2 is TypeZ.StringType -> true
-        type2 is TypeZ.CollectionType -> when {
-            type1 is TypeZ.ByteArrayType && type2.element is TypeZ.ByteType -> true
-            type1 is TypeZ.IntArrayType && type2.element is TypeZ.IntType -> true
-            type1 is TypeZ.LongArrayType && type2.element is TypeZ.LongType -> true
-            type1 is TypeZ.ListType -> subTypeZ(type1.element, type2.element) // sound?
-            else -> false
-        }
-
         type1 is TypeZ.ByteArrayType && type2 is TypeZ.ByteArrayType -> true
         type1 is TypeZ.IntArrayType && type2 is TypeZ.IntArrayType -> true
         type1 is TypeZ.LongArrayType && type2 is TypeZ.LongArrayType -> true
-        type1 is TypeZ.ListType && type2 is TypeZ.ListType -> subTypeZ(type1.element, type2.element)
+        type1 is TypeZ.ListType && type2 is TypeZ.ListType -> subTypeZ(type1.element, type2.element) // sound?
+        type1 is TypeZ.CollectionType && type2 is TypeZ.CollectionType && type2::class == TypeZ.CollectionType::class -> subTypeZ(type1.element, type2.element)
         type1 is TypeZ.CompoundType && type2 is TypeZ.CompoundType -> {
             type1.elements.keys == type2.elements.keys && type1.elements.all {
                 subTypeZ(it.value, type2.elements[it.key]!!)
