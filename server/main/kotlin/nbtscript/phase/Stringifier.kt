@@ -2,6 +2,7 @@ package nbtscript.phase
 
 import kotlinx.collections.immutable.persistentListOf
 import nbtscript.ast.Core.Kind.Syn
+import nbtscript.unreachable
 import org.eclipse.lsp4j.MarkupContent
 import org.eclipse.lsp4j.MarkupKind
 import nbtscript.ast.Core as C

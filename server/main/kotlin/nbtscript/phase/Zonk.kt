@@ -3,6 +3,7 @@ package nbtscript.phase
 import kotlinx.collections.immutable.persistentListOf
 import nbtscript.ast.Core.*
 import nbtscript.ast.Core.Kind.Syn
+import nbtscript.unreachable
 
 class Zonk private constructor(
     private val context: Phase.Context = Phase.Context(),
@@ -86,23 +87,23 @@ class Zonk private constructor(
         is TermS.LongArrayType -> term
         is TermS.ListType -> {
             val element = zonkTermS(term.element)
-            TermS.ListType(element, term.type)
+            TermS.ListType(element)
         }
 
         is TermS.CompoundType -> {
             val elements = term.elements.mapValues { zonkTermS(it.value) }
-            TermS.CompoundType(elements, term.type)
+            TermS.CompoundType(elements)
         }
 
         is TermS.FunctionType -> {
             val dom = zonkTermS(term.dom)
             val cod = zonkTermS(term.cod)
-            TermS.FunctionType(term.name, dom, cod, term.type)
+            TermS.FunctionType(term.name, dom, cod)
         }
 
         is TermS.CodeType -> {
             val element = zonkTypeZ(term.element)
-            TermS.CodeType(element, term.type)
+            TermS.CodeType(element)
         }
 
         is TermS.TypeType -> term
@@ -116,17 +117,17 @@ class Zonk private constructor(
         is TermS.StringTag -> term
         is TermS.ByteArrayTag -> {
             val elements = term.elements.map { zonkTermS(it) }
-            TermS.ByteArrayTag(elements, term.type)
+            TermS.ByteArrayTag(elements)
         }
 
         is TermS.IntArrayTag -> {
             val elements = term.elements.map { zonkTermS(it) }
-            TermS.IntArrayTag(elements, term.type)
+            TermS.IntArrayTag(elements)
         }
 
         is TermS.LongArrayTag -> {
             val elements = term.elements.map { zonkTermS(it) }
-            TermS.LongArrayTag(elements, term.type)
+            TermS.LongArrayTag(elements)
         }
 
         is TermS.ListTag -> {
@@ -159,7 +160,7 @@ class Zonk private constructor(
 
         is TermS.QuoteType -> {
             val element = zonkTypeZ(term.element)
-            TermS.QuoteType(element, term.type)
+            TermS.QuoteType(element)
         }
 
         is TermS.QuoteTerm -> {

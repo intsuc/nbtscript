@@ -6,23 +6,24 @@ import kotlinx.collections.immutable.plus
 import nbtscript.ast.Core.*
 import nbtscript.ast.Core.Kind.Sem
 import nbtscript.ast.Core.Kind.Syn
+import nbtscript.unreachable
 
 typealias Environment = PersistentList<Lazy<TermS<Sem>>>
 
 fun Unifier.reflectTypeZ(
     type: TypeZ<Syn>,
 ): TypeZ<Sem> = when (type) {
-    is TypeZ.EndType -> cast(type)
-    is TypeZ.ByteType -> cast(type)
-    is TypeZ.ShortType -> cast(type)
-    is TypeZ.IntType -> cast(type)
-    is TypeZ.LongType -> cast(type)
-    is TypeZ.FloatType -> cast(type)
-    is TypeZ.DoubleType -> cast(type)
-    is TypeZ.StringType -> cast(type)
-    is TypeZ.ByteArrayType -> cast(type)
-    is TypeZ.IntArrayType -> cast(type)
-    is TypeZ.LongArrayType -> cast(type)
+    is TypeZ.EndType -> TypeZ.reflect(type)
+    is TypeZ.ByteType -> TypeZ.reflect(type)
+    is TypeZ.ShortType -> TypeZ.reflect(type)
+    is TypeZ.IntType -> TypeZ.reflect(type)
+    is TypeZ.LongType -> TypeZ.reflect(type)
+    is TypeZ.FloatType -> TypeZ.reflect(type)
+    is TypeZ.DoubleType -> TypeZ.reflect(type)
+    is TypeZ.StringType -> TypeZ.reflect(type)
+    is TypeZ.ByteArrayType -> TypeZ.reflect(type)
+    is TypeZ.IntArrayType -> TypeZ.reflect(type)
+    is TypeZ.LongArrayType -> TypeZ.reflect(type)
     is TypeZ.ListType -> {
         val element = reflectTypeZ(type.element)
         TypeZ.ListType(element)
@@ -44,23 +45,24 @@ fun Unifier.reflectTypeZ(
             else -> TypeZ.Splice(element)
         }
     }
-    is TypeZ.Hole -> cast(type)
+
+    is TypeZ.Hole -> TypeZ.reflect(type)
 }
 
 fun Unifier.reifyTypeZ(
     type: TypeZ<Sem>,
 ): TypeZ<Syn> = when (type) {
-    is TypeZ.EndType -> cast(type)
-    is TypeZ.ByteType -> cast(type)
-    is TypeZ.ShortType -> cast(type)
-    is TypeZ.IntType -> cast(type)
-    is TypeZ.LongType -> cast(type)
-    is TypeZ.FloatType -> cast(type)
-    is TypeZ.DoubleType -> cast(type)
-    is TypeZ.StringType -> cast(type)
-    is TypeZ.ByteArrayType -> cast(type)
-    is TypeZ.IntArrayType -> cast(type)
-    is TypeZ.LongArrayType -> cast(type)
+    is TypeZ.EndType -> TypeZ.reify(type)
+    is TypeZ.ByteType -> TypeZ.reify(type)
+    is TypeZ.ShortType -> TypeZ.reify(type)
+    is TypeZ.IntType -> TypeZ.reify(type)
+    is TypeZ.LongType -> TypeZ.reify(type)
+    is TypeZ.FloatType -> TypeZ.reify(type)
+    is TypeZ.DoubleType -> TypeZ.reify(type)
+    is TypeZ.StringType -> TypeZ.reify(type)
+    is TypeZ.ByteArrayType -> TypeZ.reify(type)
+    is TypeZ.IntArrayType -> TypeZ.reify(type)
+    is TypeZ.LongArrayType -> TypeZ.reify(type)
     is TypeZ.ListType -> {
         val element = reifyTypeZ(type.element)
         TypeZ.ListType(element)
@@ -81,7 +83,7 @@ fun Unifier.reifyTypeZ(
         TypeZ.Splice(element)
     }
 
-    is TypeZ.Hole -> cast(type)
+    is TypeZ.Hole -> TypeZ.reify(type)
 }
 
 fun Unifier.normalize(
@@ -95,61 +97,61 @@ fun Unifier.reflectTermS(
     env: Environment,
     term: TermS<Syn>,
 ): TermS<Sem> = when (term) {
-    is TermS.UniverseType -> cast(term)
-    is TermS.EndType -> cast(term)
-    is TermS.ByteType -> cast(term)
-    is TermS.ShortType -> cast(term)
-    is TermS.IntType -> cast(term)
-    is TermS.LongType -> cast(term)
-    is TermS.FloatType -> cast(term)
-    is TermS.DoubleType -> cast(term)
-    is TermS.StringType -> cast(term)
-    is TermS.ByteArrayType -> cast(term)
-    is TermS.IntArrayType -> cast(term)
-    is TermS.LongArrayType -> cast(term)
+    is TermS.UniverseType -> TermS.reflect(term)
+    is TermS.EndType -> TermS.reflect(term)
+    is TermS.ByteType -> TermS.reflect(term)
+    is TermS.ShortType -> TermS.reflect(term)
+    is TermS.IntType -> TermS.reflect(term)
+    is TermS.LongType -> TermS.reflect(term)
+    is TermS.FloatType -> TermS.reflect(term)
+    is TermS.DoubleType -> TermS.reflect(term)
+    is TermS.StringType -> TermS.reflect(term)
+    is TermS.ByteArrayType -> TermS.reflect(term)
+    is TermS.IntArrayType -> TermS.reflect(term)
+    is TermS.LongArrayType -> TermS.reflect(term)
     is TermS.ListType -> {
         val element = lazy { reflectTermS(env, term.element) }
-        TermS.VListType(element, term.type)
+        TermS.VListType(element)
     }
 
     is TermS.CompoundType -> {
         val elements = term.elements.mapValues { lazy { reflectTermS(env, it.value) } }
-        TermS.VCompoundType(elements, term.type)
+        TermS.VCompoundType(elements)
     }
 
     is TermS.FunctionType -> {
         val dom = lazy { reflectTermS(env, term.dom) }
         val cod = Clos(env, lazyOf(term.cod))
-        TermS.VFunctionType(term.name, dom, cod, term.type)
+        TermS.VFunctionType(term.name, dom, cod)
     }
 
     is TermS.CodeType -> {
         val element = lazy { reflectTypeZ(term.element) }
-        TermS.VCodeType(element, term.type)
+        TermS.VCodeType(element)
     }
 
-    is TermS.TypeType -> cast(term)
-    is TermS.EndTag -> cast(term)
-    is TermS.ByteTag -> cast(term)
-    is TermS.ShortTag -> cast(term)
-    is TermS.IntTag -> cast(term)
-    is TermS.LongTag -> cast(term)
-    is TermS.FloatTag -> cast(term)
-    is TermS.DoubleTag -> cast(term)
-    is TermS.StringTag -> cast(term)
+    is TermS.TypeType -> TermS.reflect(term)
+    is TermS.EndTag -> TermS.reflect(term)
+    is TermS.ByteTag -> TermS.reflect(term)
+    is TermS.ShortTag -> TermS.reflect(term)
+    is TermS.IntTag -> TermS.reflect(term)
+    is TermS.LongTag -> TermS.reflect(term)
+    is TermS.FloatTag -> TermS.reflect(term)
+    is TermS.DoubleTag -> TermS.reflect(term)
+    is TermS.StringTag -> TermS.reflect(term)
     is TermS.ByteArrayTag -> {
         val elements = term.elements.map { lazy { reflectTermS(env, it) } }
-        TermS.VByteArrayTag(elements, term.type)
+        TermS.VByteArrayTag(elements)
     }
 
     is TermS.IntArrayTag -> {
         val elements = term.elements.map { lazy { reflectTermS(env, it) } }
-        TermS.VIntArrayTag(elements, term.type)
+        TermS.VIntArrayTag(elements)
     }
 
     is TermS.LongArrayTag -> {
         val elements = term.elements.map { lazy { reflectTermS(env, it) } }
-        TermS.VLongArrayTag(elements, term.type)
+        TermS.VLongArrayTag(elements)
     }
 
     is TermS.ListTag -> {
@@ -189,18 +191,18 @@ fun Unifier.reflectTermS(
 
     is TermS.QuoteType -> {
         val element = lazy { reflectTypeZ(term.element) }
-        TermS.VQuoteType(element, term.type)
+        TermS.VQuoteType(element)
     }
 
-    is TermS.QuoteTerm -> cast(term)
+    is TermS.QuoteTerm -> TermS.reflect(term)
     is TermS.Let -> {
         val init = lazy { reflectTermS(env, term.init) }
         reflectTermS(env + init, term.next)
     }
 
     is TermS.Var -> env[term.level].value
-    is TermS.Meta -> cast(term)
-    is TermS.Hole -> cast(term)
+    is TermS.Meta -> TermS.reflect(term)
+    is TermS.Hole -> TermS.reflect(term)
     else -> unreachable()
 }
 
@@ -208,26 +210,26 @@ fun Unifier.reifyTermS(
     env: Environment,
     term: TermS<Sem>,
 ): TermS<Syn> = when (@Suppress("NAME_SHADOWING") val term = force(term)) {
-    is TermS.UniverseType -> cast(term)
-    is TermS.EndType -> cast(term)
-    is TermS.ByteType -> cast(term)
-    is TermS.ShortType -> cast(term)
-    is TermS.IntType -> cast(term)
-    is TermS.LongType -> cast(term)
-    is TermS.FloatType -> cast(term)
-    is TermS.DoubleType -> cast(term)
-    is TermS.StringType -> cast(term)
-    is TermS.ByteArrayType -> cast(term)
-    is TermS.IntArrayType -> cast(term)
-    is TermS.LongArrayType -> cast(term)
+    is TermS.UniverseType -> TermS.reify(term)
+    is TermS.EndType -> TermS.reify(term)
+    is TermS.ByteType -> TermS.reify(term)
+    is TermS.ShortType -> TermS.reify(term)
+    is TermS.IntType -> TermS.reify(term)
+    is TermS.LongType -> TermS.reify(term)
+    is TermS.FloatType -> TermS.reify(term)
+    is TermS.DoubleType -> TermS.reify(term)
+    is TermS.StringType -> TermS.reify(term)
+    is TermS.ByteArrayType -> TermS.reify(term)
+    is TermS.IntArrayType -> TermS.reify(term)
+    is TermS.LongArrayType -> TermS.reify(term)
     is TermS.VListType -> {
         val element = reifyTermS(env, term.element.value)
-        TermS.ListType(element, term.type)
+        TermS.ListType(element)
     }
 
     is TermS.VCompoundType -> {
         val elements = term.elements.mapValues { reifyTermS(env, it.value.value) }
-        TermS.CompoundType(elements, term.type)
+        TermS.CompoundType(elements)
     }
 
     is TermS.VIndexedElement -> {
@@ -239,36 +241,36 @@ fun Unifier.reifyTermS(
         val dom = reifyTermS(env, term.dom.value)
         val x = lazyOf(TermS.Var<Sem>(term.name, env.size, term.dom.value))
         val cod = reifyTermS(env + x, term.cod(this, x))
-        TermS.FunctionType(term.name, dom, cod, term.type)
+        TermS.FunctionType(term.name, dom, cod)
     }
 
     is TermS.VCodeType -> {
         val element = reifyTypeZ(term.element.value)
-        TermS.CodeType(element, term.type)
+        TermS.CodeType(element)
     }
 
-    is TermS.TypeType -> cast(term)
-    is TermS.EndTag -> cast(term)
-    is TermS.ByteTag -> cast(term)
-    is TermS.ShortTag -> cast(term)
-    is TermS.IntTag -> cast(term)
-    is TermS.LongTag -> cast(term)
-    is TermS.FloatTag -> cast(term)
-    is TermS.DoubleTag -> cast(term)
-    is TermS.StringTag -> cast(term)
+    is TermS.TypeType -> TermS.reify(term)
+    is TermS.EndTag -> TermS.reify(term)
+    is TermS.ByteTag -> TermS.reify(term)
+    is TermS.ShortTag -> TermS.reify(term)
+    is TermS.IntTag -> TermS.reify(term)
+    is TermS.LongTag -> TermS.reify(term)
+    is TermS.FloatTag -> TermS.reify(term)
+    is TermS.DoubleTag -> TermS.reify(term)
+    is TermS.StringTag -> TermS.reify(term)
     is TermS.VByteArrayTag -> {
         val elements = term.elements.map { reifyTermS(env, it.value) }
-        TermS.ByteArrayTag(elements, term.type)
+        TermS.ByteArrayTag(elements)
     }
 
     is TermS.VIntArrayTag -> {
         val elements = term.elements.map { reifyTermS(env, it.value) }
-        TermS.IntArrayTag(elements, term.type)
+        TermS.IntArrayTag(elements)
     }
 
     is TermS.VLongArrayTag -> {
         val elements = term.elements.map { reifyTermS(env, it.value) }
-        TermS.LongArrayTag(elements, term.type)
+        TermS.LongArrayTag(elements)
     }
 
     is TermS.VListTag -> {
@@ -300,13 +302,13 @@ fun Unifier.reifyTermS(
 
     is TermS.VQuoteType -> {
         val element = reifyTypeZ(term.element.value)
-        TermS.QuoteType(element, term.type)
+        TermS.QuoteType(element)
     }
 
     is TermS.QuoteTerm -> TermS.QuoteTerm(term.element, term.type)
-    is TermS.Var -> cast(term)
-    is TermS.Meta -> cast(term)
-    is TermS.Hole -> cast(term)
+    is TermS.Var -> TermS.reify(term)
+    is TermS.Meta -> TermS.reify(term)
+    is TermS.Hole -> TermS.reify(term)
     else -> unreachable()
 }
 

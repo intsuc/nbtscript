@@ -1,4 +1,4 @@
-package nbtscript.phase
+package nbtscript
 
 inline fun <reified A, reified B> cast(a: A): B = a as B
 
