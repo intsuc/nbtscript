@@ -22,6 +22,7 @@ sealed interface Core {
         object LongArrayType : CollectionType(LongType)
         data class ListType(override val element: TypeZ) : CollectionType(element)
         data class CompoundType(val elements: Map<String, TypeZ>) : TypeZ
+        data class Splice(val element: TermS) : TypeZ
         object Hole : TypeZ
     }
 

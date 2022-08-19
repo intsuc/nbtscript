@@ -13,7 +13,7 @@ fun markup(
     "```nbtscript\n$value\n```"
 )
 
-fun stringifyTypeZ(
+fun Unifier.stringifyTypeZ(
     type: C.TypeZ,
 ): String = when (type) {
     is C.TypeZ.EndType -> "end"
@@ -30,7 +30,8 @@ fun stringifyTypeZ(
     is C.TypeZ.ListType -> "list ${stringifyTypeZ(type.element)}"
     is C.TypeZ.CollectionType -> "collection ${stringifyTypeZ(type.element)}"
     is C.TypeZ.CompoundType -> type.elements.entries.joinToString(", ", "compound {", "}") { "${it.key}: ${stringifyTypeZ(it.value)}" }
-    is C.TypeZ.Hole -> "hole"
+    is C.TypeZ.Splice -> "$${stringifyTermS(type.element)}"
+    is C.TypeZ.Hole -> " "
 }
 
 fun Unifier.stringifyTermZ(

@@ -83,11 +83,12 @@ fun notFound(
 )
 
 fun collectionTypeExpected(
+    unifier: Unifier,
     actual: TypeZ,
     range: Range,
 ): Diagnostic = makeDiagnostic(
     range,
-    "expected: collection type\nactual: '${stringifyTypeZ(actual)}'",
+    "expected: collection type\nactual: '${unifier.stringifyTypeZ(actual)}'",
     Error,
 )
 
@@ -112,12 +113,13 @@ fun codeTypeExpected(
 )
 
 fun typeZMismatched(
+    unifier: Unifier,
     expected: TypeZ,
     actual: TypeZ,
     range: Range,
 ): Diagnostic = makeDiagnostic(
     range,
-    "expected: '${stringifyTypeZ(expected)}'\nactual: '${stringifyTypeZ(actual)}'",
+    "expected: '${unifier.stringifyTypeZ(expected)}'\nactual: '${unifier.stringifyTypeZ(actual)}'",
     Error,
 )
 

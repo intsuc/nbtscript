@@ -1,5 +1,6 @@
 package nbtscript.phase
 
+import kotlinx.collections.immutable.persistentListOf
 import nbtscript.ast.Core.*
 
 class Unifier {
@@ -36,6 +37,11 @@ class Unifier {
             type1.elements.keys == type2.elements.keys && type1.elements.all {
                 subTypeZ(it.value, type2.elements[it.key]!!)
             }
+        }
+
+        type1 is TypeZ.Splice && type2 is TypeZ.Splice -> {
+            val env: Environment = persistentListOf()
+            unifyValue(env.size, reflect(env, type1.element), reflect(env, type2.element))
         }
 
         else -> false

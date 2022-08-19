@@ -48,7 +48,7 @@ class Elab private constructor(
             val elements = term.elements.map {
                 val value = elabTypeZ(it.value)
                 context.setHover(it.key.range, lazy {
-                    Hover(markup(stringifyTypeZ(value)))
+                    Hover(markup(context.unifier.stringifyTypeZ(value)))
                 })
                 it.key.text to value
             }.toMap()
@@ -95,7 +95,7 @@ class Elab private constructor(
             val elements = term.elements.map {
                 val value = elabTermZ(ctx, it.value)
                 context.setHover(it.key.range, lazy {
-                    Hover(markup(stringifyTypeZ(value.type)))
+                    Hover(markup(context.unifier.stringifyTypeZ(value.type)))
                 })
                 it.key.text to value
             }.toMap()
@@ -120,11 +120,11 @@ class Elab private constructor(
             val anno = term.anno?.let { elabTypeZ(it) }
             val body = elabTermZ(ctx, term.body, anno)
             context.setHover(term.name.range, lazy {
-                Hover(markup(stringifyTypeZ(anno ?: body.type)))
+                Hover(markup(context.unifier.stringifyTypeZ(anno ?: body.type)))
             })
             if (term.anno == null) {
                 context.addInlayHint(lazy {
-                    val part = InlayHintLabelPart(": ${stringifyTypeZ(body.type)}")
+                    val part = InlayHintLabelPart(": ${context.unifier.stringifyTypeZ(body.type)}")
                     InlayHint(term.name.range.end, forRight(listOf(part)))
                 })
             }
@@ -142,7 +142,7 @@ class Elab private constructor(
         context.setHover(term.range, lazy {
             when (it) {
                 is C.TypeZ -> Hover(markup("universe"))
-                is C.TermZ -> Hover(markup(stringifyTypeZ(it.type)))
+                is C.TermZ -> Hover(markup(context.unifier.stringifyTypeZ(it.type)))
             }
         })
         context.setCompletionItems(term.range, lazy {
@@ -150,7 +150,7 @@ class Elab private constructor(
                 CompletionItem(name).apply {
                     kind = CompletionItemKind.Function
                     labelDetails = CompletionItemLabelDetails().apply {
-                        detail = " : ${stringifyTypeZ(type)}"
+                        detail = " : ${context.unifier.stringifyTypeZ(type)}"
                     }
                 }
             }
@@ -184,11 +184,16 @@ class Elab private constructor(
             val elements = type.elements.map {
                 val value = elabTypeZ(it.value)
                 context.setHover(it.key.range, lazy {
-                    Hover(markup(stringifyTypeZ(value)))
+                    Hover(markup(context.unifier.stringifyTypeZ(value)))
                 })
                 it.key.text to value
             }.toMap()
             C.TypeZ.CompoundType(elements)
+        }
+
+        is S.Term.Splice -> {
+            val element = elabTermS(Context(), type.element, TypeS.TypeType)
+            C.TypeZ.Splice(element)
         }
 
         else -> {
@@ -261,7 +266,7 @@ class Elab private constructor(
             val elements = term.elements.map {
                 val value = elabTermZ(ctx, it.value, type?.elements?.get(it.key.text))
                 context.setHover(it.key.range, lazy {
-                    Hover(markup(stringifyTypeZ(value.type)))
+                    Hover(markup(context.unifier.stringifyTypeZ(value.type)))
                 })
                 it.key.text to value
             }.toMap()
@@ -286,11 +291,11 @@ class Elab private constructor(
             val anno = term.anno?.let { elabTypeZ(it) }
             val body = elabTermZ(ctx, term.body, anno)
             context.setHover(term.name.range, lazy {
-                Hover(markup(stringifyTypeZ(anno ?: body.type)))
+                Hover(markup(context.unifier.stringifyTypeZ(anno ?: body.type)))
             })
             if (term.anno == null) {
                 context.addInlayHint(lazy {
-                    val part = InlayHintLabelPart(": ${stringifyTypeZ(body.type)}")
+                    val part = InlayHintLabelPart(": ${context.unifier.stringifyTypeZ(body.type)}")
                     InlayHint(term.name.range.end, forRight(listOf(part)))
                 })
             }
@@ -309,19 +314,19 @@ class Elab private constructor(
             else {
                 val inferred = elabTermZ(ctx, term)
                 if (context.unifier.subTypeZ(inferred.type, type)) inferred
-                else errorZ(typeZMismatched(type, inferred.type, term.range))
+                else errorZ(typeZMismatched(context.unifier, type, inferred.type, term.range))
             }
         }
     }.also {
         context.setHover(term.range, lazy {
-            Hover(markup(stringifyTypeZ(it.type)))
+            Hover(markup(context.unifier.stringifyTypeZ(it.type)))
         })
         context.setCompletionItems(term.range, lazy {
             ctx.entries.map { (name, type) ->
                 CompletionItem(name).apply {
                     kind = CompletionItemKind.Function
                     labelDetails = CompletionItemLabelDetails().apply {
-                        detail = " : ${stringifyTypeZ(type)}"
+                        detail = " : ${context.unifier.stringifyTypeZ(type)}"
                     }
                 }
             }
@@ -435,7 +440,7 @@ class Elab private constructor(
                         C.TermS.IndexedElement(target, index, TypeS.CodeType(targetType.element))
                     }
 
-                    else -> errorS(collectionTypeExpected(targetType, term.target.range))
+                    else -> errorS(collectionTypeExpected(context.unifier, targetType, term.target.range))
                 }
             }
 
