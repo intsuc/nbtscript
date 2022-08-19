@@ -305,7 +305,7 @@ fun Unifier.reifyTermS(
         TermS.QuoteType(element)
     }
 
-    is TermS.QuoteTerm -> TermS.QuoteTerm(term.element, term.type)
+    is TermS.QuoteTerm -> TermS.reify(term)
     is TermS.Var -> TermS.reify(term)
     is TermS.Meta -> TermS.reify(term)
     is TermS.Hole -> TermS.reify(term)
