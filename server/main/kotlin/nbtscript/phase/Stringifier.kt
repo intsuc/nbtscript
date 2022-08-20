@@ -52,7 +52,7 @@ fun Unifier.stringifyTermZ(
     is C.TermZ.ListTag -> term.elements.joinToString(", ", "[", "]") { stringifyTermZ(it) }
     is C.TermZ.CompoundTag -> term.elements.entries.joinToString(", ", "{", "}") { "${it.key}: ${stringifyTermZ(it.value)}" }
     is C.TermZ.Splice -> "$${stringifyTermS(term.element)}"
-    is C.TermZ.Fun -> "function ${term.name} = ${stringifyTermZ(term.body)};\n${stringifyTermZ(term.next)}"
+    is C.TermZ.Fun -> "fun ${term.name} = ${stringifyTermZ(term.body)};\n${stringifyTermZ(term.next)}"
     is C.TermZ.Run -> term.name
     is C.TermZ.Hole -> " "
 }
@@ -118,7 +118,7 @@ fun stringifyTerm(
     is S.Term.ListTag -> term.elements.joinToString(", ", "[", "]") { stringifyTerm(it) }
     is S.Term.CompoundTag -> term.elements.entries.joinToString(", ", "{", "}") { "${it.key}: ${stringifyTerm(it.value)}" }
     is S.Term.IndexedElement -> "${stringifyTerm(term.target)}.[${term.index}]"
-    is S.Term.Fun -> "function ${term.name} = ${stringifyTerm(term.body)};\n${stringifyTerm(term.next)}"
+    is S.Term.Fun -> "fun ${term.name} = ${stringifyTerm(term.body)};\n${stringifyTerm(term.next)}"
     is S.Term.Run -> term.name
     is S.Term.Hole -> " "
 }
