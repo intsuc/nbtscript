@@ -73,6 +73,7 @@ sealed interface Core {
         }
 
         open class CollectionType<K : Kind>(open val element: TypeZ<K>) : TypeZ<K>
+
         class ByteArrayType<K : Kind> private constructor() : CollectionType<K>(cast(ByteType.Syn)) {
             companion object {
                 val Syn: TypeZ<Syn> = ByteArrayType()
@@ -95,8 +96,11 @@ sealed interface Core {
         }
 
         class ListType<K : Kind>(override val element: TypeZ<K>) : CollectionType<K>(element)
+
         class CompoundType<K : Kind>(val elements: Map<String, TypeZ<K>>) : TypeZ<K>
+
         class Splice<K : Kind>(val element: TermS<K>) : TypeZ<K>
+
         class Hole<K : Kind> private constructor() : TypeZ<K> {
             companion object {
                 val Syn: TypeZ<Syn> = Hole()
@@ -116,22 +120,61 @@ sealed interface Core {
     sealed interface TermZ : ObjZ<Syn> {
         val type: TypeZ<Sem>
 
-        class ByteTag(val data: Byte, override val type: TypeZ<Sem>) : TermZ
-        class ShortTag(val data: Short, override val type: TypeZ<Sem>) : TermZ
-        class IntTag(val data: Int, override val type: TypeZ<Sem>) : TermZ
-        class LongTag(val data: Long, override val type: TypeZ<Sem>) : TermZ
-        class FloatTag(val data: Float, override val type: TypeZ<Sem>) : TermZ
-        class DoubleTag(val data: Double, override val type: TypeZ<Sem>) : TermZ
-        class StringTag(val data: String, override val type: TypeZ<Sem>) : TermZ
-        class ByteArrayTag(val elements: List<TermZ>, override val type: TypeZ<Sem>) : TermZ
-        class IntArrayTag(val elements: List<TermZ>, override val type: TypeZ<Sem>) : TermZ
-        class LongArrayTag(val elements: List<TermZ>, override val type: TypeZ<Sem>) : TermZ
+        class ByteTag(val data: Byte) : TermZ {
+            override val type: TypeZ<Sem> get() = TypeZ.ByteType.Sem
+        }
+
+        class ShortTag(val data: Short) : TermZ {
+            override val type: TypeZ<Sem> get() = TypeZ.ShortType.Sem
+        }
+
+        class IntTag(val data: Int) : TermZ {
+            override val type: TypeZ<Sem> get() = TypeZ.IntType.Sem
+        }
+
+        class LongTag(val data: Long) : TermZ {
+            override val type: TypeZ<Sem> get() = TypeZ.LongType.Sem
+        }
+
+        class FloatTag(val data: Float) : TermZ {
+            override val type: TypeZ<Sem> get() = TypeZ.FloatType.Sem
+        }
+
+        class DoubleTag(val data: Double) : TermZ {
+            override val type: TypeZ<Sem> get() = TypeZ.DoubleType.Sem
+        }
+
+        class StringTag(val data: String) : TermZ {
+            override val type: TypeZ<Sem> get() = TypeZ.StringType.Sem
+        }
+
+        class ByteArrayTag(val elements: List<TermZ>) : TermZ {
+            override val type: TypeZ<Sem> get() = TypeZ.ByteArrayType.Sem
+        }
+
+        class IntArrayTag(val elements: List<TermZ>) : TermZ {
+            override val type: TypeZ<Sem> get() = TypeZ.IntArrayType.Sem
+        }
+
+        class LongArrayTag(val elements: List<TermZ>) : TermZ {
+            override val type: TypeZ<Sem> get() = TypeZ.LongArrayType.Sem
+        }
+
         class ListTag(val elements: List<TermZ>, override val type: TypeZ<Sem>) : TermZ
+
         class CompoundTag(val elements: Map<String, TermZ>, override val type: TypeZ<Sem>) : TermZ
+
         class Fun(val name: String, val body: TermZ, val next: TermZ, override val type: TypeZ<Sem>) : TermZ
+
         class Run(val name: String, override val type: TypeZ<Sem>) : TermZ
+
         class Splice(val element: TermS<Syn>, override val type: TypeZ<Sem>) : TermZ
-        class Hole(override val type: TypeZ<Sem>) : TermZ
+
+        class Hole(override val type: TypeZ<Sem>) : TermZ {
+            companion object {
+                val Syn: TermZ = Hole(TypeZ.EndType.Sem)
+            }
+        }
     }
 
     sealed interface TermS<out K : Kind> {
@@ -348,15 +391,25 @@ sealed interface Core {
         }
 
         class ListTag(val elements: List<TermS<Syn>>, override val type: TermS<Sem>) : TermS<Syn>
+
         class VListTag(val elements: List<Lazy<TermS<Sem>>>, override val type: TermS<Sem>) : TermS<Sem>
+
         class CompoundTag(val elements: Map<String, TermS<Syn>>, override val type: TermS<Sem>) : TermS<Syn>
+
         class VCompoundTag(val elements: Map<String, Lazy<TermS<Sem>>>, override val type: TermS<Sem>) : TermS<Sem>
+
         class IndexedElement(val target: TermZ, val index: TermS<Syn>, override val type: TermS<Sem>) : TermS<Syn>
+
         class VIndexedElement(val target: TermZ, val index: Lazy<TermS<Sem>>, override val type: TermS<Sem>) : TermS<Sem>
+
         class Abs(val name: String, val anno: TermS<Syn>, val body: TermS<Syn>, override val type: TermS<Sem>) : TermS<Syn>
+
         class VAbs(val name: String, val anno: Lazy<TermS<Sem>>, val body: Clos, override val type: TermS<Sem>) : TermS<Sem>
+
         class Apply(val operator: TermS<Syn>, val operand: TermS<Syn>, override val type: TermS<Sem>) : TermS<Syn>
+
         class VApply(val operator: TermS<Sem>, val operand: Lazy<TermS<Sem>>, override val type: TermS<Sem>) : TermS<Sem>
+
         class QuoteType(val element: TypeZ<Syn>) : TermS<Syn> {
             override val type: TermS<Sem> get() = TypeType.Sem
         }
@@ -366,9 +419,13 @@ sealed interface Core {
         }
 
         class QuoteTerm<K : Kind>(val element: TermZ, override val type: TermS<Sem>) : TermS<K>
+
         class Let(val name: String, val init: TermS<Syn>, val next: TermS<Syn>, override val type: TermS<Sem>) : TermS<Syn>
+
         class Var<K : Kind>(val name: String?, val level: Int, override val type: TermS<Sem>) : TermS<K>
+
         class Meta<K : Kind>(val index: Int, override val type: TermS<Sem>) : TermS<K>
+
         class Hole<K : Kind>(override val type: TermS<Sem>) : TermS<K> {
             companion object {
                 val Syn: TermS<Syn> = Hole(EndType.Sem)

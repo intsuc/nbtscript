@@ -31,17 +31,17 @@ class Zonk private constructor(
         is TermZ.StringTag -> term
         is TermZ.ByteArrayTag -> {
             val elements = term.elements.map { zonkTermZ(it) }
-            TermZ.ByteArrayTag(elements, term.type)
+            TermZ.ByteArrayTag(elements)
         }
 
         is TermZ.IntArrayTag -> {
             val elements = term.elements.map { zonkTermZ(it) }
-            TermZ.IntArrayTag(elements, term.type)
+            TermZ.IntArrayTag(elements)
         }
 
         is TermZ.LongArrayTag -> {
             val elements = term.elements.map { zonkTermZ(it) }
-            TermZ.LongArrayTag(elements, term.type)
+            TermZ.LongArrayTag(elements)
         }
 
         is TermZ.ListTag -> {

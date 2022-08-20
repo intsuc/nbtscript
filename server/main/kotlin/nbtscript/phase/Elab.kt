@@ -56,26 +56,26 @@ class Elab private constructor(
             C.TypeZ.CompoundType(elements)
         }
 
-        term is S.Term.ByteTag -> C.TermZ.ByteTag(term.data, C.TypeZ.ByteType.Sem)
-        term is S.Term.ShortTag -> C.TermZ.ShortTag(term.data, C.TypeZ.ShortType.Sem)
-        term is S.Term.IntTag -> C.TermZ.IntTag(term.data, C.TypeZ.IntType.Sem)
-        term is S.Term.LongTag -> C.TermZ.LongTag(term.data, C.TypeZ.LongType.Sem)
-        term is S.Term.FloatTag -> C.TermZ.FloatTag(term.data, C.TypeZ.FloatType.Sem)
-        term is S.Term.DoubleTag -> C.TermZ.DoubleTag(term.data, C.TypeZ.DoubleType.Sem)
-        term is S.Term.StringTag -> C.TermZ.StringTag(term.data, C.TypeZ.StringType.Sem)
+        term is S.Term.ByteTag -> C.TermZ.ByteTag(term.data)
+        term is S.Term.ShortTag -> C.TermZ.ShortTag(term.data)
+        term is S.Term.IntTag -> C.TermZ.IntTag(term.data)
+        term is S.Term.LongTag -> C.TermZ.LongTag(term.data)
+        term is S.Term.FloatTag -> C.TermZ.FloatTag(term.data)
+        term is S.Term.DoubleTag -> C.TermZ.DoubleTag(term.data)
+        term is S.Term.StringTag -> C.TermZ.StringTag(term.data)
         term is S.Term.ByteArrayTag -> {
             val elements = term.elements.map { elabTermZ(ctx, it, C.TypeZ.ByteType.Sem) }
-            C.TermZ.ByteArrayTag(elements, C.TypeZ.ByteArrayType.Sem)
+            C.TermZ.ByteArrayTag(elements)
         }
 
         term is S.Term.IntArrayTag -> {
             val elements = term.elements.map { elabTermZ(ctx, it, C.TypeZ.IntType.Sem) }
-            C.TermZ.IntArrayTag(elements, C.TypeZ.IntArrayType.Sem)
+            C.TermZ.IntArrayTag(elements)
         }
 
         term is S.Term.LongArrayTag -> {
             val elements = term.elements.map { elabTermZ(ctx, it, C.TypeZ.LongType.Sem) }
-            C.TermZ.LongArrayTag(elements, C.TypeZ.LongArrayType.Sem)
+            C.TermZ.LongArrayTag(elements)
         }
 
         term is S.Term.ListTag -> {
@@ -211,26 +211,26 @@ class Elab private constructor(
         type: C.TypeZ<Sem>? = null,
     ): C.TermZ = when {
         term !is S.TermZ -> errorZ(termZExpected(term.range))
-        term is S.Term.ByteTag && type is C.TypeZ.ByteType? -> C.TermZ.ByteTag(term.data, C.TypeZ.ByteType.Sem)
-        term is S.Term.ShortTag && type is C.TypeZ.ShortType? -> C.TermZ.ShortTag(term.data, C.TypeZ.ShortType.Sem)
-        term is S.Term.IntTag && type is C.TypeZ.IntType? -> C.TermZ.IntTag(term.data, C.TypeZ.IntType.Sem)
-        term is S.Term.LongTag && type is C.TypeZ.LongType? -> C.TermZ.LongTag(term.data, C.TypeZ.LongType.Sem)
-        term is S.Term.FloatTag && type is C.TypeZ.FloatType? -> C.TermZ.FloatTag(term.data, C.TypeZ.FloatType.Sem)
-        term is S.Term.DoubleTag && type is C.TypeZ.DoubleType? -> C.TermZ.DoubleTag(term.data, C.TypeZ.DoubleType.Sem)
-        term is S.Term.StringTag && type is C.TypeZ.StringType? -> C.TermZ.StringTag(term.data, C.TypeZ.StringType.Sem)
+        term is S.Term.ByteTag && type is C.TypeZ.ByteType? -> C.TermZ.ByteTag(term.data)
+        term is S.Term.ShortTag && type is C.TypeZ.ShortType? -> C.TermZ.ShortTag(term.data)
+        term is S.Term.IntTag && type is C.TypeZ.IntType? -> C.TermZ.IntTag(term.data)
+        term is S.Term.LongTag && type is C.TypeZ.LongType? -> C.TermZ.LongTag(term.data)
+        term is S.Term.FloatTag && type is C.TypeZ.FloatType? -> C.TermZ.FloatTag(term.data)
+        term is S.Term.DoubleTag && type is C.TypeZ.DoubleType? -> C.TermZ.DoubleTag(term.data)
+        term is S.Term.StringTag && type is C.TypeZ.StringType? -> C.TermZ.StringTag(term.data)
         term is S.Term.ByteArrayTag && type is C.TypeZ.CollectionType? -> {
             val elements = term.elements.map { elabTermZ(ctx, it, C.TypeZ.ByteType.Sem) }
-            C.TermZ.ByteArrayTag(elements, C.TypeZ.ByteArrayType.Sem)
+            C.TermZ.ByteArrayTag(elements)
         }
 
         term is S.Term.IntArrayTag && type is C.TypeZ.CollectionType? -> {
             val elements = term.elements.map { elabTermZ(ctx, it, C.TypeZ.IntType.Sem) }
-            C.TermZ.IntArrayTag(elements, C.TypeZ.IntArrayType.Sem)
+            C.TermZ.IntArrayTag(elements)
         }
 
         term is S.Term.LongArrayTag && type is C.TypeZ.CollectionType? -> {
             val elements = term.elements.map { elabTermZ(ctx, it, C.TypeZ.LongType.Sem) }
-            C.TermZ.LongArrayTag(elements, C.TypeZ.LongArrayType.Sem)
+            C.TermZ.LongArrayTag(elements)
         }
 
         term is S.Term.ListTag && type is C.TypeZ.CollectionType? -> {
@@ -588,7 +588,7 @@ class Elab private constructor(
         type: C.TypeZ<Sem>? = null,
     ): C.TermZ {
         context.addDiagnostic(diagnostic)
-        return C.TermZ.Hole(type ?: C.TypeZ.EndType.Sem)
+        return type?.let { C.TermZ.Hole(type) } ?: C.TermZ.Hole.Syn
     }
 
     private fun errorS(
