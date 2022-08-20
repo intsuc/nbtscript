@@ -11,6 +11,7 @@ import nbtscript.unreachable
 typealias Environment = PersistentList<Lazy<TermS<Sem>>>
 
 fun Unifier.reflectTypeZ(
+    env: Environment,
     type: TypeZ<Syn>,
 ): TypeZ<Sem> = when (type) {
     is TypeZ.EndType -> TypeZ.reflect(type)
@@ -25,22 +26,22 @@ fun Unifier.reflectTypeZ(
     is TypeZ.IntArrayType -> TypeZ.reflect(type)
     is TypeZ.LongArrayType -> TypeZ.reflect(type)
     is TypeZ.ListType -> {
-        val element = reflectTypeZ(type.element)
+        val element = reflectTypeZ(env, type.element)
         TypeZ.ListType(element)
     }
 
     is TypeZ.CollectionType -> {
-        val element = reflectTypeZ(type.element)
+        val element = reflectTypeZ(env, type.element)
         TypeZ.CollectionType(element)
     }
 
     is TypeZ.CompoundType -> {
-        val elements = type.elements.mapValues { reflectTypeZ(it.value) }
+        val elements = type.elements.mapValues { reflectTypeZ(env, it.value) }
         TypeZ.CompoundType(elements)
     }
 
     is TypeZ.Splice -> {
-        when (val element = force(reflectTermS(persistentListOf(), type.element))) {
+        when (val element = force(reflectTermS(env, type.element))) {
             is TermS.VQuoteType -> element.element.value
             else -> TypeZ.Splice(element)
         }
@@ -50,6 +51,7 @@ fun Unifier.reflectTypeZ(
 }
 
 fun Unifier.reifyTypeZ(
+    env: Environment,
     type: TypeZ<Sem>,
 ): TypeZ<Syn> = when (type) {
     is TypeZ.EndType -> TypeZ.reify(type)
@@ -64,22 +66,22 @@ fun Unifier.reifyTypeZ(
     is TypeZ.IntArrayType -> TypeZ.reify(type)
     is TypeZ.LongArrayType -> TypeZ.reify(type)
     is TypeZ.ListType -> {
-        val element = reifyTypeZ(type.element)
+        val element = reifyTypeZ(env, type.element)
         TypeZ.ListType(element)
     }
 
     is TypeZ.CollectionType -> {
-        val element = reifyTypeZ(type.element)
+        val element = reifyTypeZ(env, type.element)
         TypeZ.CollectionType(element)
     }
 
     is TypeZ.CompoundType -> {
-        val elements = type.elements.mapValues { reifyTypeZ(it.value) }
+        val elements = type.elements.mapValues { reifyTypeZ(env, it.value) }
         TypeZ.CompoundType(elements)
     }
 
     is TypeZ.Splice -> {
-        val element = reifyTermS(persistentListOf(), type.element)
+        val element = reifyTermS(env, type.element)
         TypeZ.Splice(element)
     }
 
@@ -126,7 +128,7 @@ fun Unifier.reflectTermS(
     }
 
     is TermS.CodeType -> {
-        val element = lazy { reflectTypeZ(term.element) }
+        val element = lazy { reflectTypeZ(env, term.element) }
         TermS.VCodeType(element)
     }
 
@@ -190,7 +192,7 @@ fun Unifier.reflectTermS(
     }
 
     is TermS.QuoteType -> {
-        val element = lazy { reflectTypeZ(term.element) }
+        val element = lazy { reflectTypeZ(env, term.element) }
         TermS.VQuoteType(element)
     }
 
@@ -245,7 +247,7 @@ fun Unifier.reifyTermS(
     }
 
     is TermS.VCodeType -> {
-        val element = reifyTypeZ(term.element.value)
+        val element = reifyTypeZ(env, term.element.value)
         TermS.CodeType(element)
     }
 
@@ -301,7 +303,7 @@ fun Unifier.reifyTermS(
     }
 
     is TermS.VQuoteType -> {
-        val element = reifyTypeZ(term.element.value)
+        val element = reifyTypeZ(env, term.element.value)
         TermS.QuoteType(element)
     }
 
