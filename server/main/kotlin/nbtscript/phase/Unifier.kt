@@ -23,6 +23,22 @@ class Unifier {
     ): Boolean = when {
         type1 is TypeZ.EndType -> true
         type2 is TypeZ.EndType -> false
+        type1 is TypeZ.ListType && type2 is TypeZ.ListType -> subTypeZ(type1.element, type2.element)
+        type1 is TypeZ.CollectionType && type2 is TypeZ.CollectionType && type2::class == TypeZ.CollectionType::class -> subTypeZ(type1.element, type2.element)
+        type1 is TypeZ.CompoundType && type2 is TypeZ.CompoundType -> {
+            type1.elements.keys == type2.elements.keys && type1.elements.all {
+                subTypeZ(it.value, type2.elements[it.key]!!)
+            }
+        }
+
+        else -> unifyTypeZ(type1, type2)
+    }
+
+    private fun unifyTypeZ(
+        type1: TypeZ<Sem>,
+        type2: TypeZ<Sem>,
+    ): Boolean = when {
+        type1 is TypeZ.EndType && type2 is TypeZ.EndType -> true
         type1 is TypeZ.ByteType && type2 is TypeZ.ByteType -> true
         type1 is TypeZ.ShortType && type2 is TypeZ.ShortType -> true
         type1 is TypeZ.IntType && type2 is TypeZ.IntType -> true
@@ -33,19 +49,19 @@ class Unifier {
         type1 is TypeZ.ByteArrayType && type2 is TypeZ.ByteArrayType -> true
         type1 is TypeZ.IntArrayType && type2 is TypeZ.IntArrayType -> true
         type1 is TypeZ.LongArrayType && type2 is TypeZ.LongArrayType -> true
-        type1 is TypeZ.ListType && type2 is TypeZ.ListType -> subTypeZ(type1.element, type2.element) // sound?
-        type1 is TypeZ.CollectionType && type2 is TypeZ.CollectionType && type2::class == TypeZ.CollectionType::class -> subTypeZ(type1.element, type2.element)
+        type1 is TypeZ.ListType && type2 is TypeZ.ListType -> unifyTypeZ(type1.element, type2.element)
+        type1 is TypeZ.CollectionType && type1::class == TypeZ.CollectionType::class && type2 is TypeZ.CollectionType && type2::class == TypeZ.CollectionType::class -> unifyTypeZ(type1.element, type2.element)
         type1 is TypeZ.CompoundType && type2 is TypeZ.CompoundType -> {
             type1.elements.keys == type2.elements.keys && type1.elements.all {
-                subTypeZ(it.value, type2.elements[it.key]!!)
+                unifyTypeZ(it.value, type2.elements[it.key]!!)
             }
         }
 
-        type1 is TypeZ.Splice && type2 is TypeZ.Splice -> unifyValue(0, type1.element, type2.element)
+        type1 is TypeZ.Splice && type2 is TypeZ.Splice -> unifyTermS(0, type1.element, type2.element)
         else -> false
     }
 
-    fun unifyValue(
+    fun unifyTermS(
         lvl: Int,
         term1: TermS<Sem>,
         term2: TermS<Sem>,
@@ -68,20 +84,21 @@ class Unifier {
             term1 is TermS.ByteArrayType && term2 is TermS.ByteArrayType -> true
             term1 is TermS.IntArrayType && term2 is TermS.IntArrayType -> true
             term1 is TermS.LongArrayType && term2 is TermS.LongArrayType -> true
-            term1 is TermS.VListType && term2 is TermS.VListType -> unifyValue(lvl, term1.element.value, term2.element.value)
+            term1 is TermS.VListType && term2 is TermS.VListType -> unifyTermS(lvl, term1.element.value, term2.element.value)
             term1 is TermS.VCompoundType && term2 is TermS.VCompoundType -> {
                 term1.elements.keys == term2.elements.keys && term1.elements.all {
-                    unifyValue(lvl, it.value.value, term2.elements[it.key]!!.value)
+                    unifyTermS(lvl, it.value.value, term2.elements[it.key]!!.value)
                 }
             }
 
             term1 is TermS.VIndexedElement && term2 is TermS.VIndexedElement -> false // ?
             term1 is TermS.VFunType && term2 is TermS.VFunType -> {
-                unifyValue(lvl, term1.dom.value, term2.dom.value) && lazyOf(TermS.Var<Sem>(null, lvl, term1.dom.value)).let { operand ->
-                    unifyValue(lvl.inc(), term1.cod(this, operand), term2.cod(this, operand))
+                unifyTermS(lvl, term1.dom.value, term2.dom.value) && lazyOf(TermS.Var<Sem>(null, lvl, term1.dom.value)).let { operand ->
+                    unifyTermS(lvl.inc(), term1.cod(this, operand), term2.cod(this, operand))
                 }
             }
 
+            term1 is TermS.VCodeType && term2 is TermS.VCodeType -> unifyTypeZ(term1.element.value, term2.element.value)
             term1 is TermS.TypeType && term2 is TermS.TypeType -> true
             term1 is TermS.EndTag && term2 is TermS.EndTag -> true
             term1 is TermS.ByteTag && term2 is TermS.ByteTag -> term1.data == term2.data
@@ -92,34 +109,34 @@ class Unifier {
             term1 is TermS.DoubleTag && term2 is TermS.DoubleTag -> term1.data == term2.data
             term1 is TermS.StringTag && term2 is TermS.StringTag -> term1.data == term2.data
             term1 is TermS.VByteArrayTag && term2 is TermS.VByteArrayTag -> {
-                (term1.elements zip term2.elements).all { (element1, element2) -> unifyValue(lvl, element1.value, element2.value) }
+                (term1.elements zip term2.elements).all { (element1, element2) -> unifyTermS(lvl, element1.value, element2.value) }
             }
 
             term1 is TermS.VIntArrayTag && term2 is TermS.VIntArrayTag -> {
-                (term1.elements zip term2.elements).all { (element1, element2) -> unifyValue(lvl, element1.value, element2.value) }
+                (term1.elements zip term2.elements).all { (element1, element2) -> unifyTermS(lvl, element1.value, element2.value) }
             }
 
             term1 is TermS.VLongArrayTag && term2 is TermS.VLongArrayTag -> {
-                (term1.elements zip term2.elements).all { (element1, element2) -> unifyValue(lvl, element1.value, element2.value) }
+                (term1.elements zip term2.elements).all { (element1, element2) -> unifyTermS(lvl, element1.value, element2.value) }
             }
 
             term1 is TermS.VListTag && term2 is TermS.VListTag -> {
-                (term1.elements zip term2.elements).all { (element1, element2) -> unifyValue(lvl, element1.value, element2.value) }
+                (term1.elements zip term2.elements).all { (element1, element2) -> unifyTermS(lvl, element1.value, element2.value) }
             }
 
             term1 is TermS.VCompoundTag && term2 is TermS.VCompoundTag -> {
                 term1.elements.keys == term2.elements.keys && term1.elements.all {
-                    unifyValue(lvl, it.value.value, term2.elements[it.key]!!.value)
+                    unifyTermS(lvl, it.value.value, term2.elements[it.key]!!.value)
                 }
             }
 
             term1 is TermS.VAbs && term2 is TermS.VAbs -> {
                 val operand = lazyOf(TermS.Var<Sem>(null, lvl, term1.anno.value))
-                unifyValue(lvl.inc(), term1.body(this, operand), term2.body(this, operand))
+                unifyTermS(lvl.inc(), term1.body(this, operand), term2.body(this, operand))
             }
 
             term1 is TermS.VApply && term2 is TermS.VApply -> {
-                unifyValue(lvl, term1.operator, term2.operator) && unifyValue(lvl, term1.operand.value, term2.operand.value)
+                unifyTermS(lvl, term1.operator, term2.operator) && unifyTermS(lvl, term1.operand.value, term2.operand.value)
             }
 
             term1 is TermS.VQuoteType && term2 is TermS.VQuoteType -> false // ?
@@ -153,6 +170,6 @@ class Unifier {
             true
         }
 
-        else -> unifyValue(lvl, meta, candidate)
+        else -> unifyTermS(lvl, meta, candidate)
     }
 }

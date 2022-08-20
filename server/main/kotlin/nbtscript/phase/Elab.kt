@@ -526,7 +526,7 @@ class Elab private constructor(
                 if (type == null) error("failed: inference")
                 else {
                     val inferred = elabTermS(ctx, term)
-                    if (context.unifier.unifyValue(ctx.size, inferred.type, type)) inferred
+                    if (context.unifier.unifyTermS(ctx.size, inferred.type, type)) inferred
                     else errorS(
                         typeSMismatched(
                             context.unifier,
