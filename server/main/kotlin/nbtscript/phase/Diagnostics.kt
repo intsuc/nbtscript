@@ -77,12 +77,13 @@ fun notFound(
 )
 
 fun collectionTypeExpected(
+    env: Environment,
     unifier: Unifier,
     actual: TypeZ<Sem>,
     range: Range,
 ): Diagnostic = makeDiagnostic(
     range,
-    "expected: collection type\nactual: '${unifier.stringifyTypeZ(unifier.reifyTypeZ(actual))}'",
+    "expected: collection type\nactual: '${unifier.stringifyTypeZ(unifier.reifyTypeZ(env, actual))}'",
     Error,
 )
 
@@ -107,13 +108,14 @@ fun codeTypeExpected(
 )
 
 fun typeZMismatched(
+    env: Environment,
     unifier: Unifier,
     expected: TypeZ<Sem>,
     actual: TypeZ<Sem>,
     range: Range,
 ): Diagnostic = makeDiagnostic(
     range,
-    "expected: '${unifier.stringifyTypeZ(unifier.reifyTypeZ(expected))}'\nactual: '${unifier.stringifyTypeZ(unifier.reifyTypeZ(actual))}'",
+    "expected: '${unifier.stringifyTypeZ(unifier.reifyTypeZ(env, expected))}'\nactual: '${unifier.stringifyTypeZ(unifier.reifyTypeZ(env, actual))}'",
     Error,
 )
 

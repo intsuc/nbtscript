@@ -290,7 +290,7 @@ class Elab private constructor(
             else {
                 val inferred = elabTermZ(ctx, term)
                 if (context.unifier.subTypeZ(inferred.type, type)) inferred
-                else errorZ(typeZMismatched(context.unifier, type, inferred.type, term.range))
+                else errorZ(typeZMismatched(ctx.values, context.unifier, type, inferred.type, term.range))
             }
         }
     }.also {
@@ -415,7 +415,7 @@ class Elab private constructor(
                         C.TermS.IndexedElement(target, index, C.TermS.VCodeType(lazyOf(targetType.element)))
                     }
 
-                    else -> errorS(collectionTypeExpected(context.unifier, targetType, term.target.range))
+                    else -> errorS(collectionTypeExpected(ctx.values, context.unifier, targetType, term.target.range))
                 }
             }
 
