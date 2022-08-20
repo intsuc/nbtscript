@@ -91,7 +91,7 @@ fun Unifier.stringifyTermS(
     is C.TermS.LongArrayTag -> term.elements.joinToString(", ", "[L;", "]") { stringifyTermS(it) }
     is C.TermS.ListTag -> term.elements.joinToString(", ", "[", "]") { stringifyTermS(it) }
     is C.TermS.CompoundTag -> term.elements.entries.joinToString(", ", "{", "}") { "${it.key}: ${stringifyTermS(it.value)}" }
-    is C.TermS.Abs -> "${term.name} => ${stringifyTermS(term.body)}"
+    is C.TermS.Abs -> "(${term.name}) => ${stringifyTermS(term.body)}"
     is C.TermS.Apply -> "${stringifyTermS(term.operator)}(${stringifyTermS(term.operand)})"
     is C.TermS.QuoteType -> "`${stringifyTypeZ(term.element)}"
     is C.TermS.QuoteTerm -> "`${stringifyTermZ(term.element)}"
