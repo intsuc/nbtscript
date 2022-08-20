@@ -457,28 +457,28 @@ class Elab private constructor(
                 C.TermS.Abs(term.name.text, dom, body, type)
             }
 
-            term is S.Term.Apply -> {
-                if (type == null) {
-                    val operator = elabTermS(ctx, term.operator)
-                    when (val operatorType = context.unifier.force(operator.type)) {
-                        is C.TermS.VFunType -> {
-                            val operand = elabTermS(ctx, term.operand, operatorType.dom.value)
-                            val cod = operatorType.cod(context.unifier, lazy { context.unifier.reflectTermS(ctx.values, operand) })
-                            C.TermS.Apply(operator, operand, cod)
-                        }
-
-                        else -> errorS(functionTypeExpected(context.unifier, context.unifier.reifyTermS(ctx.values, operatorType), term.operator.range))
-                    }
-                } else {
-                    val operand = elabTermS(ctx, term.operand)
-                    val operator = elabTermS(
-                        ctx, term.operator, C.TermS.VFunType(
-                            null,
-                            lazyOf(operand.type),
-                            C.Clos(ctx.values, lazy { context.unifier.reifyTermS(ctx.values, type) }),
-                        )
+            term is S.Term.Apply && type != null -> {
+                val operand = elabTermS(ctx, term.operand)
+                val operator = elabTermS(
+                    ctx, term.operator, C.TermS.VFunType(
+                        null,
+                        lazyOf(operand.type),
+                        C.Clos(ctx.values, lazy { context.unifier.reifyTermS(ctx.values, type) }),
                     )
-                    C.TermS.Apply(operator, operand, type)
+                )
+                C.TermS.Apply(operator, operand, type)
+            }
+
+            term is S.Term.Apply -> {
+                val operator = elabTermS(ctx, term.operator)
+                when (val operatorType = context.unifier.force(operator.type)) {
+                    is C.TermS.VFunType -> {
+                        val operand = elabTermS(ctx, term.operand, operatorType.dom.value)
+                        val cod = operatorType.cod(context.unifier, lazy { context.unifier.reflectTermS(ctx.values, operand) })
+                        C.TermS.Apply(operator, operand, cod)
+                    }
+
+                    else -> errorS(functionTypeExpected(context.unifier, context.unifier.reifyTermS(ctx.values, operatorType), term.operator.range))
                 }
             }
 
