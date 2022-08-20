@@ -10,11 +10,9 @@ class Unifier {
 
     operator fun get(index: Int): TermS<Sem>? = metas.getOrNull(index)
 
-    fun fresh(
-        type: TermS<Sem>,
-    ): TermS<Syn> {
+    fun fresh(): TermS<Syn> {
         metas += null
-        return TermS.Meta(metas.lastIndex, type)
+        return TermS.Meta(metas.lastIndex, TermS.UniverseType.Sem)
     }
 
     fun subTypeZ(

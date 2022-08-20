@@ -420,7 +420,7 @@ class Elab private constructor(
             }
 
             term is S.Term.Abs && type == null -> {
-                val anno = term.anno?.let { elabTermS(ctx, it, C.TermS.UniverseType.Sem) } ?: context.unifier.fresh(C.TermS.UniverseType.Sem)
+                val anno = term.anno?.let { elabTermS(ctx, it, C.TermS.UniverseType.Sem) } ?: context.unifier.fresh()
                 context.setHover(term.name.range, lazy {
                     Hover(markup(context.unifier.stringifyTermS(anno)))
                 })
@@ -476,7 +476,15 @@ class Elab private constructor(
                         C.TermS.Apply(operator, operand, cod)
                     }
 
-                    else -> errorS(functionTypeExpected(context.unifier, context.unifier.reifyTermS(ctx.values, operatorType), term.operator.range))
+                    else -> {
+                        val dom = context.unifier.reflectTermS(ctx.values, context.unifier.fresh())
+                        val cod = context.unifier.fresh()
+                        val operatorType2 = C.TermS.VFunType(null, lazyOf(dom), C.Clos(ctx.values, lazyOf(cod)))
+                        tryUnify(ctx, operatorType, operatorType2, term.operator.range) {
+                            val operand = elabTermS(ctx, term.operand, dom)
+                            C.TermS.Apply(operator, operand, context.unifier.reflectTermS(ctx.values, cod))
+                        }
+                    }
                 }
             }
 
@@ -526,15 +534,7 @@ class Elab private constructor(
                 if (type == null) error("failed: inference")
                 else {
                     val inferred = elabTermS(ctx, term)
-                    if (context.unifier.unifyTermS(ctx.size, inferred.type, type)) inferred
-                    else errorS(
-                        typeSMismatched(
-                            context.unifier,
-                            context.unifier.reifyTermS(ctx.values, type),
-                            context.unifier.reifyTermS(ctx.values, inferred.type),
-                            term.range,
-                        )
-                    )
+                    tryUnify(ctx, inferred.type, type, term.range) { inferred }
                 }
             }
         }.also {
@@ -554,6 +554,23 @@ class Elab private constructor(
             })
         }
     }
+
+    private inline fun tryUnify(
+        ctx: Context,
+        term1: C.TermS<Sem>,
+        term2: C.TermS<Sem>,
+        range: Range,
+        block: () -> C.TermS<Syn>,
+    ): C.TermS<Syn> =
+        if (context.unifier.unifyTermS(ctx.size, term1, term2)) block()
+        else errorS(
+            typeSMismatched(
+                context.unifier,
+                context.unifier.reifyTermS(ctx.values, term1),
+                context.unifier.reifyTermS(ctx.values, term2),
+                range,
+            )
+        )
 
     private class Context private constructor(
         val typesZ: PersistentMap<String, C.TypeZ<Sem>>,

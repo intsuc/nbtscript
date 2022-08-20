@@ -87,16 +87,6 @@ fun collectionTypeExpected(
     Error,
 )
 
-fun functionTypeExpected(
-    unifier: Unifier,
-    actual: TermS<Syn>,
-    range: Range,
-): Diagnostic = makeDiagnostic(
-    range,
-    "expected: fun type\nactual: '${unifier.stringifyTermS(actual)}'",
-    Error,
-)
-
 fun codeTypeExpected(
     unifier: Unifier,
     actual: TermS<Syn>,
