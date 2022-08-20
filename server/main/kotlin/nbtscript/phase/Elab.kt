@@ -135,7 +135,7 @@ class Elab private constructor(
     }.also {
         context.setHover(term.range, lazy {
             when (it) {
-                is C.TypeZ -> Hover(markup("universe"))
+                is C.TypeZ -> Hover(markup("type₀"))
                 is C.TermZ -> Hover(markup(context.unifier.stringifyTypeZ(context.unifier.reifyTypeZ(it.type))))
             }
         })
@@ -201,7 +201,7 @@ class Elab private constructor(
         }
     }.also {
         context.setHover(type.range, lazy {
-            Hover(markup("universe")) // TODO: use appropriate name
+            Hover(markup("type₀"))
         })
     }
 
