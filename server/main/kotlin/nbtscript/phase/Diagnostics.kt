@@ -35,11 +35,11 @@ fun endOfFileExpected(
     Error,
 )
 
-fun typeZOrTermZExpected(
+fun objZExpected(
     range: Range,
 ): Diagnostic = makeDiagnostic(
     range,
-    "expected: type₀ or term₀",
+    "expected: obj₀",
     Error,
 )
 
