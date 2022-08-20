@@ -352,7 +352,7 @@ class Elab private constructor(
                         Hover(markup(context.unifier.stringifyTermS(dom)))
                     })
                 }
-                val cod = elabTermS(ctx.bindS(term.name?.text, dom.type), term.cod, C.TermS.UniverseType.Sem)
+                val cod = elabTermS(ctx.bindS(term.name?.text, context.unifier.reflectTermS(ctx.values, dom)), term.cod, C.TermS.UniverseType.Sem)
                 C.TermS.FunType(term.name?.text, dom, cod)
             }
 
