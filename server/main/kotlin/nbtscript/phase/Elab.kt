@@ -22,140 +22,39 @@ class Elab private constructor(
     private fun elabObjZ(
         ctx: Context,
         term: S.Term,
-    ): C.ObjZ<Syn> = when {
-        term !is S.TypeZ && term !is S.TermZ -> errorZ(objZExpected(term.range))
-        term is S.Term.ByteType -> C.TypeZ.ByteType.Syn
-        term is S.Term.ShortType -> C.TypeZ.ShortType.Syn
-        term is S.Term.IntType -> C.TypeZ.IntType.Syn
-        term is S.Term.LongType -> C.TypeZ.LongType.Syn
-        term is S.Term.FloatType -> C.TypeZ.FloatType.Syn
-        term is S.Term.DoubleType -> C.TypeZ.DoubleType.Syn
-        term is S.Term.StringType -> C.TypeZ.StringType.Syn
-        term is S.Term.CollectionType -> {
-            val element = elabTypeZ(ctx, term.element)
-            C.TypeZ.CollectionType(element)
-        }
-
-        term is S.Term.ByteArrayType -> C.TypeZ.ByteArrayType.Syn
-        term is S.Term.IntArrayType -> C.TypeZ.IntArrayType.Syn
-        term is S.Term.LongArrayType -> C.TypeZ.LongArrayType.Syn
-        term is S.Term.ListType -> {
-            val element = elabTypeZ(ctx, term.element)
-            C.TypeZ.ListType(element)
-        }
-
-        term is S.Term.CompoundType -> {
-            val elements = term.elements.map {
-                val value = elabTypeZ(ctx, it.value)
-                context.setHover(it.key.range, lazy {
-                    Hover(markup(context.unifier.stringifyTypeZ(value)))
+    ): C.ObjZ<Syn> = when (val typeZ = elabTypeZ(ctx, term)) {
+        is C.TypeZ.Hole -> when (val termZ = elabTermZ(ctx, term)) {
+            is C.TermZ.Hole -> errorZ(typeZOrTermZExpected(term.range))
+            else -> {
+                context.setHover(term.range, lazy {
+                    Hover(markup(context.unifier.stringifyTypeZ(context.unifier.reifyTypeZ(ctx.values, termZ.type))))
                 })
-                it.key.text to value
-            }.toMap()
-            C.TypeZ.CompoundType(elements)
-        }
-
-        term is S.Term.ByteTag -> C.TermZ.ByteTag(term.data)
-        term is S.Term.ShortTag -> C.TermZ.ShortTag(term.data)
-        term is S.Term.IntTag -> C.TermZ.IntTag(term.data)
-        term is S.Term.LongTag -> C.TermZ.LongTag(term.data)
-        term is S.Term.FloatTag -> C.TermZ.FloatTag(term.data)
-        term is S.Term.DoubleTag -> C.TermZ.DoubleTag(term.data)
-        term is S.Term.StringTag -> C.TermZ.StringTag(term.data)
-        term is S.Term.ByteArrayTag -> {
-            val elements = term.elements.map { elabTermZ(ctx, it, C.TypeZ.ByteType.Sem) }
-            C.TermZ.ByteArrayTag(elements)
-        }
-
-        term is S.Term.IntArrayTag -> {
-            val elements = term.elements.map { elabTermZ(ctx, it, C.TypeZ.IntType.Sem) }
-            C.TermZ.IntArrayTag(elements)
-        }
-
-        term is S.Term.LongArrayTag -> {
-            val elements = term.elements.map { elabTermZ(ctx, it, C.TypeZ.LongType.Sem) }
-            C.TermZ.LongArrayTag(elements)
-        }
-
-        term is S.Term.ListTag -> {
-            if (term.elements.isEmpty()) C.TermZ.ListTag(emptyList(), C.TypeZ.ListType(C.TypeZ.EndType.Sem))
-            else {
-                val elements = mutableListOf<C.TermZ>()
-                val head = elabTermZ(ctx, term.elements.first())
-                elements += head
-                term.elements.subList(1, term.elements.size).mapTo(elements) { elabTermZ(ctx, it, head.type) }
-                C.TermZ.ListTag(elements, C.TypeZ.ListType(head.type))
-            }
-        }
-
-        term is S.Term.CompoundTag -> {
-            val elements = term.elements.map {
-                val value = elabTermZ(ctx, it.value)
-                context.setHover(it.key.range, lazy {
-                    Hover(markup(context.unifier.stringifyTypeZ(context.unifier.reifyTypeZ(ctx.values, value.type))))
-                })
-                it.key.text to value
-            }.toMap()
-            val elementTypes = elements.mapValues { it.value.type }
-            C.TermZ.CompoundTag(elements, C.TypeZ.CompoundType(elementTypes))
-        }
-
-        term is S.Term.Splice -> {
-            val element = elabTermS(ctx, term.element)
-            when (val elementType = context.unifier.force(element.type)) {
-                is C.TermS.VCodeType -> C.TermZ.Splice(element, elementType.element.value)
-                else -> errorZ(codeTypeExpected(context.unifier, context.unifier.reifyTermS(persistentListOf(), elementType), term.range))
-            }
-        }
-
-        term is S.Term.Fun -> {
-            val anno = term.anno?.let { context.unifier.reflectTypeZ(ctx.values, elabTypeZ(ctx, it)) }
-            val body = elabTermZ(ctx, term.body, anno)
-            context.setHover(term.name.range, lazy {
-                Hover(markup(context.unifier.stringifyTypeZ(context.unifier.reifyTypeZ(ctx.values, anno ?: body.type))))
-            })
-            if (term.anno == null) {
-                context.addInlayHint(lazy {
-                    val part = InlayHintLabelPart(": ${context.unifier.stringifyTypeZ(context.unifier.reifyTypeZ(ctx.values, body.type))}")
-                    InlayHint(term.name.range.end, forRight(listOf(part)))
-                })
-            }
-            val next = elabTermZ(ctx.bindZ(term.name.text, anno ?: body.type), term.next)
-            C.TermZ.Fun(term.name.text, body, next, next.type)
-        }
-
-        term is S.Term.Var -> {
-            if (ctx.typesZ.contains(term.name)) C.TermZ.Run(term.name, ctx.typesZ[term.name]!!)
-            else errorZ(notFound(term.name, term.range))
-        }
-
-        term is S.Term.Hole -> errorZ(objZExpected(term.range))
-        else -> errorZ(objZExpected(term.range)) // unreachable?
-    }.also {
-        context.setHover(term.range, lazy {
-            when (it) {
-                is C.TypeZ -> Hover(markup("type₀"))
-                is C.TermZ -> Hover(markup(context.unifier.stringifyTypeZ(context.unifier.reifyTypeZ(ctx.values, it.type))))
-            }
-        })
-        context.setCompletionItems(term.range, lazy {
-            ctx.typesZ.entries.map { (name, type) ->
-                CompletionItem(name).apply {
-                    kind = CompletionItemKind.Function
-                    labelDetails = CompletionItemLabelDetails().apply {
-                        detail = " : ${context.unifier.stringifyTypeZ(context.unifier.reifyTypeZ(ctx.values, type))}"
+                context.setCompletionItems(term.range, lazy {
+                    ctx.typesZ.entries.map { (name, type) ->
+                        CompletionItem(name).apply {
+                            kind = CompletionItemKind.Function
+                            labelDetails = CompletionItemLabelDetails().apply {
+                                detail = " : ${context.unifier.stringifyTypeZ(context.unifier.reifyTypeZ(ctx.values, type))}"
+                            }
+                        }
                     }
-                }
+                })
+                termZ
             }
-        })
+        }
+
+        else -> {
+            context.setHover(term.range, lazyOf(Hover(markup("type₀"))))
+            typeZ
+        }
     }
 
     private fun elabTypeZ(
         ctx: Context,
-        type: S.Term,
-    ): C.TypeZ<Syn> = when (type) {
+        term: S.Term,
+    ): C.TypeZ<Syn> = when (term) {
         !is S.TypeZ -> {
-            context.addDiagnostic(typeZExpected(type.range))
+            context.addDiagnostic(typeZExpected(term.range))
             C.TypeZ.Hole.Syn
         }
 
@@ -167,7 +66,7 @@ class Elab private constructor(
         is S.Term.DoubleType -> C.TypeZ.DoubleType.Syn
         is S.Term.StringType -> C.TypeZ.StringType.Syn
         is S.Term.CollectionType -> {
-            val element = elabTypeZ(ctx, type.element)
+            val element = elabTypeZ(ctx, term.element)
             C.TypeZ.CollectionType(element)
         }
 
@@ -175,12 +74,12 @@ class Elab private constructor(
         is S.Term.IntArrayType -> C.TypeZ.IntArrayType.Syn
         is S.Term.LongArrayType -> C.TypeZ.LongArrayType.Syn
         is S.Term.ListType -> {
-            val element = elabTypeZ(ctx, type.element)
+            val element = elabTypeZ(ctx, term.element)
             C.TypeZ.ListType(element)
         }
 
         is S.Term.CompoundType -> {
-            val elements = type.elements.map {
+            val elements = term.elements.map {
                 val value = elabTypeZ(ctx, it.value)
                 context.setHover(it.key.range, lazy {
                     Hover(markup(context.unifier.stringifyTypeZ(value)))
@@ -191,16 +90,16 @@ class Elab private constructor(
         }
 
         is S.Term.Splice -> {
-            val element = elabTermS(ctx, type.element, C.TermS.TypeType.Sem)
+            val element = elabTermS(ctx, term.element, C.TermS.TypeType.Sem)
             C.TypeZ.Splice(element)
         }
 
         is S.Term.Hole -> {
-            context.addDiagnostic(typeZExpected(type.range))
+            context.addDiagnostic(typeZExpected(term.range))
             C.TypeZ.Hole.Syn
         }
     }.also {
-        context.setHover(type.range, lazy {
+        context.setHover(term.range, lazy {
             Hover(markup("type₀"))
         })
     }
