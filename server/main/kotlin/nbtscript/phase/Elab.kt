@@ -8,7 +8,6 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either.forRight
 import nbtscript.ast.Core as C
 import nbtscript.ast.Surface as S
 
-// TODO: eliminate redundant type reconstruction
 // TODO: create report messages lazily
 class Elab private constructor(
     private val context: Phase.Context = Phase.Context(),
@@ -240,7 +239,7 @@ class Elab private constructor(
                 val head = elabTermZ(ctx, term.elements.first(), type?.element)
                 elements += head
                 term.elements.subList(1, term.elements.size).mapTo(elements) { elabTermZ(ctx, it, head.type) }
-                C.TermZ.ListTag(elements, C.TypeZ.ListType(head.type))
+                C.TermZ.ListTag(elements, type ?: C.TypeZ.ListType(head.type))
             }
         }
 
@@ -252,8 +251,7 @@ class Elab private constructor(
                 })
                 it.key.text to value
             }.toMap()
-            val elementTypes = elements.mapValues { it.value.type }
-            C.TermZ.CompoundTag(elements, C.TypeZ.CompoundType(elementTypes))
+            C.TermZ.CompoundTag(elements, type ?: C.TypeZ.CompoundType(elements.mapValues { it.value.type }))
         }
 
         term is S.Term.Splice -> {
@@ -393,7 +391,7 @@ class Elab private constructor(
                     val head = elabTermS(ctx, term.elements.first(), type?.element?.value)
                     elements += head
                     term.elements.subList(1, term.elements.size).mapTo(elements) { elabTermS(ctx, it, head.type) }
-                    C.TermS.ListTag(elements, C.TermS.VListType(lazyOf(head.type)))
+                    C.TermS.ListTag(elements, type ?: C.TermS.VListType(lazyOf(head.type)))
                 }
             }
 
@@ -405,8 +403,7 @@ class Elab private constructor(
                     })
                     it.key.text to value
                 }.toMap()
-                val elementTypes = elements.mapValues { lazyOf(it.value.type) }
-                C.TermS.CompoundTag(elements, C.TermS.VCompoundType(elementTypes))
+                C.TermS.CompoundTag(elements, type ?: C.TermS.VCompoundType(elements.mapValues { lazyOf(it.value.type) }))
             }
 
             term is S.Term.IndexedElement -> {
@@ -534,7 +531,7 @@ class Elab private constructor(
                             context.unifier,
                             context.unifier.reifyTermS(ctx.values, type),
                             context.unifier.reifyTermS(ctx.values, inferred.type),
-                            term.range
+                            term.range,
                         )
                     )
                 }
