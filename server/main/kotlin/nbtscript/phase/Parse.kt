@@ -168,13 +168,13 @@ class Parse private constructor(
 
             '`' -> {
                 skip()
-                val element = parseTerm()
+                val element = parseTerm2()
                 Term.Quote(element, range())
             }
 
             '$' -> {
                 skip()
-                val element = parseTerm()
+                val element = parseTerm2()
                 Term.Splice(element, range())
             }
 
@@ -207,7 +207,7 @@ class Parse private constructor(
                         "double" -> Term.DoubleType(range())
                         "string" -> Term.StringType(range())
                         "collection" -> {
-                            val element = parseTerm()
+                            val element = parseTerm2()
                             Term.CollectionType(element, range())
                         }
 
@@ -215,7 +215,7 @@ class Parse private constructor(
                         "int_array" -> Term.IntArrayType(range())
                         "long_array" -> Term.LongArrayType(range())
                         "list" -> {
-                            val element = parseTerm()
+                            val element = parseTerm2()
                             Term.ListType(element, range())
                         }
 
@@ -231,7 +231,7 @@ class Parse private constructor(
                         }
 
                         "code" -> {
-                            val element = parseTerm()
+                            val element = parseTerm2()
                             Term.CodeType(element, range())
                         }
 
