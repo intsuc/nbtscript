@@ -89,7 +89,7 @@ class Unifier {
                 }
             }
 
-            term1 is TermS.VIndexedElement && term2 is TermS.VIndexedElement -> false // ?
+            term1 is TermS.NodeType && term2 is TermS.NodeType -> true
             term1 is TermS.VFunType && term2 is TermS.VFunType -> {
                 unifyTermS(lvl, term1.dom.value, term2.dom.value) && lazyOf(TermS.Var<Sem>(null, lvl, term1.dom.value)).let { operand ->
                     unifyTermS(lvl.inc(), term1.cod(this, operand), term2.cod(this, operand))
@@ -126,6 +126,15 @@ class Unifier {
                 term1.elements.keys == term2.elements.keys && term1.elements.all {
                     unifyTermS(lvl, it.value.value, term2.elements[it.key]!!.value)
                 }
+            }
+
+            term1 is TermS.VMatchObjectNode && term2 is TermS.VMatchObjectNode -> unifyTermS(lvl, term1.pattern.value, term2.pattern.value)
+            term1 is TermS.VMatchElementNode && term2 is TermS.VMatchElementNode -> unifyTermS(lvl, term1.pattern.value, term2.pattern.value)
+            term1 is TermS.AllElementsNode && term2 is TermS.AllElementsNode -> true
+            term1 is TermS.VIndexedElementNode && term2 is TermS.VIndexedElementNode -> unifyTermS(lvl, term1.index.value, term2.index.value)
+            term1 is TermS.VCompoundChildNode && term2 is TermS.VCompoundChildNode -> unifyTermS(lvl, term1.name.value, term2.name.value)
+            term1 is TermS.VGet && term2 is TermS.VGet -> {
+                unifyTermS(lvl, term1.target.value, term2.target.value) && unifyTermS(lvl, term1.path.value, term2.path.value)
             }
 
             term1 is TermS.VAbs && term2 is TermS.VAbs -> {

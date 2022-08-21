@@ -345,6 +345,7 @@ class Elab private constructor(
                 C.TermS.CompoundType(elements)
             }
 
+            term is S.Term.NodeType && type is C.TermS.UniverseType? -> C.TermS.NodeType.Syn
             term is S.Term.FunType && type is C.TermS.UniverseType? -> {
                 val dom = elabTermS(ctx, term.dom, C.TermS.UniverseType.Sem)
                 if (term.name != null) {
@@ -356,7 +357,7 @@ class Elab private constructor(
                 C.TermS.FunType(term.name?.text, dom, cod)
             }
 
-            term is S.Term.CodeType && type is C.TermS.UniverseType? /* ? */ -> {
+            term is S.Term.CodeType && type is C.TermS.UniverseType? -> {
                 val element = elabTypeZ(ctx, term.element)
                 C.TermS.CodeType(element)
             }
@@ -407,16 +408,42 @@ class Elab private constructor(
                 C.TermS.CompoundTag(elements, type ?: C.TermS.VCompoundType(elements.mapValues { lazyOf(it.value.type) }))
             }
 
-            term is S.Term.IndexedElement -> {
-                val target = elabTermZ(ctx, term.target)
-                when (val targetType = target.type) {
-                    is C.TypeZ.CollectionType -> {
-                        val index = elabTermS(ctx, term.index, C.TermS.IntType.Sem)
-                        C.TermS.IndexedElement(target, index, C.TermS.VCodeType(lazyOf(targetType.element)))
+            type is C.TermS.NodeType -> {
+                when (term) {
+                    is S.Term.StringTag -> {
+                        val name = elabTermS(ctx, term)
+                        C.TermS.CompoundChildNode(name)
                     }
 
-                    else -> errorS(collectionTypeExpected(ctx.values, context.unifier, targetType, term.target.range))
+                    is S.Term.ListTag -> {
+                        when (val size = term.elements.size) {
+                            0 -> C.TermS.AllElementsNode.Syn
+                            1 -> {
+                                val pattern = elabTermS(ctx, term.elements.first())
+                                when (context.unifier.force(pattern.type)) {
+                                    is C.TermS.VCompoundType -> C.TermS.MatchElementNode(pattern)
+                                    is C.TermS.IntType -> C.TermS.IndexedElementNode(pattern)
+                                    else -> errorS(invalidNode(term.range))
+                                }
+                            }
+
+                            else -> errorS(sizeMismatched(1, size, term.range))
+                        }
+                    }
+
+                    is S.Term.CompoundTag -> {
+                        val pattern = elabTermS(ctx, term)
+                        C.TermS.MatchObjectNode(pattern)
+                    }
+
+                    else -> errorS(invalidNode(term.range))
                 }
+            }
+
+            term is S.Term.Get -> {
+                val target = elabTermS(ctx, term.target)
+                val path = elabTermS(ctx, term.path, C.TermS.VListType(lazyOf(C.TermS.NodeType.Sem)))
+                C.TermS.Get(target, path, C.TermS.VCodeType(lazyOf(C.TypeZ.EndType.Sem) /* TODO */))
             }
 
             term is S.Term.Abs && type == null -> {

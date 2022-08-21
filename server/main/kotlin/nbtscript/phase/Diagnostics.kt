@@ -76,14 +76,22 @@ fun notFound(
     Error,
 )
 
-fun collectionTypeExpected(
-    env: Environment,
-    unifier: Unifier,
-    actual: TypeZ<Sem>,
+@Deprecated("Use more precise diagnostic.")
+fun invalidNode(
     range: Range,
 ): Diagnostic = makeDiagnostic(
     range,
-    "expected: collection type\nactual: '${unifier.stringifyTypeZ(unifier.reifyTypeZ(env, actual))}'",
+    "invalid node",
+    Error,
+)
+
+fun sizeMismatched(
+    expected: Int,
+    actual: Int,
+    range: Range,
+): Diagnostic = makeDiagnostic(
+    range,
+    "expected: '$expected'\nactual: '$actual'",
     Error,
 )
 

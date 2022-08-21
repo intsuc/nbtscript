@@ -74,7 +74,7 @@ fun Unifier.stringifyTermS(
     is C.TermS.LongArrayType -> "long_array"
     is C.TermS.ListType -> "list ${stringifyTermS(term.element)}"
     is C.TermS.CompoundType -> term.elements.entries.joinToString(", ", "compound {", "}") { "${it.key}: ${stringifyTermS(it.value)}" }
-    is C.TermS.IndexedElement -> "${stringifyTermZ(term.target)}.[${stringifyTermS(term.index)}]"
+    is C.TermS.NodeType -> "node"
     is C.TermS.FunType -> "${term.name?.let { "($it: ${stringifyTermS(term.dom)})" } ?: stringifyTermS(term.dom)} -> ${stringifyTermS(term.cod)}"
     is C.TermS.CodeType -> "code ${stringifyTypeZ(term.element)}"
     is C.TermS.TypeType -> "type"
@@ -91,6 +91,12 @@ fun Unifier.stringifyTermS(
     is C.TermS.LongArrayTag -> term.elements.joinToString(", ", "[L;", "]") { stringifyTermS(it) }
     is C.TermS.ListTag -> term.elements.joinToString(", ", "[", "]") { stringifyTermS(it) }
     is C.TermS.CompoundTag -> term.elements.entries.joinToString(", ", "{", "}") { "${it.key}: ${stringifyTermS(it.value)}" }
+    is C.TermS.MatchObjectNode -> stringifyTermS(term.pattern)
+    is C.TermS.MatchElementNode -> "[${stringifyTermS(term.pattern)}]"
+    is C.TermS.AllElementsNode -> "[]"
+    is C.TermS.IndexedElementNode -> "[${stringifyTermS(term.index)}]"
+    is C.TermS.CompoundChildNode -> stringifyTermS(term.name)
+    is C.TermS.Get -> "${stringifyTermS(term.target)}.${stringifyTermS(term.path)}"
     is C.TermS.Abs -> "(${term.name}) => ${stringifyTermS(term.body)}"
     is C.TermS.Apply -> "${stringifyTermS(term.operator)}(${stringifyTermS(term.operand)})"
     is C.TermS.QuoteType -> "`${stringifyTypeZ(term.element)}"
@@ -117,7 +123,6 @@ fun stringifyTerm(
     is S.Term.LongArrayTag -> term.elements.joinToString(", ", "[L;", "]") { stringifyTerm(it) }
     is S.Term.ListTag -> term.elements.joinToString(", ", "[", "]") { stringifyTerm(it) }
     is S.Term.CompoundTag -> term.elements.entries.joinToString(", ", "{", "}") { "${it.key}: ${stringifyTerm(it.value)}" }
-    is S.Term.IndexedElement -> "${stringifyTerm(term.target)}.[${term.index}]"
     is S.Term.Fun -> "fun ${term.name} = ${stringifyTerm(term.body)};\n${stringifyTerm(term.next)}"
     is S.Term.Run -> term.name
     is S.Term.Hole -> " "

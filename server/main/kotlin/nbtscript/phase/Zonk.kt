@@ -95,6 +95,7 @@ class Zonk private constructor(
             TermS.CompoundType(elements)
         }
 
+        is TermS.NodeType -> term
         is TermS.FunType -> {
             val dom = zonkTermS(term.dom)
             val cod = zonkTermS(term.cod)
@@ -140,10 +141,31 @@ class Zonk private constructor(
             TermS.CompoundTag(elements, term.type)
         }
 
-        is TermS.IndexedElement -> {
-            val target = zonkTermZ(term.target)
+        is TermS.MatchObjectNode -> {
+            val pattern = zonkTermS(term.pattern)
+            TermS.MatchObjectNode(pattern)
+        }
+
+        is TermS.MatchElementNode -> {
+            val pattern = zonkTermS(term.pattern)
+            TermS.MatchElementNode(pattern)
+        }
+
+        is TermS.AllElementsNode -> term
+        is TermS.IndexedElementNode -> {
             val index = zonkTermS(term.index)
-            TermS.IndexedElement(target, index, term.type)
+            TermS.IndexedElementNode(index)
+        }
+
+        is TermS.CompoundChildNode -> {
+            val name = zonkTermS(term.name)
+            TermS.CompoundChildNode(name)
+        }
+
+        is TermS.Get -> {
+            val target = zonkTermS(term.target)
+            val path = zonkTermS(term.path)
+            TermS.Get(target, path, term.type)
         }
 
         is TermS.Abs -> {

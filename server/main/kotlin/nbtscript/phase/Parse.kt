@@ -96,12 +96,9 @@ class Parse private constructor(
                 when (peek()) {
                     '.' -> {
                         skip()
-                        expect('[')
-                        val index = parseTerm()
-                        expect(']')
-                        Term.IndexedElement(left, index, range())
+                        val path = parseTerm()
+                        Term.Get(left, path, range())
                     }
-
                     '-' -> {
                         skip()
                         expect('>')
@@ -233,6 +230,7 @@ class Parse private constructor(
                                 Term.CompoundType(elements, range())
                             }
 
+                            "node" -> Term.NodeType(range())
                             "code" -> {
                                 val element = parseTerm2()
                                 Term.CodeType(element, range())

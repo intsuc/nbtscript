@@ -27,6 +27,7 @@ sealed interface Surface {
         class LongArrayType(override val range: Range) : TypeZ, TermS
         class ListType(val element: Term, override val range: Range) : TypeZ, TermS
         class CompoundType(val elements: Map<Name, Term>, override val range: Range) : TypeZ, TermS
+        class NodeType(override val range: Range) : TermS
         class FunType(val name: Name?, val dom: Term, val cod: Term, override val range: Range) : TermS
         class CodeType(val element: Term, override val range: Range) : TermS
         class TypeType(override val range: Range) : TermS
@@ -42,7 +43,7 @@ sealed interface Surface {
         class LongArrayTag(val elements: List<Term>, override val range: Range) : TermZ, TermS
         class ListTag(val elements: List<Term>, override val range: Range) : TermZ, TermS
         class CompoundTag(val elements: Map<Name, Term>, override val range: Range) : TermZ, TermS
-        class IndexedElement(val target: Term, val index: Term, override val range: Range) : TermS
+        class Get(val target: Term, val path: Term, override val range: Range) : TermS
         class Abs(val name: Name, val anno: Term?, val body: Term, override val range: Range) : TermS
         class Apply(val operator: Term, val operand: Term, override val range: Range) : TermS
         class Quote(val element: Term, override val range: Range) : TermS

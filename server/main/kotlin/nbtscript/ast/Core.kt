@@ -304,6 +304,15 @@ sealed interface Core {
             override val type: TermS<Sem> get() = UniverseType.Sem
         }
 
+        class NodeType<K : Kind> private constructor() : TermS<K> {
+            override val type: TermS<Sem> get() = UniverseType.Sem
+
+            companion object {
+                val Syn: TermS<Syn> = NodeType()
+                val Sem: TermS<Sem> = reflect(Syn)
+            }
+        }
+
         class FunType(val name: String?, val dom: TermS<Syn>, val cod: TermS<Syn>) : TermS<Syn> {
             override val type: TermS<Sem> get() = UniverseType.Sem
         }
@@ -398,9 +407,50 @@ sealed interface Core {
 
         class VCompoundTag(val elements: Map<String, Lazy<TermS<Sem>>>, override val type: TermS<Sem>) : TermS<Sem>
 
-        class IndexedElement(val target: TermZ, val index: TermS<Syn>, override val type: TermS<Sem>) : TermS<Syn>
+        class MatchObjectNode(val pattern: TermS<Syn>) : TermS<Syn> {
+            override val type: TermS<Sem> get() = NodeType.Sem
+        }
 
-        class VIndexedElement(val target: TermZ, val index: Lazy<TermS<Sem>>, override val type: TermS<Sem>) : TermS<Sem>
+        class VMatchObjectNode(val pattern: Lazy<TermS<Sem>>) : TermS<Sem> {
+            override val type: TermS<Sem> get() = NodeType.Sem
+        }
+
+        class MatchElementNode(val pattern: TermS<Syn>) : TermS<Syn> {
+            override val type: TermS<Sem> get() = NodeType.Sem
+        }
+
+        class VMatchElementNode(val pattern: Lazy<TermS<Sem>>) : TermS<Sem> {
+            override val type: TermS<Sem> get() = NodeType.Sem
+        }
+
+        class AllElementsNode<K : Kind> : TermS<K> {
+            override val type: TermS<Sem> get() = NodeType.Sem
+
+            companion object {
+                val Syn: TermS<Syn> = AllElementsNode()
+                val Sem: TermS<Sem> = reflect(Syn)
+            }
+        }
+
+        class IndexedElementNode(val index: TermS<Syn>) : TermS<Syn> {
+            override val type: TermS<Sem> get() = NodeType.Sem
+        }
+
+        class VIndexedElementNode(val index: Lazy<TermS<Sem>>) : TermS<Sem> {
+            override val type: TermS<Sem> get() = NodeType.Sem
+        }
+
+        class CompoundChildNode(val name: TermS<Syn>) : TermS<Syn> {
+            override val type: TermS<Sem> get() = NodeType.Sem
+        }
+
+        class VCompoundChildNode(val name: Lazy<TermS<Sem>>) : TermS<Sem> {
+            override val type: TermS<Sem> get() = NodeType.Sem
+        }
+
+        class Get(val target: TermS<Syn>, val path: TermS<Syn>, override val type: TermS<Sem>) : TermS<Syn>
+
+        class VGet(val target: Lazy<TermS<Sem>>, val path: Lazy<TermS<Sem>>, override val type: TermS<Sem>) : TermS<Sem>
 
         class Abs(val name: String, val anno: TermS<Syn>, val body: TermS<Syn>, override val type: TermS<Sem>) : TermS<Syn>
 

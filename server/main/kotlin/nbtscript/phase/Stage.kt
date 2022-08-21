@@ -1,6 +1,5 @@
 package nbtscript.phase
 
-import kotlinx.collections.immutable.persistentListOf
 import nbtscript.ast.Core as C
 import nbtscript.ast.Staged as S
 
@@ -58,12 +57,7 @@ class Stage private constructor(
         is C.TermZ.Run -> S.Term.Run(term.name)
         is C.TermZ.Splice -> {
             when (val element = context.unifier.normalize(term.element)) {
-                is C.TermS.IndexedElement -> {
-                    val target = stageTermZ(element.target)
-                    val index = (context.unifier.reflectTermS(persistentListOf(), element.index) as C.TermS.IntTag).data
-                    S.Term.IndexedElement(target, index)
-                }
-
+                is C.TermS.Get -> TODO()
                 is C.TermS.QuoteTerm -> stageTermZ(element.element)
                 else -> error("expected: quote")
             }

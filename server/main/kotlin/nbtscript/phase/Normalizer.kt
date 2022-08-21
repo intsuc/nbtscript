@@ -121,6 +121,7 @@ fun Unifier.reflectTermS(
         TermS.VCompoundType(elements)
     }
 
+    is TermS.NodeType -> TermS.reflect(term)
     is TermS.FunType -> {
         val dom = lazy { reflectTermS(env, term.dom) }
         val cod = Clos(env, lazyOf(term.cod))
@@ -166,9 +167,31 @@ fun Unifier.reflectTermS(
         TermS.VCompoundTag(elements, term.type)
     }
 
-    is TermS.IndexedElement -> {
-        val index = lazy { reflectTermS(env, term.index) }
-        TermS.VIndexedElement(term.target, index, term.type)
+    is TermS.MatchObjectNode -> {
+        val pattern = lazy { reflectTermS(env, term.pattern) }
+        TermS.VMatchObjectNode(pattern)
+    }
+
+    is TermS.MatchElementNode -> {
+        val pattern = lazy { reflectTermS(env, term.pattern) }
+        TermS.VMatchElementNode(pattern)
+    }
+
+    is TermS.AllElementsNode -> TermS.reflect(term)
+    is TermS.IndexedElementNode -> {
+        val pattern = lazy { reflectTermS(env, term.index) }
+        TermS.VIndexedElementNode(pattern)
+    }
+
+    is TermS.CompoundChildNode -> {
+        val pattern = lazy { reflectTermS(env, term.name) }
+        TermS.VCompoundChildNode(pattern)
+    }
+
+    is TermS.Get -> {
+        val target = lazy { reflectTermS(env, term.target) }
+        val path = lazy { reflectTermS(env, term.path) }
+        TermS.VGet(target, path, term.type)
     }
 
     is TermS.Abs -> {
@@ -234,9 +257,26 @@ fun Unifier.reifyTermS(
         TermS.CompoundType(elements)
     }
 
-    is TermS.VIndexedElement -> {
-        val index = reifyTermS(env, term.index.value)
-        TermS.IndexedElement(term.target, index, term.type)
+    is TermS.NodeType -> TermS.reify(term)
+    is TermS.VMatchObjectNode -> {
+        val pattern = reifyTermS(env, term.pattern.value)
+        TermS.MatchObjectNode(pattern)
+    }
+
+    is TermS.VMatchElementNode -> {
+        val pattern = reifyTermS(env, term.pattern.value)
+        TermS.MatchElementNode(pattern)
+    }
+
+    is TermS.AllElementsNode -> TermS.reify(term)
+    is TermS.VIndexedElementNode -> {
+        val pattern = reifyTermS(env, term.index.value)
+        TermS.IndexedElementNode(pattern)
+    }
+
+    is TermS.VCompoundChildNode -> {
+        val pattern = reifyTermS(env, term.name.value)
+        TermS.CompoundChildNode(pattern)
     }
 
     is TermS.VFunType -> {
@@ -283,6 +323,12 @@ fun Unifier.reifyTermS(
     is TermS.VCompoundTag -> {
         val elements = term.elements.mapValues { reifyTermS(env, it.value.value) }
         TermS.CompoundTag(elements, term.type)
+    }
+
+    is TermS.VGet -> {
+        val target = reifyTermS(env, term.target.value)
+        val path = reifyTermS(env, term.path.value)
+        TermS.Get(target, path, term.type)
     }
 
     is TermS.VAbs -> {
