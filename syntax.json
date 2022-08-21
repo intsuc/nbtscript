@@ -8,11 +8,11 @@
     },
     {
       "name": "keyword.nbtscript",
-      "match": "\\b(fun|let)\\b"
+      "match": "\\b(fun|let|mac)\\b"
     },
     {
       "name": "support.type.nbtscript",
-      "match": "\\b(universe|end|byte|short|int|long|float|double|string|collection|byte_array|int_array|long_array|list|compound|node|code|type)\\b"
+      "match": "\\b(universe|end|byte|short|int|long|float|double|string|collection|byte_array|int_array|long_array|list|compound|node|code|macro|type)\\b"
     },
     {
       "match": "\\b(?<=fun)\\s+([^\\s\"(),.:;=\\[\\\\\\]{}-]+)",

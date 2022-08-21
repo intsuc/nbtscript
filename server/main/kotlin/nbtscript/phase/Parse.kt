@@ -176,6 +176,18 @@ class Parse private constructor(
                 Term.Splice(element, range())
             }
 
+            '^' -> {
+                skip()
+                val element = parseTerm2()
+                Term.Lift(element, range())
+            }
+
+            '~' -> {
+                skip()
+                val element = parseTerm2()
+                Term.Unlift(element, range())
+            }
+
             null -> hole()
             else -> {
                 skipWhitespace()
@@ -236,6 +248,11 @@ class Parse private constructor(
                                 Term.CodeType(element, range())
                             }
 
+                            "macro" -> {
+                                val element = parseTerm2()
+                                Term.MacroType(element, range())
+                            }
+
                             "type" -> Term.TypeType(range())
                             "let" -> {
                                 val name = parseName()
@@ -269,6 +286,23 @@ class Parse private constructor(
                                 expect(';')
                                 val next = parseTerm()
                                 Term.Fun(name, anno, body, next, range())
+                            }
+
+                            "mac" -> {
+                                val name = parseName()
+                                val anno = when (peek()) {
+                                    ':' -> {
+                                        skip()
+                                        parseTerm()
+                                    }
+
+                                    else -> null
+                                }
+                                expect('=')
+                                val body = parseTerm()
+                                expect(';')
+                                val next = parseTerm()
+                                Term.Mac(name, anno, body, next, range())
                             }
 
                             "" -> this@outer.hole()

@@ -10,6 +10,7 @@ sealed interface Surface {
     sealed interface TypeZ : Term
     sealed interface TermZ : Term
     sealed interface TermS : Term
+    sealed interface TermM : Term
 
     sealed interface Term : Surface {
         class UniverseType(override val range: Range) : TermS
@@ -30,6 +31,7 @@ sealed interface Surface {
         class NodeType(override val range: Range) : TermS
         class FunType(val name: Name?, val dom: Term, val cod: Term, override val range: Range) : TermS
         class CodeType(val element: Term, override val range: Range) : TermS
+        class MacroType(val element: Term, override val range: Range) : TermM
         class TypeType(override val range: Range) : TermS
         class ByteTag(val data: Byte, override val range: Range) : TermZ, TermS
         class ShortTag(val data: Short, override val range: Range) : TermZ, TermS
@@ -48,8 +50,11 @@ sealed interface Surface {
         class Apply(val operator: Term, val operand: Term, override val range: Range) : TermS
         class Quote(val element: Term, override val range: Range) : TermS
         class Splice(val element: Term, override val range: Range) : TypeZ, TermZ
+        class Lift(val element: Term, override val range: Range) : TermM
+        class Unlift(val element: Term, override val range: Range) : TypeZ, TermZ, TermS
         class Let(val name: Name, val anno: Term?, val init: Term, val next: Term, override val range: Range) : TermS
         class Fun(val name: Name, val anno: Term?, val body: Term, val next: Term, override val range: Range) : TermZ
+        class Mac(val name: Name, val anno: Term?, val body: Term, val next: Term, override val range: Range) : TermM
         class Var(val name: String, override val range: Range) : TermZ, TermS
         class Hole(override val range: Range) : Term
     }

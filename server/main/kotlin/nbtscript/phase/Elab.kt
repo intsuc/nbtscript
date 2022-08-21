@@ -38,6 +38,7 @@ class Elab private constructor(
         is S.Term.ListType -> elabTypeZListType(ctx, type)
         is S.Term.CompoundType -> elabTypeZCompoundType(ctx, type)
         is S.Term.Splice -> elabTypeZSplice(ctx, type)
+        is S.Term.Unlift -> TODO()
     }.also {
         context.setHover(type.range, lazy {
             Hover(markup("type₀"))
@@ -99,6 +100,7 @@ class Elab private constructor(
         term is S.Term.ListTag && type is C.TypeZ.ListType? -> elabTermZListTag(ctx, term, type)
         term is S.Term.CompoundTag && type is C.TypeZ.CompoundType? -> elabTermZCompoundTag(ctx, term, type)
         term is S.Term.Splice -> elabTermZSplice(ctx, term, type)
+        term is S.Term.Unlift -> TODO()
         term is S.Term.Fun -> elabTermZFun(ctx, term, type)
         term is S.Term.Var && type == null -> synthTermZVar(ctx, term)
         type == null -> error("failed: synthesis")
@@ -252,6 +254,7 @@ class Elab private constructor(
             term is S.Term.Quote && type is C.TermS.TypeType -> checkTermSQuoteTypeType(ctx, term)
             term is S.Term.Quote && type is C.TermS.VCodeType -> checkTermSQuoteVCodeType(ctx, term, type)
             term is S.Term.Quote && type == null -> synthTermSQuote(ctx, term)
+            term is S.Term.Unlift -> TODO()
             term is S.Term.Let -> elabTermSLet(ctx, term, type)
             term is S.Term.Var && type == null -> synthTermSVar(ctx, term)
             type == null -> error("failed: synthesis")
