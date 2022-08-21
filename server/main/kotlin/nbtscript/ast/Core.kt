@@ -72,30 +72,30 @@ sealed interface Core {
             }
         }
 
-        open class CollectionType<K : Kind>(open val element: TypeZ<K>) : TypeZ<K>
+        class CollectionType<K : Kind>(val element: TypeZ<K>) : TypeZ<K>
 
-        class ByteArrayType<K : Kind> private constructor() : CollectionType<K>(cast(ByteType.Syn)) {
+        class ByteArrayType<K : Kind> private constructor() : TypeZ<K> {
             companion object {
                 val Syn: TypeZ<Syn> = ByteArrayType()
                 val Sem: TypeZ<Sem> = reflect(Syn)
             }
         }
 
-        class IntArrayType<K : Kind> private constructor() : CollectionType<K>(cast(IntType.Syn)) {
+        class IntArrayType<K : Kind> private constructor() : TypeZ<K> {
             companion object {
                 val Syn: TypeZ<Syn> = IntArrayType()
                 val Sem: TypeZ<Sem> = reflect(Syn)
             }
         }
 
-        class LongArrayType<K : Kind> private constructor() : CollectionType<K>(cast(LongType.Syn)) {
+        class LongArrayType<K : Kind> private constructor() : TypeZ<K> {
             companion object {
                 val Syn: TypeZ<Syn> = LongArrayType()
                 val Sem: TypeZ<Sem> = reflect(Syn)
             }
         }
 
-        class ListType<K : Kind>(override val element: TypeZ<K>) : CollectionType<K>(element)
+        class ListType<K : Kind>(val element: TypeZ<K>) : TypeZ<K>
 
         class CompoundType<K : Kind>(val elements: Map<String, TypeZ<K>>) : TypeZ<K>
 

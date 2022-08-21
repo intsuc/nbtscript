@@ -26,11 +26,11 @@ fun Unifier.stringifyTypeZ(
     is C.TypeZ.FloatType -> "float"
     is C.TypeZ.DoubleType -> "double"
     is C.TypeZ.StringType -> "string"
+    is C.TypeZ.CollectionType -> "collection ${stringifyTypeZ(type.element)}"
     is C.TypeZ.ByteArrayType -> "byte_array"
     is C.TypeZ.IntArrayType -> "int_array"
     is C.TypeZ.LongArrayType -> "long_array"
     is C.TypeZ.ListType -> "list ${stringifyTypeZ(type.element)}"
-    is C.TypeZ.CollectionType -> "collection ${stringifyTypeZ(type.element)}"
     is C.TypeZ.CompoundType -> type.elements.entries.joinToString(", ", "compound {", "}") { "${it.key}: ${stringifyTypeZ(it.value)}" }
     is C.TypeZ.Splice -> "$${stringifyTermS(type.element)}"
     is C.TypeZ.Hole -> " "

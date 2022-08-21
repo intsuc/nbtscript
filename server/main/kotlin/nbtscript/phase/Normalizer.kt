@@ -22,17 +22,17 @@ fun Unifier.reflectTypeZ(
     is TypeZ.FloatType -> TypeZ.reflect(type)
     is TypeZ.DoubleType -> TypeZ.reflect(type)
     is TypeZ.StringType -> TypeZ.reflect(type)
+    is TypeZ.CollectionType -> {
+        val element = reflectTypeZ(env, type.element)
+        TypeZ.CollectionType(element)
+    }
+
     is TypeZ.ByteArrayType -> TypeZ.reflect(type)
     is TypeZ.IntArrayType -> TypeZ.reflect(type)
     is TypeZ.LongArrayType -> TypeZ.reflect(type)
     is TypeZ.ListType -> {
         val element = reflectTypeZ(env, type.element)
         TypeZ.ListType(element)
-    }
-
-    is TypeZ.CollectionType -> {
-        val element = reflectTypeZ(env, type.element)
-        TypeZ.CollectionType(element)
     }
 
     is TypeZ.CompoundType -> {
@@ -62,17 +62,17 @@ fun Unifier.reifyTypeZ(
     is TypeZ.FloatType -> TypeZ.reify(type)
     is TypeZ.DoubleType -> TypeZ.reify(type)
     is TypeZ.StringType -> TypeZ.reify(type)
+    is TypeZ.CollectionType -> {
+        val element = reifyTypeZ(env, type.element)
+        TypeZ.CollectionType(element)
+    }
+
     is TypeZ.ByteArrayType -> TypeZ.reify(type)
     is TypeZ.IntArrayType -> TypeZ.reify(type)
     is TypeZ.LongArrayType -> TypeZ.reify(type)
     is TypeZ.ListType -> {
         val element = reifyTypeZ(env, type.element)
         TypeZ.ListType(element)
-    }
-
-    is TypeZ.CollectionType -> {
-        val element = reifyTypeZ(env, type.element)
-        TypeZ.CollectionType(element)
     }
 
     is TypeZ.CompoundType -> {
