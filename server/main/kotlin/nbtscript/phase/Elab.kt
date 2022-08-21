@@ -239,7 +239,7 @@ class Elab private constructor(
                 val elements = mutableListOf<C.TermZ>()
                 val head = elabTermZ(ctx, term.elements.first(), type?.element)
                 elements += head
-                term.elements.subList(1, term.elements.size).mapTo(elements) { elabTermZ(ctx, it, head.type) }
+                term.elements.subList(1, term.elements.size).mapTo(elements) { elabTermZ(ctx, it, type?.element ?: head.type) }
                 C.TermZ.ListTag(elements, type ?: C.TypeZ.ListType(head.type))
             }
         }
