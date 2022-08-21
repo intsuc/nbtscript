@@ -3,6 +3,10 @@
   "name": "nbtscript",
   "patterns": [
     {
+      "name": "keyword.operator.nbtscript",
+      "match": "(->|=>|`|\\$|\\.|:|=)"
+    },
+    {
       "name": "keyword.nbtscript",
       "match": "\\b(fun|let)\\b"
     },
