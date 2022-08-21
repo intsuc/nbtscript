@@ -254,23 +254,6 @@ class Parse private constructor(
                             }
 
                             "type" -> Term.TypeType(range())
-                            "let" -> {
-                                val name = parseName()
-                                val anno = when (peek()) {
-                                    ':' -> {
-                                        skip()
-                                        parseTerm()
-                                    }
-
-                                    else -> null
-                                }
-                                expect('=')
-                                val init = parseTerm()
-                                expect(';')
-                                val next = parseTerm()
-                                Term.Let(name, anno, init, next, range())
-                            }
-
                             "fun" -> {
                                 val name = parseName()
                                 val anno = when (peek()) {
@@ -288,6 +271,22 @@ class Parse private constructor(
                                 Term.Fun(name, anno, body, next, range())
                             }
 
+                            "let" -> {
+                                val name = parseName()
+                                val anno = when (peek()) {
+                                    ':' -> {
+                                        skip()
+                                        parseTerm()
+                                    }
+
+                                    else -> null
+                                }
+                                expect('=')
+                                val init = parseTerm()
+                                expect(';')
+                                val next = parseTerm()
+                                Term.Let(name, anno, init, next, range())
+                            }
                             "mac" -> {
                                 val name = parseName()
                                 val anno = when (peek()) {

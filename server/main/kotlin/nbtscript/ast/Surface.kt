@@ -52,8 +52,8 @@ sealed interface Surface {
         class Splice(val element: Term, override val range: Range) : TypeZ, TermZ
         class Lift(val element: Term, override val range: Range) : TermM
         class Unlift(val element: Term, override val range: Range) : TypeZ, TermZ, TermS
-        class Let(val name: Name, val anno: Term?, val init: Term, val next: Term, override val range: Range) : TermS
         class Fun(val name: Name, val anno: Term?, val body: Term, val next: Term, override val range: Range) : TermZ
+        class Let(val name: Name, val anno: Term?, val body: Term, val next: Term, override val range: Range) : TermS
         class Mac(val name: Name, val anno: Term?, val body: Term, val next: Term, override val range: Range) : TermM
         class Var(val name: String, override val range: Range) : TermZ, TermS
         class Hole(override val range: Range) : Term

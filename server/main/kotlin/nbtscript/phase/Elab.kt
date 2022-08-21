@@ -504,7 +504,7 @@ class Elab private constructor(
     private inline fun elabTermSLet(ctx: Context, term: S.Term.Let, type: C.TermS<Sem>?): C.TermS<Syn> {
         val anno = term.anno?.let { elabTermS(ctx, it, C.TermS.UniverseType) }
         val a = anno?.let { context.unifier.reflectTermS(ctx.values, it) }
-        val init = elabTermS(ctx, term.init, a)
+        val init = elabTermS(ctx, term.body, a)
         context.setHover(term.name.range, lazy {
             Hover(markup(context.unifier.stringifyTermS(anno ?: context.unifier.reifyTermS(ctx.values, init.type))))
         })
