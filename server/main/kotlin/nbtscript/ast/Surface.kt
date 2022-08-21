@@ -51,7 +51,7 @@ sealed interface Surface {
         class Let(val name: Name, val anno: Term?, val init: Term, val next: Term, override val range: Range) : TermS
         class Fun(val name: Name, val anno: Term?, val body: Term, val next: Term, override val range: Range) : TermZ
         class Var(val name: String, override val range: Range) : TermZ, TermS
-        class Hole(override val range: Range) : TypeZ, TermZ, TermS
+        class Hole(override val range: Range) : Term
     }
 
     class Name(val text: String, override val range: Range) : Surface
