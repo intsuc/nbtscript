@@ -1,8 +1,7 @@
 package nbtscript.phase
 
 import kotlinx.collections.immutable.*
-import nbtscript.ast.Core.Kind.Sem
-import nbtscript.ast.Core.Kind.Syn
+import nbtscript.ast.Core.Kind.*
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either.forRight
 import nbtscript.ast.Core as C
@@ -45,21 +44,21 @@ class Elab private constructor(
         })
     }
 
-    private inline fun elabTypeZByteType(): C.TypeZ<Syn> = C.TypeZ.ByteType.Syn
-    private inline fun elabTypeZShortType(): C.TypeZ<Syn> = C.TypeZ.ShortType.Syn
-    private inline fun elabTypeZIntType(): C.TypeZ<Syn> = C.TypeZ.IntType.Syn
-    private inline fun elabTypeZLongType(): C.TypeZ<Syn> = C.TypeZ.LongType.Syn
-    private inline fun elabTypeZFloatType(): C.TypeZ<Syn> = C.TypeZ.FloatType.Syn
-    private inline fun elabTypeZDoubleType(): C.TypeZ<Syn> = C.TypeZ.DoubleType.Syn
-    private inline fun elabTypeZStringType(): C.TypeZ<Syn> = C.TypeZ.StringType.Syn
+    private inline fun elabTypeZByteType(): C.TypeZ<Syn> = C.TypeZ.ByteType
+    private inline fun elabTypeZShortType(): C.TypeZ<Syn> = C.TypeZ.ShortType
+    private inline fun elabTypeZIntType(): C.TypeZ<Syn> = C.TypeZ.IntType
+    private inline fun elabTypeZLongType(): C.TypeZ<Syn> = C.TypeZ.LongType
+    private inline fun elabTypeZFloatType(): C.TypeZ<Syn> = C.TypeZ.FloatType
+    private inline fun elabTypeZDoubleType(): C.TypeZ<Syn> = C.TypeZ.DoubleType
+    private inline fun elabTypeZStringType(): C.TypeZ<Syn> = C.TypeZ.StringType
     private inline fun elabTypeZCollectionType(ctx: Context, type: S.Term.CollectionType): C.TypeZ<Syn> {
         val element = elabTypeZ(ctx, type.element)
         return C.TypeZ.CollectionType(element)
     }
 
-    private inline fun elabTypeZByteArrayType(): C.TypeZ<Syn> = C.TypeZ.ByteArrayType.Syn
-    private inline fun elabTypeZIntArrayType(): C.TypeZ<Syn> = C.TypeZ.IntArrayType.Syn
-    private inline fun elabTypeZLongArrayType(): C.TypeZ<Syn> = C.TypeZ.LongArrayType.Syn
+    private inline fun elabTypeZByteArrayType(): C.TypeZ<Syn> = C.TypeZ.ByteArrayType
+    private inline fun elabTypeZIntArrayType(): C.TypeZ<Syn> = C.TypeZ.IntArrayType
+    private inline fun elabTypeZLongArrayType(): C.TypeZ<Syn> = C.TypeZ.LongArrayType
     private inline fun elabTypeZListType(ctx: Context, type: S.Term.ListType): C.TypeZ<Syn> {
         val element = elabTypeZ(ctx, type.element)
         return C.TypeZ.ListType(element)
@@ -77,7 +76,7 @@ class Elab private constructor(
     }
 
     private inline fun elabTypeZSplice(ctx: Context, type: S.Term.Splice): C.TypeZ<Syn> {
-        val element = elabTermS(ctx, type.element, C.TermS.TypeType.Sem)
+        val element = elabTermS(ctx, type.element, C.TermS.TypeType)
         return C.TypeZ.Splice(element)
     }
 
@@ -128,23 +127,23 @@ class Elab private constructor(
     private inline fun elabTermZDoubleTag(term: S.Term.DoubleTag): C.TermZ = C.TermZ.DoubleTag(term.data)
     private inline fun elabTermZStringTag(term: S.Term.StringTag): C.TermZ = C.TermZ.StringTag(term.data)
     private inline fun elabTermZByteArrayTag(ctx: Context, term: S.Term.ByteArrayTag): C.TermZ {
-        val elements = term.elements.map { elabTermZ(ctx, it, C.TypeZ.ByteType.Sem) }
+        val elements = term.elements.map { elabTermZ(ctx, it, C.TypeZ.ByteType) }
         return C.TermZ.ByteArrayTag(elements)
     }
 
     private inline fun elabTermZIntArrayTag(ctx: Context, term: S.Term.IntArrayTag): C.TermZ {
-        val elements = term.elements.map { elabTermZ(ctx, it, C.TypeZ.IntType.Sem) }
+        val elements = term.elements.map { elabTermZ(ctx, it, C.TypeZ.IntType) }
         return C.TermZ.IntArrayTag(elements)
     }
 
     private inline fun elabTermZLongArrayTag(ctx: Context, term: S.Term.LongArrayTag): C.TermZ {
-        val elements = term.elements.map { elabTermZ(ctx, it, C.TypeZ.LongType.Sem) }
+        val elements = term.elements.map { elabTermZ(ctx, it, C.TypeZ.LongType) }
         return C.TermZ.LongArrayTag(elements)
     }
 
     private inline fun elabTermZListTag(ctx: Context, term: S.Term.ListTag, type: C.TypeZ.ListType<Sem>? = null): C.TermZ {
         return if (term.elements.isEmpty()) {
-            C.TermZ.ListTag(emptyList(), C.TypeZ.ListType(C.TypeZ.EndType.Sem))
+            C.TermZ.ListTag(emptyList(), C.TypeZ.ListType(C.TypeZ.EndType))
         } else {
             val elements = mutableListOf<C.TermZ>()
             val head = elabTermZ(ctx, term.elements.first(), type?.element)
@@ -275,26 +274,26 @@ class Elab private constructor(
         }
     }
 
-    private inline fun elabTermSUniverseType(): C.TermS<Syn> = C.TermS.UniverseType.Syn
-    private inline fun elabTermSEndType(): C.TermS<Syn> = C.TermS.EndType.Syn
-    private inline fun elabTermSByteType(): C.TermS<Syn> = C.TermS.ByteType.Syn
-    private inline fun elabTermSShortType(): C.TermS<Syn> = C.TermS.ShortType.Syn
-    private inline fun elabTermSIntType(): C.TermS<Syn> = C.TermS.IntType.Syn
-    private inline fun elabTermSLongType(): C.TermS<Syn> = C.TermS.LongType.Syn
-    private inline fun elabTermSFloatType(): C.TermS<Syn> = C.TermS.FloatType.Syn
-    private inline fun elabTermSDoubleType(): C.TermS<Syn> = C.TermS.DoubleType.Syn
-    private inline fun elabTermSStringType(): C.TermS<Syn> = C.TermS.StringType.Syn
-    private inline fun elabTermSByteArrayType(): C.TermS<Syn> = C.TermS.ByteArrayType.Syn
-    private inline fun elabTermSIntArrayType(): C.TermS<Syn> = C.TermS.IntArrayType.Syn
-    private inline fun elabTermSLongArrayType(): C.TermS<Syn> = C.TermS.LongArrayType.Syn
+    private inline fun elabTermSUniverseType(): C.TermS<Syn> = C.TermS.UniverseType
+    private inline fun elabTermSEndType(): C.TermS<Syn> = C.TermS.EndType
+    private inline fun elabTermSByteType(): C.TermS<Syn> = C.TermS.ByteType
+    private inline fun elabTermSShortType(): C.TermS<Syn> = C.TermS.ShortType
+    private inline fun elabTermSIntType(): C.TermS<Syn> = C.TermS.IntType
+    private inline fun elabTermSLongType(): C.TermS<Syn> = C.TermS.LongType
+    private inline fun elabTermSFloatType(): C.TermS<Syn> = C.TermS.FloatType
+    private inline fun elabTermSDoubleType(): C.TermS<Syn> = C.TermS.DoubleType
+    private inline fun elabTermSStringType(): C.TermS<Syn> = C.TermS.StringType
+    private inline fun elabTermSByteArrayType(): C.TermS<Syn> = C.TermS.ByteArrayType
+    private inline fun elabTermSIntArrayType(): C.TermS<Syn> = C.TermS.IntArrayType
+    private inline fun elabTermSLongArrayType(): C.TermS<Syn> = C.TermS.LongArrayType
     private inline fun elabTermSListType(ctx: Context, term: S.Term.ListType): C.TermS<Syn> {
-        val element = elabTermS(ctx, term.element, C.TermS.UniverseType.Sem)
+        val element = elabTermS(ctx, term.element, C.TermS.UniverseType)
         return C.TermS.ListType(element)
     }
 
     private inline fun elabTermSCompoundType(ctx: Context, term: S.Term.CompoundType): C.TermS<Syn> {
         val elements = term.elements.map {
-            val value = elabTermS(ctx, it.value, C.TermS.UniverseType.Sem)
+            val value = elabTermS(ctx, it.value, C.TermS.UniverseType)
             context.setHover(it.key.range, lazy {
                 Hover(markup(context.unifier.stringifyTermS(value)))
             })
@@ -303,15 +302,15 @@ class Elab private constructor(
         return C.TermS.CompoundType(elements)
     }
 
-    private inline fun elabTermSNodeType(): C.TermS<Syn> = C.TermS.NodeType.Syn
+    private inline fun elabTermSNodeType(): C.TermS<Syn> = C.TermS.NodeType
     private inline fun elabTermSFunType(ctx: Context, term: S.Term.FunType): C.TermS<Syn> {
-        val dom = elabTermS(ctx, term.dom, C.TermS.UniverseType.Sem)
+        val dom = elabTermS(ctx, term.dom, C.TermS.UniverseType)
         if (term.name != null) {
             context.setHover(term.name.range, lazy {
                 Hover(markup(context.unifier.stringifyTermS(dom)))
             })
         }
-        val cod = elabTermS(ctx.bindS(term.name?.text, context.unifier.reflectTermS(ctx.values, dom)), term.cod, C.TermS.UniverseType.Sem)
+        val cod = elabTermS(ctx.bindS(term.name?.text, context.unifier.reflectTermS(ctx.values, dom)), term.cod, C.TermS.UniverseType)
         return C.TermS.FunType(term.name?.text, dom, cod)
     }
 
@@ -320,7 +319,7 @@ class Elab private constructor(
         return C.TermS.CodeType(element)
     }
 
-    private inline fun elabTermSTypeType(): C.TermS<Syn> = C.TermS.TypeType.Syn
+    private inline fun elabTermSTypeType(): C.TermS<Syn> = C.TermS.TypeType
     private inline fun elabTermSByteTag(term: S.Term.ByteTag): C.TermS<Syn> = C.TermS.ByteTag(term.data)
     private inline fun elabTermSShortTag(term: S.Term.ShortTag): C.TermS<Syn> = C.TermS.ShortTag(term.data)
     private inline fun elabTermSIntTag(term: S.Term.IntTag): C.TermS<Syn> = C.TermS.IntTag(term.data)
@@ -329,23 +328,23 @@ class Elab private constructor(
     private inline fun elabTermSDoubleTag(term: S.Term.DoubleTag): C.TermS<Syn> = C.TermS.DoubleTag(term.data)
     private inline fun elabTermSStringTag(term: S.Term.StringTag): C.TermS<Syn> = C.TermS.StringTag(term.data)
     private inline fun elabTermSByteArrayTag(ctx: Context, term: S.Term.ByteArrayTag): C.TermS<Syn> {
-        val elements = term.elements.map { elabTermS(ctx, it, C.TermS.ByteType.Sem) }
+        val elements = term.elements.map { elabTermS(ctx, it, C.TermS.ByteType) }
         return C.TermS.ByteArrayTag(elements)
     }
 
     private inline fun elabTermSIntArrayTag(ctx: Context, term: S.Term.IntArrayTag): C.TermS<Syn> {
-        val elements = term.elements.map { elabTermS(ctx, it, C.TermS.IntType.Sem) }
+        val elements = term.elements.map { elabTermS(ctx, it, C.TermS.IntType) }
         return C.TermS.IntArrayTag(elements)
     }
 
     private inline fun elabTermSLongArrayTag(ctx: Context, term: S.Term.LongArrayTag): C.TermS<Syn> {
-        val elements = term.elements.map { elabTermS(ctx, it, C.TermS.LongType.Sem) }
+        val elements = term.elements.map { elabTermS(ctx, it, C.TermS.LongType) }
         return C.TermS.LongArrayTag(elements)
     }
 
     private inline fun elabTermSListTag(ctx: Context, term: S.Term.ListTag, type: C.TermS.VListType?): C.TermS<Syn> {
         return if (term.elements.isEmpty()) {
-            C.TermS.ListTag(emptyList(), C.TermS.VListType(lazyOf(C.TermS.EndType.Sem)))
+            C.TermS.ListTag(emptyList(), C.TermS.VListType(lazyOf(C.TermS.EndType)))
         } else {
             val elements = mutableListOf<C.TermS<Syn>>()
             val head = elabTermS(ctx, term.elements.first(), type?.element?.value)
@@ -375,7 +374,7 @@ class Elab private constructor(
 
             is S.Term.ListTag -> {
                 when (val size = term.elements.size) {
-                    0 -> C.TermS.AllElementsNode.Syn
+                    0 -> C.TermS.AllElementsNode
                     1 -> {
                         val pattern = elabTermS(ctx, term.elements.first())
                         when (context.unifier.force(pattern.type)) {
@@ -400,12 +399,12 @@ class Elab private constructor(
 
     private inline fun elabTermSGet(ctx: Context, term: S.Term.Get): C.TermS<Syn> {
         val target = elabTermS(ctx, term.target)
-        val path = elabTermS(ctx, term.path, C.TermS.VListType(lazyOf(C.TermS.NodeType.Sem)))
-        return C.TermS.Get(target, path, C.TermS.VCodeType(lazyOf(C.TypeZ.EndType.Sem) /* TODO */))
+        val path = elabTermS(ctx, term.path, C.TermS.VListType(lazyOf(C.TermS.NodeType)))
+        return C.TermS.Get(target, path, C.TermS.VCodeType(lazyOf(C.TypeZ.EndType) /* TODO */))
     }
 
     private inline fun inferTermSAbs(ctx: Context, term: S.Term.Abs): C.TermS<Syn> {
-        val anno = term.anno?.let { elabTermS(ctx, it, C.TermS.UniverseType.Sem) } ?: context.unifier.fresh()
+        val anno = term.anno?.let { elabTermS(ctx, it, C.TermS.UniverseType) } ?: context.unifier.fresh()
         context.setHover(term.name.range, lazy {
             Hover(markup(context.unifier.stringifyTermS(anno)))
         })
@@ -500,7 +499,7 @@ class Elab private constructor(
     }
 
     private inline fun elabTermSLet(ctx: Context, term: S.Term.Let, type: C.TermS<Sem>?): C.TermS<Syn> {
-        val anno = term.anno?.let { elabTermS(ctx, it, C.TermS.UniverseType.Sem) }
+        val anno = term.anno?.let { elabTermS(ctx, it, C.TermS.UniverseType) }
         val a = anno?.let { context.unifier.reflectTermS(ctx.values, it) }
         val init = elabTermS(ctx, term.init, a)
         context.setHover(term.name.range, lazy {
@@ -585,7 +584,7 @@ class Elab private constructor(
         diagnostic: Diagnostic,
     ): C.TypeZ<Syn> {
         context.addDiagnostic(diagnostic)
-        return C.TypeZ.Hole.Syn
+        return C.TypeZ.Hole
     }
 
     private fun errorTermZ(
@@ -593,7 +592,7 @@ class Elab private constructor(
         type: C.TypeZ<Sem>? = null,
     ): C.TermZ {
         context.addDiagnostic(diagnostic)
-        return type?.let { C.TermZ.Hole(type) } ?: C.TermZ.Hole.Syn
+        return type?.let { C.TermZ.Hole(type) } ?: HoleZ
     }
 
     private fun errorTermS(
@@ -601,10 +600,13 @@ class Elab private constructor(
         type: C.TermS<Sem>? = null,
     ): C.TermS<Syn> {
         context.addDiagnostic(diagnostic)
-        return type?.let { C.TermS.Hole(it) } ?: C.TermS.Hole.Syn
+        return type?.let { C.TermS.Hole(it) } ?: HoleS
     }
 
     companion object : Phase<S.Root, C.Root> {
+        private val HoleZ: C.TermZ = C.TermZ.Hole(C.TypeZ.EndType)
+        private val HoleS: C.TermS<End> = C.TermS.Hole(C.TermS.EndType)
+
         override operator fun invoke(
             context: Phase.Context,
             input: S.Root,

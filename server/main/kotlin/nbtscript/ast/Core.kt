@@ -1,163 +1,79 @@
 package nbtscript.ast
 
 import kotlinx.collections.immutable.PersistentList
-import nbtscript.ast.Core.Kind.Sem
-import nbtscript.ast.Core.Kind.Syn
-import nbtscript.cast
+import nbtscript.ast.Core.Kind.*
 
 sealed interface Core {
     class Root(val body: TermZ)
 
     sealed interface Kind {
-        object Syn : Kind
-        object Sem : Kind
+        sealed interface Syn : Kind
+        sealed interface Sem : Kind
+        sealed interface End : Syn, Sem
     }
 
     sealed interface ObjZ<out K : Kind>
 
     sealed interface TypeZ<out K : Kind> : ObjZ<K> {
-        class EndType<K : Kind> private constructor() : TypeZ<K> {
-            companion object {
-                val Syn: TypeZ<Syn> = EndType()
-                val Sem: TypeZ<Sem> = reflect(Syn)
-            }
-        }
-
-        class ByteType<K : Kind> private constructor() : TypeZ<K> {
-            companion object {
-                val Syn: TypeZ<Syn> = ByteType()
-                val Sem: TypeZ<Sem> = reflect(Syn)
-            }
-        }
-
-        class ShortType<K : Kind> private constructor() : TypeZ<K> {
-            companion object {
-                val Syn: TypeZ<Syn> = ShortType()
-                val Sem: TypeZ<Sem> = reflect(Syn)
-            }
-        }
-
-        class IntType<K : Kind> private constructor() : TypeZ<K> {
-            companion object {
-                val Syn: TypeZ<Syn> = IntType()
-                val Sem: TypeZ<Sem> = reflect(Syn)
-            }
-        }
-
-        class LongType<K : Kind> private constructor() : TypeZ<K> {
-            companion object {
-                val Syn: TypeZ<Syn> = LongType()
-                val Sem: TypeZ<Sem> = reflect(Syn)
-            }
-        }
-
-        class FloatType<K : Kind> private constructor() : TypeZ<K> {
-            companion object {
-                val Syn: TypeZ<Syn> = FloatType()
-                val Sem: TypeZ<Sem> = reflect(Syn)
-            }
-        }
-
-        class DoubleType<K : Kind> private constructor() : TypeZ<K> {
-            companion object {
-                val Syn: TypeZ<Syn> = DoubleType()
-                val Sem: TypeZ<Sem> = reflect(Syn)
-            }
-        }
-
-        class StringType<K : Kind> private constructor() : TypeZ<K> {
-            companion object {
-                val Syn: TypeZ<Syn> = StringType()
-                val Sem: TypeZ<Sem> = reflect(Syn)
-            }
-        }
-
+        object EndType : TypeZ<End>
+        object ByteType : TypeZ<End>
+        object ShortType : TypeZ<End>
+        object IntType : TypeZ<End>
+        object LongType : TypeZ<End>
+        object FloatType : TypeZ<End>
+        object DoubleType : TypeZ<End>
+        object StringType : TypeZ<End>
         class CollectionType<K : Kind>(val element: TypeZ<K>) : TypeZ<K>
-
-        class ByteArrayType<K : Kind> private constructor() : TypeZ<K> {
-            companion object {
-                val Syn: TypeZ<Syn> = ByteArrayType()
-                val Sem: TypeZ<Sem> = reflect(Syn)
-            }
-        }
-
-        class IntArrayType<K : Kind> private constructor() : TypeZ<K> {
-            companion object {
-                val Syn: TypeZ<Syn> = IntArrayType()
-                val Sem: TypeZ<Sem> = reflect(Syn)
-            }
-        }
-
-        class LongArrayType<K : Kind> private constructor() : TypeZ<K> {
-            companion object {
-                val Syn: TypeZ<Syn> = LongArrayType()
-                val Sem: TypeZ<Sem> = reflect(Syn)
-            }
-        }
-
+        object ByteArrayType : TypeZ<End>
+        object IntArrayType : TypeZ<End>
+        object LongArrayType : TypeZ<End>
         class ListType<K : Kind>(val element: TypeZ<K>) : TypeZ<K>
-
         class CompoundType<K : Kind>(val elements: Map<String, TypeZ<K>>) : TypeZ<K>
-
         class Splice<K : Kind>(val element: TermS<K>) : TypeZ<K>
-
-        class Hole<K : Kind> private constructor() : TypeZ<K> {
-            companion object {
-                val Syn: TypeZ<Syn> = Hole()
-                val Sem: TypeZ<Sem> = reflect(Syn)
-            }
-        }
-
-        companion object {
-            @Suppress("NOTHING_TO_INLINE")
-            inline fun reflect(term: TypeZ<Syn>): TypeZ<Sem> = cast(term)
-
-            @Suppress("NOTHING_TO_INLINE")
-            inline fun reify(term: TypeZ<Sem>): TypeZ<Syn> = cast(term)
-        }
+        object Hole : TypeZ<End>
     }
 
     sealed interface TermZ : ObjZ<Syn> {
         val type: TypeZ<Sem>
 
         class ByteTag(val data: Byte) : TermZ {
-            override val type: TypeZ<Sem> get() = TypeZ.ByteType.Sem
+            override val type: TypeZ<Sem> get() = TypeZ.ByteType
         }
 
         class ShortTag(val data: Short) : TermZ {
-            override val type: TypeZ<Sem> get() = TypeZ.ShortType.Sem
+            override val type: TypeZ<Sem> get() = TypeZ.ShortType
         }
 
         class IntTag(val data: Int) : TermZ {
-            override val type: TypeZ<Sem> get() = TypeZ.IntType.Sem
+            override val type: TypeZ<Sem> get() = TypeZ.IntType
         }
 
         class LongTag(val data: Long) : TermZ {
-            override val type: TypeZ<Sem> get() = TypeZ.LongType.Sem
+            override val type: TypeZ<Sem> get() = TypeZ.LongType
         }
 
         class FloatTag(val data: Float) : TermZ {
-            override val type: TypeZ<Sem> get() = TypeZ.FloatType.Sem
+            override val type: TypeZ<Sem> get() = TypeZ.FloatType
         }
 
         class DoubleTag(val data: Double) : TermZ {
-            override val type: TypeZ<Sem> get() = TypeZ.DoubleType.Sem
+            override val type: TypeZ<Sem> get() = TypeZ.DoubleType
         }
 
         class StringTag(val data: String) : TermZ {
-            override val type: TypeZ<Sem> get() = TypeZ.StringType.Sem
+            override val type: TypeZ<Sem> get() = TypeZ.StringType
         }
 
         class ByteArrayTag(val elements: List<TermZ>) : TermZ {
-            override val type: TypeZ<Sem> get() = TypeZ.ByteArrayType.Sem
+            override val type: TypeZ<Sem> get() = TypeZ.ByteArrayType
         }
 
         class IntArrayTag(val elements: List<TermZ>) : TermZ {
-            override val type: TypeZ<Sem> get() = TypeZ.IntArrayType.Sem
+            override val type: TypeZ<Sem> get() = TypeZ.IntArrayType
         }
 
         class LongArrayTag(val elements: List<TermZ>) : TermZ {
-            override val type: TypeZ<Sem> get() = TypeZ.LongArrayType.Sem
+            override val type: TypeZ<Sem> get() = TypeZ.LongArrayType
         }
 
         class ListTag(val elements: List<TermZ>, override val type: TypeZ<Sem>) : TermZ
@@ -170,233 +86,154 @@ sealed interface Core {
 
         class Splice(val element: TermS<Syn>, override val type: TypeZ<Sem>) : TermZ
 
-        class Hole(override val type: TypeZ<Sem>) : TermZ {
-            companion object {
-                val Syn: TermZ = Hole(TypeZ.EndType.Sem)
-            }
-        }
+        class Hole(override val type: TypeZ<Sem>) : TermZ
     }
 
     sealed interface TermS<out K : Kind> {
         val type: TermS<Sem>
 
-        class UniverseType<K : Kind> private constructor() : TermS<K> {
-            override val type: TermS<Sem> get() = Sem
-
-            companion object {
-                val Syn: TermS<Syn> = UniverseType()
-                val Sem: TermS<Sem> = reflect(Syn)
-            }
+        object UniverseType : TermS<End> {
+            override val type: TermS<Sem> get() = this
         }
 
-        class EndType<K : Kind> private constructor() : TermS<K> {
-            override val type: TermS<Sem> get() = UniverseType.Sem
-
-            companion object {
-                val Syn: TermS<Syn> = EndType()
-                val Sem: TermS<Sem> = reflect(Syn)
-            }
+        object EndType : TermS<End> {
+            override val type: TermS<Sem> get() = UniverseType
         }
 
-        class ByteType<K : Kind> private constructor() : TermS<K> {
-            override val type: TermS<Sem> get() = UniverseType.Sem
-
-            companion object {
-                val Syn: TermS<Syn> = ByteType()
-                val Sem: TermS<Sem> = reflect(Syn)
-            }
+        object ByteType : TermS<End> {
+            override val type: TermS<Sem> get() = UniverseType
         }
 
-        class ShortType<K : Kind> private constructor() : TermS<K> {
-            override val type: TermS<Sem> get() = UniverseType.Sem
-
-            companion object {
-                val Syn: TermS<Syn> = ShortType()
-                val Sem: TermS<Sem> = reflect(Syn)
-            }
+        object ShortType : TermS<End> {
+            override val type: TermS<Sem> get() = UniverseType
         }
 
-        class IntType<K : Kind> private constructor() : TermS<K> {
-            override val type: TermS<Sem> get() = UniverseType.Sem
-
-            companion object {
-                val Syn: TermS<Syn> = IntType()
-                val Sem: TermS<Sem> = reflect(Syn)
-            }
+        object IntType : TermS<End> {
+            override val type: TermS<Sem> get() = UniverseType
         }
 
-        class LongType<K : Kind> private constructor() : TermS<K> {
-            override val type: TermS<Sem> get() = UniverseType.Sem
-
-            companion object {
-                val Syn: TermS<Syn> = LongType()
-                val Sem: TermS<Sem> = reflect(Syn)
-            }
+        object LongType : TermS<End> {
+            override val type: TermS<Sem> get() = UniverseType
         }
 
-        class FloatType<K : Kind> private constructor() : TermS<K> {
-            override val type: TermS<Sem> get() = UniverseType.Sem
-
-            companion object {
-                val Syn: TermS<Syn> = FloatType()
-                val Sem: TermS<Sem> = reflect(Syn)
-            }
+        object FloatType : TermS<End> {
+            override val type: TermS<Sem> get() = UniverseType
         }
 
-        class DoubleType<K : Kind> private constructor() : TermS<K> {
-            override val type: TermS<Sem> get() = UniverseType.Sem
-
-            companion object {
-                val Syn: TermS<Syn> = DoubleType()
-                val Sem: TermS<Sem> = reflect(Syn)
-            }
+        object DoubleType : TermS<End> {
+            override val type: TermS<Sem> get() = UniverseType
         }
 
-        class StringType<K : Kind> private constructor() : TermS<K> {
-            override val type: TermS<Sem> get() = UniverseType.Sem
-
-            companion object {
-                val Syn: TermS<Syn> = StringType()
-                val Sem: TermS<Sem> = reflect(Syn)
-            }
+        object StringType : TermS<End> {
+            override val type: TermS<Sem> get() = UniverseType
         }
 
-        class ByteArrayType<K : Kind> private constructor() : TermS<K> {
-            override val type: TermS<Sem> get() = UniverseType.Sem
-
-            companion object {
-                val Syn: TermS<Syn> = ByteArrayType()
-                val Sem: TermS<Sem> = reflect(Syn)
-            }
+        object ByteArrayType : TermS<End> {
+            override val type: TermS<Sem> get() = UniverseType
         }
 
-        class IntArrayType<K : Kind> private constructor() : TermS<K> {
-            override val type: TermS<Sem> get() = UniverseType.Sem
-
-            companion object {
-                val Syn: TermS<Syn> = IntArrayType()
-                val Sem: TermS<Sem> = reflect(Syn)
-            }
+        object IntArrayType : TermS<End> {
+            override val type: TermS<Sem> get() = UniverseType
         }
 
-        class LongArrayType<K : Kind> private constructor() : TermS<K> {
-            override val type: TermS<Sem> get() = UniverseType.Sem
-
-            companion object {
-                val Syn: TermS<Syn> = LongArrayType()
-                val Sem: TermS<Sem> = reflect(Syn)
-            }
+        object LongArrayType : TermS<End> {
+            override val type: TermS<Sem> get() = UniverseType
         }
 
         class ListType(val element: TermS<Syn>) : TermS<Syn> {
-            override val type: TermS<Sem> get() = UniverseType.Sem
+            override val type: TermS<Sem> get() = UniverseType
         }
 
         class VListType(val element: Lazy<TermS<Sem>>) : TermS<Sem> {
-            override val type: TermS<Sem> get() = UniverseType.Sem
+            override val type: TermS<Sem> get() = UniverseType
         }
 
         class CompoundType(val elements: Map<String, TermS<Syn>>) : TermS<Syn> {
-            override val type: TermS<Sem> get() = UniverseType.Sem
+            override val type: TermS<Sem> get() = UniverseType
         }
 
         class VCompoundType(val elements: Map<String, Lazy<TermS<Sem>>>) : TermS<Sem> {
-            override val type: TermS<Sem> get() = UniverseType.Sem
+            override val type: TermS<Sem> get() = UniverseType
         }
 
-        class NodeType<K : Kind> private constructor() : TermS<K> {
-            override val type: TermS<Sem> get() = UniverseType.Sem
-
-            companion object {
-                val Syn: TermS<Syn> = NodeType()
-                val Sem: TermS<Sem> = reflect(Syn)
-            }
+        object NodeType : TermS<End> {
+            override val type: TermS<Sem> get() = UniverseType
         }
 
         class FunType(val name: String?, val dom: TermS<Syn>, val cod: TermS<Syn>) : TermS<Syn> {
-            override val type: TermS<Sem> get() = UniverseType.Sem
+            override val type: TermS<Sem> get() = UniverseType
         }
 
         class VFunType(val name: String?, val dom: Lazy<TermS<Sem>>, val cod: Clos) : TermS<Sem> {
-            override val type: TermS<Sem> get() = UniverseType.Sem
+            override val type: TermS<Sem> get() = UniverseType
         }
 
         class CodeType(val element: TypeZ<Syn>) : TermS<Syn> {
-            override val type: TermS<Sem> get() = UniverseType.Sem // ?
+            override val type: TermS<Sem> get() = UniverseType
         }
 
         class VCodeType(val element: Lazy<TypeZ<Sem>>) : TermS<Sem> {
-            override val type: TermS<Sem> get() = UniverseType.Sem // ?
+            override val type: TermS<Sem> get() = UniverseType
         }
 
-        class TypeType<K : Kind> private constructor() : TermS<K> {
-            override val type: TermS<Sem> get() = UniverseType.Sem
-
-            companion object {
-                val Syn: TermS<Syn> = TypeType()
-                val Sem: TermS<Sem> = reflect(Syn)
-            }
+        object TypeType : TermS<End> {
+            override val type: TermS<Sem> get() = UniverseType
         }
 
-        class EndTag<K : Kind> private constructor() : TermS<K> {
-            override val type: TermS<Sem> get() = EndType.Sem
-
-            companion object {
-                val Syn: TermS<Syn> = EndTag()
-                val Sem: TermS<Sem> = reflect(Syn)
-            }
+        object EndTag : TermS<End> {
+            override val type: TermS<Sem> get() = EndType
         }
 
-        class ByteTag<K : Kind>(val data: Byte) : TermS<K> {
-            override val type: TermS<Sem> get() = ByteType.Sem
+        class ByteTag(val data: Byte) : TermS<End> {
+            override val type: TermS<Sem> get() = ByteType
         }
 
-        class ShortTag<K : Kind>(val data: Short) : TermS<K> {
-            override val type: TermS<Sem> get() = ShortType.Sem
+        class ShortTag(val data: Short) : TermS<End> {
+            override val type: TermS<Sem> get() = ShortType
         }
 
-        class IntTag<K : Kind>(val data: Int) : TermS<K> {
-            override val type: TermS<Sem> get() = IntType.Sem
+        class IntTag(val data: Int) : TermS<End> {
+            override val type: TermS<Sem> get() = IntType
         }
 
-        class LongTag<K : Kind>(val data: Long) : TermS<K> {
-            override val type: TermS<Sem> get() = LongType.Sem
+        class LongTag(val data: Long) : TermS<End> {
+            override val type: TermS<Sem> get() = LongType
         }
 
-        class FloatTag<K : Kind>(val data: Float) : TermS<K> {
-            override val type: TermS<Sem> get() = FloatType.Sem
+        class FloatTag(val data: Float) : TermS<End> {
+            override val type: TermS<Sem> get() = FloatType
         }
 
-        class DoubleTag<K : Kind>(val data: Double) : TermS<K> {
-            override val type: TermS<Sem> get() = DoubleType.Sem
+        class DoubleTag(val data: Double) : TermS<End> {
+            override val type: TermS<Sem> get() = DoubleType
         }
 
-        class StringTag<K : Kind>(val data: String) : TermS<K> {
-            override val type: TermS<Sem> get() = StringType.Sem
+        class StringTag(val data: String) : TermS<End> {
+            override val type: TermS<Sem> get() = StringType
         }
 
         class ByteArrayTag(val elements: List<TermS<Syn>>) : TermS<Syn> {
-            override val type: TermS<Sem> get() = ByteArrayType.Sem
+            override val type: TermS<Sem> get() = ByteArrayType
         }
 
         class VByteArrayTag(val elements: List<Lazy<TermS<Sem>>>) : TermS<Sem> {
-            override val type: TermS<Sem> get() = ByteArrayType.Sem
+            override val type: TermS<Sem> get() = ByteArrayType
         }
 
         class IntArrayTag(val elements: List<TermS<Syn>>) : TermS<Syn> {
-            override val type: TermS<Sem> get() = IntArrayType.Sem
+            override val type: TermS<Sem> get() = IntArrayType
         }
 
         class VIntArrayTag(val elements: List<Lazy<TermS<Sem>>>) : TermS<Sem> {
-            override val type: TermS<Sem> get() = IntArrayType.Sem
+            override val type: TermS<Sem> get() = IntArrayType
         }
 
         class LongArrayTag(val elements: List<TermS<Syn>>) : TermS<Syn> {
-            override val type: TermS<Sem> get() = LongArrayType.Sem
+            override val type: TermS<Sem> get() = LongArrayType
         }
 
         class VLongArrayTag(val elements: List<Lazy<TermS<Sem>>>) : TermS<Sem> {
-            override val type: TermS<Sem> get() = LongArrayType.Sem
+            override val type: TermS<Sem> get() = LongArrayType
         }
 
         class ListTag(val elements: List<TermS<Syn>>, override val type: TermS<Sem>) : TermS<Syn>
@@ -408,44 +245,39 @@ sealed interface Core {
         class VCompoundTag(val elements: Map<String, Lazy<TermS<Sem>>>, override val type: TermS<Sem>) : TermS<Sem>
 
         class MatchObjectNode(val pattern: TermS<Syn>) : TermS<Syn> {
-            override val type: TermS<Sem> get() = NodeType.Sem
+            override val type: TermS<Sem> get() = NodeType
         }
 
         class VMatchObjectNode(val pattern: Lazy<TermS<Sem>>) : TermS<Sem> {
-            override val type: TermS<Sem> get() = NodeType.Sem
+            override val type: TermS<Sem> get() = NodeType
         }
 
         class MatchElementNode(val pattern: TermS<Syn>) : TermS<Syn> {
-            override val type: TermS<Sem> get() = NodeType.Sem
+            override val type: TermS<Sem> get() = NodeType
         }
 
         class VMatchElementNode(val pattern: Lazy<TermS<Sem>>) : TermS<Sem> {
-            override val type: TermS<Sem> get() = NodeType.Sem
+            override val type: TermS<Sem> get() = NodeType
         }
 
-        class AllElementsNode<K : Kind> : TermS<K> {
-            override val type: TermS<Sem> get() = NodeType.Sem
-
-            companion object {
-                val Syn: TermS<Syn> = AllElementsNode()
-                val Sem: TermS<Sem> = reflect(Syn)
-            }
+        object AllElementsNode : TermS<End> {
+            override val type: TermS<Sem> get() = NodeType
         }
 
         class IndexedElementNode(val index: TermS<Syn>) : TermS<Syn> {
-            override val type: TermS<Sem> get() = NodeType.Sem
+            override val type: TermS<Sem> get() = NodeType
         }
 
         class VIndexedElementNode(val index: Lazy<TermS<Sem>>) : TermS<Sem> {
-            override val type: TermS<Sem> get() = NodeType.Sem
+            override val type: TermS<Sem> get() = NodeType
         }
 
         class CompoundChildNode(val name: TermS<Syn>) : TermS<Syn> {
-            override val type: TermS<Sem> get() = NodeType.Sem
+            override val type: TermS<Sem> get() = NodeType
         }
 
         class VCompoundChildNode(val name: Lazy<TermS<Sem>>) : TermS<Sem> {
-            override val type: TermS<Sem> get() = NodeType.Sem
+            override val type: TermS<Sem> get() = NodeType
         }
 
         class Get(val target: TermS<Syn>, val path: TermS<Syn>, override val type: TermS<Sem>) : TermS<Syn>
@@ -461,35 +293,22 @@ sealed interface Core {
         class VApply(val operator: TermS<Sem>, val operand: Lazy<TermS<Sem>>, override val type: TermS<Sem>) : TermS<Sem>
 
         class QuoteType(val element: TypeZ<Syn>) : TermS<Syn> {
-            override val type: TermS<Sem> get() = TypeType.Sem
+            override val type: TermS<Sem> get() = TypeType
         }
 
         class VQuoteType(val element: Lazy<TypeZ<Sem>>) : TermS<Sem> {
-            override val type: TermS<Sem> get() = TypeType.Sem
+            override val type: TermS<Sem> get() = TypeType
         }
 
-        class QuoteTerm<K : Kind>(val element: TermZ, override val type: TermS<Sem>) : TermS<K>
+        class QuoteTerm(val element: TermZ, override val type: TermS<Sem>) : TermS<End>
 
         class Let(val name: String, val init: TermS<Syn>, val next: TermS<Syn>, override val type: TermS<Sem>) : TermS<Syn>
 
-        class Var<K : Kind>(val name: String?, val level: Int, override val type: TermS<Sem>) : TermS<K>
+        class Var(val name: String?, val level: Int, override val type: TermS<Sem>) : TermS<End>
 
-        class Meta<K : Kind>(val index: Int, override val type: TermS<Sem>) : TermS<K>
+        class Meta(val index: Int, override val type: TermS<Sem>) : TermS<End>
 
-        class Hole<K : Kind>(override val type: TermS<Sem>) : TermS<K> {
-            companion object {
-                val Syn: TermS<Syn> = Hole(EndType.Sem)
-                val Sem: TermS<Sem> = reflect(Syn)
-            }
-        }
-
-        companion object {
-            @Suppress("NOTHING_TO_INLINE")
-            inline fun reflect(term: TermS<Syn>): TermS<Sem> = cast(term)
-
-            @Suppress("NOTHING_TO_INLINE")
-            inline fun reify(term: TermS<Sem>): TermS<Syn> = cast(term)
-        }
+        class Hole(override val type: TermS<Sem>) : TermS<End>
     }
 
     class Clos(val env: PersistentList<Lazy<TermS<Sem>>>, val body: Lazy<TermS<Syn>>)

@@ -49,6 +49,7 @@ class Exec private constructor() {
             val elements = term.elements.mapValues { execTerm(ctx, it.value) }
             Term.CompoundTag(elements)
         }
+
         is Term.Fun -> execTerm(ctx + (term.name to term.body), term.next)
         is Term.Run -> execTerm(ctx, ctx[term.name]!!)
         is Term.Hole -> term

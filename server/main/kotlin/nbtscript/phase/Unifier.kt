@@ -12,7 +12,7 @@ class Unifier {
 
     fun fresh(): TermS<Syn> {
         metas += null
-        return TermS.Meta(metas.lastIndex, TermS.UniverseType.Sem)
+        return TermS.Meta(metas.lastIndex, TermS.UniverseType)
     }
 
     fun subTypeZ(
@@ -23,9 +23,9 @@ class Unifier {
         type2 is TypeZ.EndType -> false
         type2 is TypeZ.CollectionType -> when (type1) {
             is TypeZ.CollectionType -> subTypeZ(type1.element, type2.element)
-            is TypeZ.ByteArrayType -> subTypeZ(TypeZ.ByteType.Sem, type2.element)
-            is TypeZ.IntArrayType -> subTypeZ(TypeZ.IntType.Sem, type2.element)
-            is TypeZ.LongArrayType -> subTypeZ(TypeZ.LongType.Sem, type2.element)
+            is TypeZ.ByteArrayType -> subTypeZ(TypeZ.ByteType, type2.element)
+            is TypeZ.IntArrayType -> subTypeZ(TypeZ.IntType, type2.element)
+            is TypeZ.LongArrayType -> subTypeZ(TypeZ.LongType, type2.element)
             is TypeZ.ListType -> subTypeZ(type1.element, type2.element)
             else -> false
         }
@@ -99,7 +99,7 @@ class Unifier {
 
             term1 is TermS.NodeType && term2 is TermS.NodeType -> true
             term1 is TermS.VFunType && term2 is TermS.VFunType -> {
-                unifyTermS(lvl, term1.dom.value, term2.dom.value) && lazyOf(TermS.Var<Sem>(null, lvl, term1.dom.value)).let { operand ->
+                unifyTermS(lvl, term1.dom.value, term2.dom.value) && lazyOf(TermS.Var(null, lvl, term1.dom.value)).let { operand ->
                     unifyTermS(lvl.inc(), term1.cod(this, operand), term2.cod(this, operand))
                 }
             }
@@ -146,7 +146,7 @@ class Unifier {
             }
 
             term1 is TermS.VAbs && term2 is TermS.VAbs -> {
-                val operand = lazyOf(TermS.Var<Sem>(null, lvl, term1.anno.value))
+                val operand = lazyOf(TermS.Var(null, lvl, term1.anno.value))
                 unifyTermS(lvl.inc(), term1.body(this, operand), term2.body(this, operand))
             }
 
