@@ -100,8 +100,8 @@ class Elab private constructor(
         term is S.Term.CompoundTag && type is C.TypeZ.CompoundType? -> elabTermZCompoundTag(ctx, term, type)
         term is S.Term.Splice -> elabTermZSplice(ctx, term, type)
         term is S.Term.Fun -> elabTermZFun(ctx, term, type)
-        term is S.Term.Var && type == null -> inferTermZVar(ctx, term)
-        type == null -> error("failed: inference")
+        term is S.Term.Var && type == null -> synthTermZVar(ctx, term)
+        type == null -> error("failed: synthesis")
         else -> elabTermZSub(ctx, term, type)
     }.also {
         context.setHover(term.range, lazy {
@@ -188,7 +188,7 @@ class Elab private constructor(
         return C.TermZ.Fun(term.name.text, body, next, next.type)
     }
 
-    private inline fun inferTermZVar(ctx: Context, term: S.Term.Var): C.TermZ {
+    private inline fun synthTermZVar(ctx: Context, term: S.Term.Var): C.TermZ {
         return if (ctx.typesZ.contains(term.name)) {
             C.TermZ.Run(term.name, ctx.typesZ[term.name]!!)
         } else {
@@ -197,11 +197,11 @@ class Elab private constructor(
     }
 
     private inline fun elabTermZSub(ctx: Context, term: S.Term, type: C.TypeZ<Sem>): C.TermZ {
-        val inferred = elabTermZ(ctx, term)
-        return if (context.unifier.subTypeZ(inferred.type, type)) {
-            inferred
+        val synth = elabTermZ(ctx, term)
+        return if (context.unifier.subTypeZ(synth.type, type)) {
+            synth
         } else {
-            errorTermZ(typeZMismatched(ctx.values, context.unifier, type, inferred.type, term.range))
+            errorTermZ(typeZMismatched(ctx.values, context.unifier, type, synth.type, term.range))
         }
     }
 
@@ -245,16 +245,16 @@ class Elab private constructor(
             term is S.Term.CompoundTag && type is C.TermS.VCompoundType? -> elabTermSCompoundTag(ctx, term, type)
             type is C.TermS.NodeType -> checkTermSNode(ctx, term)
             term is S.Term.Get -> elabTermSGet(ctx, term)
-            term is S.Term.Abs && type == null -> inferTermSAbs(ctx, term)
+            term is S.Term.Abs && type == null -> synthTermSAbs(ctx, term)
             term is S.Term.Abs && term.anno == null && type is C.TermS.VFunType -> checkTermSAbs(ctx, term, type)
             term is S.Term.Apply && type != null -> checkTermSApply(ctx, term, type)
-            term is S.Term.Apply -> inferTermSApply(ctx, term)
+            term is S.Term.Apply -> synthTermSApply(ctx, term)
             term is S.Term.Quote && type is C.TermS.TypeType -> checkTermSQuoteTypeType(ctx, term)
             term is S.Term.Quote && type is C.TermS.VCodeType -> checkTermSQuoteVCodeType(ctx, term, type)
-            term is S.Term.Quote && type == null -> inferTermSQuote(ctx, term)
+            term is S.Term.Quote && type == null -> synthTermSQuote(ctx, term)
             term is S.Term.Let -> elabTermSLet(ctx, term, type)
-            term is S.Term.Var && type == null -> inferTermSVar(ctx, term)
-            type == null -> error("failed: inference")
+            term is S.Term.Var && type == null -> synthTermSVar(ctx, term)
+            type == null -> error("failed: synthesis")
             else -> elabTermSSub(ctx, term, type)
         }.also {
             context.setHover(term.range, lazy {
@@ -403,7 +403,7 @@ class Elab private constructor(
         return C.TermS.Get(target, path, C.TermS.VCodeType(lazyOf(C.TypeZ.EndType) /* TODO */))
     }
 
-    private inline fun inferTermSAbs(ctx: Context, term: S.Term.Abs): C.TermS<Syn> {
+    private inline fun synthTermSAbs(ctx: Context, term: S.Term.Abs): C.TermS<Syn> {
         val anno = term.anno?.let { elabTermS(ctx, it, C.TermS.UniverseType) } ?: context.unifier.fresh()
         context.setHover(term.name.range, lazy {
             Hover(markup(context.unifier.stringifyTermS(anno)))
@@ -451,7 +451,7 @@ class Elab private constructor(
         return C.TermS.Apply(operator, operand, type)
     }
 
-    private inline fun inferTermSApply(ctx: Context, term: S.Term.Apply): C.TermS<Syn> {
+    private inline fun synthTermSApply(ctx: Context, term: S.Term.Apply): C.TermS<Syn> {
         val operator = elabTermS(ctx, term.operator)
         return when (val operatorType = context.unifier.force(operator.type)) {
             is C.TermS.VFunType -> {
@@ -482,7 +482,7 @@ class Elab private constructor(
         return C.TermS.QuoteTerm(element, type)
     }
 
-    private inline fun inferTermSQuote(ctx: Context, term: S.Term.Quote): C.TermS<Syn> {
+    private inline fun synthTermSQuote(ctx: Context, term: S.Term.Quote): C.TermS<Syn> {
         return when (term.element) {
             is S.TypeZ -> {
                 val element = elabTypeZ(ctx, term.element)
@@ -515,7 +515,7 @@ class Elab private constructor(
         return C.TermS.Let(term.name.text, init, next, type ?: next.type)
     }
 
-    private inline fun inferTermSVar(ctx: Context, term: S.Term.Var): C.TermS<Syn> {
+    private inline fun synthTermSVar(ctx: Context, term: S.Term.Var): C.TermS<Syn> {
         return when (val level = ctx.levels[term.name]) {
             null -> errorTermS(notFound(term.name, term.range))
             else -> C.TermS.Var(term.name, level, ctx.typesS[level])
@@ -523,8 +523,8 @@ class Elab private constructor(
     }
 
     private inline fun elabTermSSub(ctx: Context, term: S.Term, type: C.TermS<Sem>): C.TermS<Syn> {
-        val inferred = elabTermS(ctx, term)
-        return tryUnify(ctx, inferred.type, type, term.range) { inferred }
+        val synth = elabTermS(ctx, term)
+        return tryUnify(ctx, synth.type, type, term.range) { synth }
     }
 
     private inline fun tryUnify(
