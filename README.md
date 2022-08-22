@@ -9,7 +9,7 @@
 - [x] NBTs as primitive data types
 - [x] Textual representation
 - [x] Dependent types
-- [x] Two-level types
+- [ ] Multi-level types
 - [ ] ...
 
 ## References
