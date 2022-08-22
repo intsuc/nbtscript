@@ -8,6 +8,12 @@
 
 - [x] NBTs as primitive data types
 - [x] Textual representation
+  - [x] LSP support
+    - [x] Hover
+    - [x] Inlay Hint
+    - [x] Completion
+    - [x] Push Diagnostics
+    - [ ] ...
 - [x] Dependent types
 - [ ] Multi-level types
 - [ ] ...
