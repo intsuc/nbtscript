@@ -12,9 +12,7 @@ sealed interface Core {
         sealed interface End : Syn, Sem
     }
 
-    sealed interface ObjZ<out K : Kind>
-
-    sealed interface TypeZ<out K : Kind> : ObjZ<K> {
+    sealed interface TypeZ<out K : Kind> {
         object EndType : TypeZ<End>
         object ByteType : TypeZ<End>
         object ShortType : TypeZ<End>
@@ -33,7 +31,7 @@ sealed interface Core {
         object Hole : TypeZ<End>
     }
 
-    sealed interface TermZ : ObjZ<Syn> {
+    sealed interface TermZ {
         val type: TypeZ<Sem>
 
         class ByteTag(val data: Byte) : TermZ {
