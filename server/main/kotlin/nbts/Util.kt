@@ -1,4 +1,4 @@
-package nbtscript
+package nbts
 
 inline fun <A, reified B> cast(a: A): B = a as B
 

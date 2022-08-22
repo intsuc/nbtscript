@@ -1,10 +1,10 @@
-package nbtscript.phase
+package nbts.phase
 
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.plus
-import nbtscript.ast.Staged.Root
-import nbtscript.ast.Staged.Term
+import nbts.ast.Staged.Root
+import nbts.ast.Staged.Term
 
 class Exec private constructor() {
     private fun execRoot(

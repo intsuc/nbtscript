@@ -1,4 +1,4 @@
-package nbtscript.lsp
+package nbts.lsp
 
 import org.eclipse.lsp4j.DidChangeNotebookDocumentParams
 import org.eclipse.lsp4j.DidCloseNotebookDocumentParams

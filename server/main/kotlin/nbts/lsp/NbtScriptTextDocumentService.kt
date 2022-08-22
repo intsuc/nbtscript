@@ -1,6 +1,6 @@
-package nbtscript.lsp
+package nbts.lsp
 
-import nbtscript.phase.*
+import nbts.phase.*
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 import org.eclipse.lsp4j.jsonrpc.messages.Either.forLeft

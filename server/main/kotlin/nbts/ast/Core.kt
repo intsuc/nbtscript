@@ -1,7 +1,7 @@
-package nbtscript.ast
+package nbts.ast
 
 import kotlinx.collections.immutable.PersistentList
-import nbtscript.ast.Core.Kind.*
+import nbts.ast.Core.Kind.*
 
 sealed interface Core {
     class Root(val body: TermZ)

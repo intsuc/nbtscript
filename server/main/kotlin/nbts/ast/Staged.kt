@@ -1,4 +1,4 @@
-package nbtscript.ast
+package nbts.ast
 
 sealed interface Staged {
     class Root(val body: Term)

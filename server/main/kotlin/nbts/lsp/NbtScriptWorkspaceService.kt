@@ -1,4 +1,4 @@
-package nbtscript.lsp
+package nbts.lsp
 
 import org.eclipse.lsp4j.DidChangeConfigurationParams
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams

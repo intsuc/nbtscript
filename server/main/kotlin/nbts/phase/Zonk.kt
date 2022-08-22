@@ -1,9 +1,9 @@
-package nbtscript.phase
+package nbts.phase
 
 import kotlinx.collections.immutable.persistentListOf
-import nbtscript.ast.Core.*
-import nbtscript.ast.Core.Kind.Syn
-import nbtscript.unreachable
+import nbts.ast.Core.*
+import nbts.ast.Core.Kind.Syn
+import nbts.unreachable
 
 class Zonk private constructor(
     private val context: Phase.Context = Phase.Context(),

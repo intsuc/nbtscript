@@ -1,9 +1,9 @@
-package nbtscript.phase
+package nbts.phase
 
-import nbtscript.ast.Core.Kind.Sem
-import nbtscript.ast.Core.Kind.Syn
-import nbtscript.ast.Core.TermS
-import nbtscript.ast.Core.TypeZ
+import nbts.ast.Core.Kind.Sem
+import nbts.ast.Core.Kind.Syn
+import nbts.ast.Core.TermS
+import nbts.ast.Core.TypeZ
 
 class Unifier {
     private val metas: MutableList<TermS<Sem>?> = mutableListOf()

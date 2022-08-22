@@ -1,12 +1,12 @@
-package nbtscript.phase
+package nbts.phase
 
 import kotlinx.collections.immutable.persistentListOf
-import nbtscript.ast.Core.Kind.Syn
-import nbtscript.unreachable
+import nbts.ast.Core.Kind.Syn
+import nbts.unreachable
 import org.eclipse.lsp4j.MarkupContent
 import org.eclipse.lsp4j.MarkupKind
-import nbtscript.ast.Core as C
-import nbtscript.ast.Staged as S
+import nbts.ast.Core as C
+import nbts.ast.Staged as S
 
 fun markup(
     value: String,

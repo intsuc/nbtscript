@@ -1,12 +1,12 @@
-package nbtscript.phase
+package nbts.phase
 
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.plus
-import nbtscript.ast.Core.*
-import nbtscript.ast.Core.Kind.Sem
-import nbtscript.ast.Core.Kind.Syn
-import nbtscript.unreachable
+import nbts.ast.Core.*
+import nbts.ast.Core.Kind.Sem
+import nbts.ast.Core.Kind.Syn
+import nbts.unreachable
 
 typealias Environment = PersistentList<Lazy<TermS<Sem>>>
 

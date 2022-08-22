@@ -32,5 +32,6 @@ kotlin {
 }
 
 application {
-    mainClass.set("nbtscript.cli.MainKt")
+    applicationName = "nbts"
+    mainClass.set("nbts.cli.MainKt")
 }

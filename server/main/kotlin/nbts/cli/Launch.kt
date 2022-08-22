@@ -1,8 +1,8 @@
-package nbtscript.cli
+package nbts.cli
 
 import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.Subcommand
-import nbtscript.lsp.NbtScriptLanguageServer
+import nbts.lsp.NbtScriptLanguageServer
 import org.eclipse.lsp4j.launch.LSPLauncher
 
 @ExperimentalCli

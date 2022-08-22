@@ -1,10 +1,10 @@
-package nbtscript.cli
+package nbts.cli
 
 import kotlinx.cli.ArgType
 import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.Subcommand
-import nbtscript.phase.*
-import nbtscript.phase.Exec
+import nbts.phase.*
+import nbts.phase.Exec
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Paths

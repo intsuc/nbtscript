@@ -1,4 +1,4 @@
-package nbtscript.cli
+package nbts.cli
 
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ExperimentalCli

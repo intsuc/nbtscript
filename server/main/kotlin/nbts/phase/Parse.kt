@@ -1,6 +1,6 @@
-package nbtscript.phase
+package nbts.phase
 
-import nbtscript.ast.Surface.*
+import nbts.ast.Surface.*
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 

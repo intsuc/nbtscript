@@ -1,11 +1,11 @@
-package nbtscript.phase
+package nbts.phase
 
 import kotlinx.collections.immutable.*
-import nbtscript.ast.Core.Kind.*
+import nbts.ast.Core.Kind.*
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either.forRight
-import nbtscript.ast.Core as C
-import nbtscript.ast.Surface as S
+import nbts.ast.Core as C
+import nbts.ast.Surface as S
 
 // TODO: create report messages lazily
 @Suppress("NOTHING_TO_INLINE")

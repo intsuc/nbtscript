@@ -1,9 +1,9 @@
-package nbtscript.phase
+package nbts.phase
 
-import nbtscript.ast.Core.Kind.Sem
-import nbtscript.ast.Core.Kind.Syn
-import nbtscript.ast.Core.TermS
-import nbtscript.ast.Core.TypeZ
+import nbts.ast.Core.Kind.Sem
+import nbts.ast.Core.Kind.Syn
+import nbts.ast.Core.TermS
+import nbts.ast.Core.TypeZ
 import org.eclipse.lsp4j.Diagnostic
 import org.eclipse.lsp4j.DiagnosticSeverity
 import org.eclipse.lsp4j.DiagnosticSeverity.Error
@@ -144,5 +144,5 @@ private fun makeDiagnostic(
     range,
     message,
     severity,
-    "nbtscript",
+    "nbts",
 )

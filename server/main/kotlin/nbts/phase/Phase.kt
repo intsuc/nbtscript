@@ -1,4 +1,4 @@
-package nbtscript.phase
+package nbts.phase
 
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.util.Ranges

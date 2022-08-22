@@ -1,4 +1,4 @@
-package nbtscript.ast
+package nbts.ast
 
 import org.eclipse.lsp4j.Range
 
