@@ -14,7 +14,7 @@ sealed interface Surface {
 
     sealed interface Term : Surface {
         class UniverseType(override val range: Range) : TermS
-        class EndType(override val range: Range) : TermS
+        class EndType(override val range: Range) : TypeZ, TermS
         class ByteType(override val range: Range) : TypeZ, TermS
         class ShortType(override val range: Range) : TypeZ, TermS
         class IntType(override val range: Range) : TypeZ, TermS

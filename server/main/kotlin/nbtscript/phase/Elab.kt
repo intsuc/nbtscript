@@ -24,6 +24,7 @@ class Elab private constructor(
         type: S.Term,
     ): C.TypeZ<Syn> = when (type) {
         !is S.TypeZ -> errorTypeZ(typeZExpected(type.range))
+        is S.Term.EndType -> elabTypeZEndType()
         is S.Term.ByteType -> elabTypeZByteType()
         is S.Term.ShortType -> elabTypeZShortType()
         is S.Term.IntType -> elabTypeZIntType()
@@ -45,6 +46,7 @@ class Elab private constructor(
         })
     }
 
+    private inline fun elabTypeZEndType(): C.TypeZ<Syn> = C.TypeZ.EndType
     private inline fun elabTypeZByteType(): C.TypeZ<Syn> = C.TypeZ.ByteType
     private inline fun elabTypeZShortType(): C.TypeZ<Syn> = C.TypeZ.ShortType
     private inline fun elabTypeZIntType(): C.TypeZ<Syn> = C.TypeZ.IntType
