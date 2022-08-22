@@ -49,7 +49,8 @@ sealed interface Surface {
         class Get(val target: Term, val path: Term, override val range: Range) : TermS
         class Abs(val name: Name, val anno: Term?, val body: Term, override val range: Range) : TermS
         class Apply(val operator: Term, val operand: Term, override val range: Range) : TermS
-        class Quote(val element: Term, override val range: Range) : TermS
+        class QuoteZ(val element: Term, override val range: Range) : TermS
+        class QuoteS(val element: Term, override val range: Range) : TermS
         class Splice(val element: Term, override val range: Range) : TypeZ, TermZ, TermS
         class Lift(val element: Term, override val range: Range) : TermM
         class Unlift(val element: Term, override val range: Range) : TypeZ, TermZ, TermS

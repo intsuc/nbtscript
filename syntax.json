@@ -4,7 +4,7 @@
   "patterns": [
     {
       "name": "keyword.operator.nbtscript",
-      "match": "(->|=>|`|\\$|\\.|:|=)"
+      "match": "(->|=>|`z|`s|\\$|\\.|:|=)"
     },
     {
       "name": "keyword.nbtscript",

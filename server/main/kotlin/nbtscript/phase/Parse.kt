@@ -166,8 +166,21 @@ class Parse private constructor(
 
             '`' -> {
                 skip()
-                val element = parseTerm2()
-                Term.Quote(element, range())
+                when (peek()) {
+                    'z' -> {
+                        skip()
+                        val element = parseTerm2()
+                        Term.QuoteZ(element, range())
+                    }
+
+                    's' -> {
+                        skip()
+                        val element = parseTerm2()
+                        Term.QuoteS(element, range())
+                    }
+
+                    else -> hole()
+                }
             }
 
             '$' -> {

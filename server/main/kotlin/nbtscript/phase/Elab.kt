@@ -254,10 +254,11 @@ class Elab private constructor(
             term is S.Term.Abs && term.anno == null && type is C.TermS.VFunType -> checkTermSAbs(ctx, term, type)
             term is S.Term.Apply && type != null -> checkTermSApply(ctx, term, type)
             term is S.Term.Apply -> synthTermSApply(ctx, term)
-            term is S.Term.Quote && type is C.TermS.TypeType -> checkTermSQuoteTypeType(ctx, term)
-            term is S.Term.Quote && type is C.TermS.VCodeZType -> checkTermSQuoteVCodeTypeZ(ctx, term, type)
-            term is S.Term.Quote && type is C.TermS.VCodeSType -> checkTermSQuoteVCodeTypeS(ctx, term, type)
-            term is S.Term.Quote && type == null -> synthTermSQuoteS(ctx, term) // TODO: disambiguate?
+            term is S.Term.QuoteZ && type is C.TermS.TypeType -> checkTermSQuoteTypeType(ctx, term)
+            term is S.Term.QuoteZ && type is C.TermS.VCodeZType -> checkTermSQuoteVCodeTypeZ(ctx, term, type)
+            term is S.Term.QuoteS && type is C.TermS.VCodeSType -> checkTermSQuoteVCodeTypeS(ctx, term, type)
+            term is S.Term.QuoteZ && type == null -> synthTermSQuoteZ(ctx, term)
+            term is S.Term.QuoteS && type == null -> synthTermSQuoteS(ctx, term)
             term is S.Term.Splice -> synthTermSSplice(ctx, term, type)
             term is S.Term.Unlift -> TODO()
             term is S.Term.Let -> elabTermSLet(ctx, term, type)
@@ -485,22 +486,22 @@ class Elab private constructor(
         }
     }
 
-    private inline fun checkTermSQuoteTypeType(ctx: Context, term: S.Term.Quote): C.TermS<Syn> {
+    private inline fun checkTermSQuoteTypeType(ctx: Context, term: S.Term.QuoteZ): C.TermS<Syn> {
         val element = elabTypeZ(ctx, term.element)
         return C.TermS.QuoteTypeZ(element)
     }
 
-    private inline fun checkTermSQuoteVCodeTypeZ(ctx: Context, term: S.Term.Quote, type: C.TermS.VCodeZType): C.TermS<Syn> {
+    private inline fun checkTermSQuoteVCodeTypeZ(ctx: Context, term: S.Term.QuoteZ, type: C.TermS.VCodeZType): C.TermS<Syn> {
         val element = elabTermZ(ctx, term.element, type.element.value)
         return C.TermS.QuoteTermZ(element, type)
     }
 
-    private inline fun checkTermSQuoteVCodeTypeS(ctx: Context, term: S.Term.Quote, type: C.TermS.VCodeSType): C.TermS<Syn> {
+    private inline fun checkTermSQuoteVCodeTypeS(ctx: Context, term: S.Term.QuoteS, type: C.TermS.VCodeSType): C.TermS<Syn> {
         val element = elabTermS(ctx.down(), term.element, type.element.value)
         return C.TermS.QuoteTermS(element, type)
     }
 
-    private inline fun synthTermSQuoteZ(ctx: Context, term: S.Term.Quote): C.TermS<Syn> {
+    private inline fun synthTermSQuoteZ(ctx: Context, term: S.Term.QuoteZ): C.TermS<Syn> {
         return when (term.element) {
             is S.TypeZ -> {
                 val element = elabTypeZ(ctx, term.element)
@@ -516,7 +517,7 @@ class Elab private constructor(
         }
     }
 
-    private inline fun synthTermSQuoteS(ctx: Context, term: S.Term.Quote): C.TermS<Syn> {
+    private inline fun synthTermSQuoteS(ctx: Context, term: S.Term.QuoteS): C.TermS<Syn> {
         val element = elabTermS(ctx.down(), term.element)
         return C.TermS.QuoteTermS(element, C.TermS.VCodeSType(lazyOf(element.type)))
     }
