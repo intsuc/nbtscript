@@ -42,7 +42,7 @@ fun Unifier.reflectTypeZ(
 
     is TypeZ.Splice -> {
         when (val element = force(reflectTermS(env, type.element))) {
-            is TermS.VQuoteType -> element.element.value
+            is TermS.VQuoteTypeZ -> element.element.value
             else -> TypeZ.Splice(element)
         }
     }
@@ -128,9 +128,14 @@ fun Unifier.reflectTermS(
         TermS.VFunType(term.name, dom, cod)
     }
 
-    is TermS.CodeType -> {
+    is TermS.CodeTypeZ -> {
         val element = lazy { reflectTypeZ(env, term.element) }
-        TermS.VCodeType(element)
+        TermS.VCodeTypeZ(element)
+    }
+
+    is TermS.CodeTypeS -> {
+        val element = lazy { reflectTermS(env, term.element) }
+        TermS.VCodeTypeS(element)
     }
 
     is TermS.TypeType -> term
@@ -214,12 +219,22 @@ fun Unifier.reflectTermS(
         }
     }
 
-    is TermS.QuoteType -> {
+    is TermS.QuoteTypeZ -> {
         val element = lazy { reflectTypeZ(env, term.element) }
-        TermS.VQuoteType(element)
+        TermS.VQuoteTypeZ(element)
     }
 
-    is TermS.QuoteTerm -> term
+    is TermS.QuoteTermZ -> term
+    is TermS.QuoteTermS -> {
+        val element = lazy { reflectTermS(env, term.element) }
+        TermS.VQuoteTermS(element, term.type)
+    }
+
+    is TermS.Splice -> {
+        val element = lazy { reflectTermS(env, term.element) }
+        TermS.VSplice(element, term.type)
+    }
+
     is TermS.Let -> {
         val init = lazy { reflectTermS(env, term.init) }
         reflectTermS(env + init, term.next)
@@ -258,27 +273,6 @@ fun Unifier.reifyTermS(
     }
 
     is TermS.NodeType -> term
-    is TermS.VMatchObjectNode -> {
-        val pattern = reifyTermS(env, term.pattern.value)
-        TermS.MatchObjectNode(pattern)
-    }
-
-    is TermS.VMatchElementNode -> {
-        val pattern = reifyTermS(env, term.pattern.value)
-        TermS.MatchElementNode(pattern)
-    }
-
-    is TermS.AllElementsNode -> term
-    is TermS.VIndexedElementNode -> {
-        val pattern = reifyTermS(env, term.index.value)
-        TermS.IndexedElementNode(pattern)
-    }
-
-    is TermS.VCompoundChildNode -> {
-        val pattern = reifyTermS(env, term.name.value)
-        TermS.CompoundChildNode(pattern)
-    }
-
     is TermS.VFunType -> {
         val dom = reifyTermS(env, term.dom.value)
         val x = lazyOf(TermS.Var(term.name, env.size, term.dom.value))
@@ -286,9 +280,14 @@ fun Unifier.reifyTermS(
         TermS.FunType(term.name, dom, cod)
     }
 
-    is TermS.VCodeType -> {
+    is TermS.VCodeTypeZ -> {
         val element = reifyTypeZ(env, term.element.value)
-        TermS.CodeType(element)
+        TermS.CodeTypeZ(element)
+    }
+
+    is TermS.VCodeTypeS -> {
+        val element = reifyTermS(env, term.element.value)
+        TermS.CodeTypeS(element)
     }
 
     is TermS.TypeType -> term
@@ -325,6 +324,27 @@ fun Unifier.reifyTermS(
         TermS.CompoundTag(elements, term.type)
     }
 
+    is TermS.VMatchObjectNode -> {
+        val pattern = reifyTermS(env, term.pattern.value)
+        TermS.MatchObjectNode(pattern)
+    }
+
+    is TermS.VMatchElementNode -> {
+        val pattern = reifyTermS(env, term.pattern.value)
+        TermS.MatchElementNode(pattern)
+    }
+
+    is TermS.AllElementsNode -> term
+    is TermS.VIndexedElementNode -> {
+        val pattern = reifyTermS(env, term.index.value)
+        TermS.IndexedElementNode(pattern)
+    }
+
+    is TermS.VCompoundChildNode -> {
+        val pattern = reifyTermS(env, term.name.value)
+        TermS.CompoundChildNode(pattern)
+    }
+
     is TermS.VGet -> {
         val target = reifyTermS(env, term.target.value)
         val path = reifyTermS(env, term.path.value)
@@ -348,12 +368,22 @@ fun Unifier.reifyTermS(
         TermS.Apply(operator, operand, cod)
     }
 
-    is TermS.VQuoteType -> {
+    is TermS.VQuoteTypeZ -> {
         val element = reifyTypeZ(env, term.element.value)
-        TermS.QuoteType(element)
+        TermS.QuoteTypeZ(element)
     }
 
-    is TermS.QuoteTerm -> term
+    is TermS.QuoteTermZ -> term
+    is TermS.VQuoteTermS -> {
+        val element = reifyTermS(env, term.element.value)
+        TermS.QuoteTermS(element, term.type)
+    }
+
+    is TermS.VSplice -> {
+        val element = reifyTermS(env, term.element.value)
+        TermS.Splice(element, term.type)
+    }
+
     is TermS.Var -> term
     is TermS.Meta -> term
     is TermS.Hole -> term

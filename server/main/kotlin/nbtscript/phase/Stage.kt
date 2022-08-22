@@ -58,7 +58,7 @@ class Stage private constructor(
         is C.TermZ.Splice -> {
             when (val element = context.unifier.normalize(term.element)) {
                 is C.TermS.Get -> TODO()
-                is C.TermS.QuoteTerm -> stageTermZ(element.element)
+                is C.TermS.QuoteTermZ -> stageTermZ(element.element)
                 else -> error("expected: quote")
             }
         }

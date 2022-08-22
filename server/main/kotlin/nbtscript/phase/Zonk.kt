@@ -102,9 +102,9 @@ class Zonk private constructor(
             TermS.FunType(term.name, dom, cod)
         }
 
-        is TermS.CodeType -> {
+        is TermS.CodeTypeZ -> {
             val element = zonkTypeZ(term.element)
-            TermS.CodeType(element)
+            TermS.CodeTypeZ(element)
         }
 
         is TermS.TypeType -> term
@@ -180,14 +180,14 @@ class Zonk private constructor(
             TermS.Apply(operator, operand, term.type)
         }
 
-        is TermS.QuoteType -> {
+        is TermS.QuoteTypeZ -> {
             val element = zonkTypeZ(term.element)
-            TermS.QuoteType(element)
+            TermS.QuoteTypeZ(element)
         }
 
-        is TermS.QuoteTerm -> {
+        is TermS.QuoteTermZ -> {
             val element = zonkTermZ(term.element)
-            TermS.QuoteTerm(element, term.type)
+            TermS.QuoteTermZ(element, term.type)
         }
 
         is TermS.Let -> {

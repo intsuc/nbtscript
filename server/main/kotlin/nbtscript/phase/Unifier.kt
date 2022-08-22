@@ -104,7 +104,8 @@ class Unifier {
                 }
             }
 
-            term1 is TermS.VCodeType && term2 is TermS.VCodeType -> unifyTypeZ(term1.element.value, term2.element.value)
+            term1 is TermS.VCodeTypeZ && term2 is TermS.VCodeTypeZ -> unifyTypeZ(term1.element.value, term2.element.value)
+            term1 is TermS.VCodeTypeS && term2 is TermS.VCodeTypeS -> unifyTermS(lvl, term1.element.value, term2.element.value)
             term1 is TermS.TypeType && term2 is TermS.TypeType -> true
             term1 is TermS.EndTag && term2 is TermS.EndTag -> true
             term1 is TermS.ByteTag && term2 is TermS.ByteTag -> term1.data == term2.data
@@ -154,8 +155,10 @@ class Unifier {
                 unifyTermS(lvl, term1.operator, term2.operator) && unifyTermS(lvl, term1.operand.value, term2.operand.value)
             }
 
-            term1 is TermS.VQuoteType && term2 is TermS.VQuoteType -> false // ?
-            term1 is TermS.QuoteTerm && term2 is TermS.QuoteTerm -> false // ?
+            term1 is TermS.VQuoteTypeZ && term2 is TermS.VQuoteTypeZ -> unifyTypeZ(term1.element.value, term2.element.value)
+            term1 is TermS.QuoteTermZ && term2 is TermS.QuoteTermZ -> false // ?
+            term1 is TermS.VQuoteTermS && term2 is TermS.VQuoteTermS -> unifyTermS(lvl, term1.element.value, term2.element.value)
+            term1 is TermS.VSplice && term2 is TermS.VSplice -> unifyTermS(lvl, term1.element.value, term2.element.value)
             term1 is TermS.Var && term2 is TermS.Var -> term1.level == term2.level
             term1 is TermS.Hole && term2 is TermS.Hole -> false // ?
             else -> false

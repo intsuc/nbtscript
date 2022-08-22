@@ -166,11 +166,19 @@ sealed interface Core {
             override val type: TermS<Sem> get() = UniverseType
         }
 
-        class CodeType(val element: TypeZ<Syn>) : TermS<Syn> {
+        class CodeTypeZ(val element: TypeZ<Syn>) : TermS<Syn> {
             override val type: TermS<Sem> get() = UniverseType
         }
 
-        class VCodeType(val element: Lazy<TypeZ<Sem>>) : TermS<Sem> {
+        class VCodeTypeZ(val element: Lazy<TypeZ<Sem>>) : TermS<Sem> {
+            override val type: TermS<Sem> get() = UniverseType
+        }
+
+        class CodeTypeS(val element: TermS<Syn>) : TermS<Syn> {
+            override val type: TermS<Sem> get() = UniverseType
+        }
+
+        class VCodeTypeS(val element: Lazy<TermS<Sem>>) : TermS<Sem> {
             override val type: TermS<Sem> get() = UniverseType
         }
 
@@ -290,15 +298,23 @@ sealed interface Core {
 
         class VApply(val operator: TermS<Sem>, val operand: Lazy<TermS<Sem>>, override val type: TermS<Sem>) : TermS<Sem>
 
-        class QuoteType(val element: TypeZ<Syn>) : TermS<Syn> {
+        class QuoteTypeZ(val element: TypeZ<Syn>) : TermS<Syn> {
             override val type: TermS<Sem> get() = TypeType
         }
 
-        class VQuoteType(val element: Lazy<TypeZ<Sem>>) : TermS<Sem> {
+        class VQuoteTypeZ(val element: Lazy<TypeZ<Sem>>) : TermS<Sem> {
             override val type: TermS<Sem> get() = TypeType
         }
 
-        class QuoteTerm(val element: TermZ, override val type: TermS<Sem>) : TermS<End>
+        class QuoteTermZ(val element: TermZ, override val type: TermS<Sem>) : TermS<End>
+
+        class QuoteTermS(val element: TermS<Syn>, override val type: TermS<Sem>) : TermS<Syn>
+
+        class VQuoteTermS(val element: Lazy<TermS<Sem>>, override val type: TermS<Sem>) : TermS<Sem>
+
+        class Splice(val element: TermS<Syn>, override val type: TermS<Sem>) : TermS<Syn>
+
+        class VSplice(val element: Lazy<TermS<Sem>>, override val type: TermS<Sem>) : TermS<Sem>
 
         class Let(val name: String, val init: TermS<Syn>, val next: TermS<Syn>, override val type: TermS<Sem>) : TermS<Syn>
 
