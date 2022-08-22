@@ -5,17 +5,17 @@ import { LanguageClient, LanguageClientOptions, ServerOptions } from "vscode-lan
 let client: LanguageClient | undefined;
 
 export function activate(context: ExtensionContext) {
-	const nbtscript = context.asAbsolutePath(
+	const nbts = context.asAbsolutePath(
 		path.join(
 			"build",
 			"install",
-			"nbtscript",
+			"nbts",
 			"bin",
-			`nbtscript${process.platform === "win32" ? ".bat" : ""}`,
+			`nbts${process.platform === "win32" ? ".bat" : ""}`,
 		)
 	);
 	const serverOptions: ServerOptions = {
-		command: nbtscript,
+		command: nbts,
 		args: ["launch"],
 	};
 	const clientOptions: LanguageClientOptions = {
