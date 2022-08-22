@@ -166,19 +166,19 @@ sealed interface Core {
             override val type: TermS<Sem> get() = UniverseType
         }
 
-        class CodeTypeZ(val element: TypeZ<Syn>) : TermS<Syn> {
+        class CodeZType(val element: TypeZ<Syn>) : TermS<Syn> {
             override val type: TermS<Sem> get() = UniverseType
         }
 
-        class VCodeTypeZ(val element: Lazy<TypeZ<Sem>>) : TermS<Sem> {
+        class VCodeZType(val element: Lazy<TypeZ<Sem>>) : TermS<Sem> {
             override val type: TermS<Sem> get() = UniverseType
         }
 
-        class CodeTypeS(val element: TermS<Syn>) : TermS<Syn> {
+        class CodeSType(val element: TermS<Syn>) : TermS<Syn> {
             override val type: TermS<Sem> get() = UniverseType
         }
 
-        class VCodeTypeS(val element: Lazy<TermS<Sem>>) : TermS<Sem> {
+        class VCodeSType(val element: Lazy<TermS<Sem>>) : TermS<Sem> {
             override val type: TermS<Sem> get() = UniverseType
         }
 

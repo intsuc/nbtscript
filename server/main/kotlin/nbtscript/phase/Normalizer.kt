@@ -128,14 +128,14 @@ fun Unifier.reflectTermS(
         TermS.VFunType(term.name, dom, cod)
     }
 
-    is TermS.CodeTypeZ -> {
+    is TermS.CodeZType -> {
         val element = lazy { reflectTypeZ(env, term.element) }
-        TermS.VCodeTypeZ(element)
+        TermS.VCodeZType(element)
     }
 
-    is TermS.CodeTypeS -> {
+    is TermS.CodeSType -> {
         val element = lazy { reflectTermS(env, term.element) }
-        TermS.VCodeTypeS(element)
+        TermS.VCodeSType(element)
     }
 
     is TermS.TypeType -> term
@@ -280,14 +280,14 @@ fun Unifier.reifyTermS(
         TermS.FunType(term.name, dom, cod)
     }
 
-    is TermS.VCodeTypeZ -> {
+    is TermS.VCodeZType -> {
         val element = reifyTypeZ(env, term.element.value)
-        TermS.CodeTypeZ(element)
+        TermS.CodeZType(element)
     }
 
-    is TermS.VCodeTypeS -> {
+    is TermS.VCodeSType -> {
         val element = reifyTermS(env, term.element.value)
-        TermS.CodeTypeS(element)
+        TermS.CodeSType(element)
     }
 
     is TermS.TypeType -> term

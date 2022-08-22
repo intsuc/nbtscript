@@ -30,7 +30,8 @@ sealed interface Surface {
         class CompoundType(val elements: Map<Name, Term>, override val range: Range) : TypeZ, TermS
         class NodeType(override val range: Range) : TermS
         class FunType(val name: Name?, val dom: Term, val cod: Term, override val range: Range) : TermS
-        class CodeType(val element: Term, override val range: Range) : TermS
+        class CodeZType(val element: Term, override val range: Range) : TermS
+        class CodeSType(val element: Term, override val range: Range) : TermS
         class MacroType(val element: Term, override val range: Range) : TermM
         class TypeType(override val range: Range) : TermS
         class ByteTag(val data: Byte, override val range: Range) : TermZ, TermS

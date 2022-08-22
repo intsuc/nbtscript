@@ -243,9 +243,14 @@ class Parse private constructor(
                             }
 
                             "node" -> Term.NodeType(range())
-                            "code" -> {
+                            "code_z" -> {
                                 val element = parseTerm2()
-                                Term.CodeType(element, range())
+                                Term.CodeZType(element, range())
+                            }
+
+                            "code_s" -> {
+                                val element = parseTerm2()
+                                Term.CodeSType(element, range())
                             }
 
                             "macro" -> {

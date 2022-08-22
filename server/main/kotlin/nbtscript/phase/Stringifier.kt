@@ -76,8 +76,8 @@ fun Unifier.stringifyTermS(
     is C.TermS.CompoundType -> term.elements.entries.joinToString(", ", "compound {", "}") { "${it.key}: ${stringifyTermS(it.value)}" }
     is C.TermS.NodeType -> "node"
     is C.TermS.FunType -> "${term.name?.let { "($it: ${stringifyTermS(term.dom)})" } ?: stringifyTermS(term.dom)} -> ${stringifyTermS(term.cod)}"
-    is C.TermS.CodeTypeZ -> "code ${stringifyTypeZ(term.element)}"
-    is C.TermS.CodeTypeS -> "code ${stringifyTermS(term.element)}"
+    is C.TermS.CodeZType -> "code_z ${stringifyTypeZ(term.element)}"
+    is C.TermS.CodeSType -> "code_s ${stringifyTermS(term.element)}"
     is C.TermS.TypeType -> "type"
     is C.TermS.EndTag -> ""
     is C.TermS.ByteTag -> "${term.data}b"

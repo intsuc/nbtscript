@@ -12,7 +12,7 @@
     },
     {
       "name": "support.type.nbtscript",
-      "match": "\\b(universe|end|byte|short|int|long|float|double|string|collection|byte_array|int_array|long_array|list|compound|node|code|macro|type)\\b"
+      "match": "\\b(universe|end|byte|short|int|long|float|double|string|collection|byte_array|int_array|long_array|list|compound|node|code_z|code_s|macro|type)\\b"
     },
     {
       "match": "\\b(?<=fun)\\s+([^\\s\"(),.:;=\\[\\\\\\]{}-]+)",

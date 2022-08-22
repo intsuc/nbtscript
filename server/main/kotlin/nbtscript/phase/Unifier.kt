@@ -104,8 +104,8 @@ class Unifier {
                 }
             }
 
-            term1 is TermS.VCodeTypeZ && term2 is TermS.VCodeTypeZ -> unifyTypeZ(term1.element.value, term2.element.value)
-            term1 is TermS.VCodeTypeS && term2 is TermS.VCodeTypeS -> unifyTermS(lvl, term1.element.value, term2.element.value)
+            term1 is TermS.VCodeZType && term2 is TermS.VCodeZType -> unifyTypeZ(term1.element.value, term2.element.value)
+            term1 is TermS.VCodeSType && term2 is TermS.VCodeSType -> unifyTermS(lvl, term1.element.value, term2.element.value)
             term1 is TermS.TypeType && term2 is TermS.TypeType -> true
             term1 is TermS.EndTag && term2 is TermS.EndTag -> true
             term1 is TermS.ByteTag && term2 is TermS.ByteTag -> term1.data == term2.data
